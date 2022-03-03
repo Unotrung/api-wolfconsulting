@@ -31,7 +31,7 @@ const AuthController = {
     login: async (req, res) => {
         try {
             // Vì email là unique => Chỉ cần tìm 1 
-            const auth = await User.findOne({ email: req.body.email });
+            const auth = await Auth.findOne({ email: req.body.email });
             if (!auth) {
                 res.status(404).json("Wrong Email!");
             }
