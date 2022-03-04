@@ -60,10 +60,10 @@ const AuthController = {
 
     login: async (req, res) => {
         try {
-            // Vì email là unique => Chỉ cần tìm 1 
-            const auth = await Auth.findOne({ email: req.body.email });
+            // Vì phone là unique => Chỉ cần tìm 1 
+            const auth = await Auth.findOne({ phone: req.body.phone });
             if (!auth) {
-                return res.status(401).json("Wrong Email!");
+                return res.status(401).json("Wrong phone!");
             }
             // So sánh mk của người dùng và mk trong db (so sánh 2 cái mk được mã hóa)
             const validPassword = await bcrypt.compare(req.body.password, auth.password);
