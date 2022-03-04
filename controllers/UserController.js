@@ -5,14 +5,14 @@ const UserController = {
         try {
             const users = await User.find();
             if (users.length > 0) {
-                res.status(200).json(users);
+                return res.status(200).json(users);
             }
             else {
-                res.status(500).json("User List is empty");
+                return res.status(200).json("User List is empty");
             }
         }
         catch (err) {
-            res.status(500).json(err);
+            return res.status(500).json(err);
         }
     },
 
@@ -20,14 +20,14 @@ const UserController = {
         try {
             const user = await User.findById(req.params.id);
             if (user) {
-                res.status(200).json(user);
+                return res.status(200).json(user);
             }
             else {
-                res.status(500).json("User is not exists");
+                return res.status(200).json("User is not exists");
             }
         }
         catch (err) {
-            res.status(500).json(err);
+            return res.status(500).json(err);
         }
     },
 
@@ -35,14 +35,14 @@ const UserController = {
         try {
             const user = await User.findByIdAndDelete(req.params.id);
             if (!user) {
-                res.status(500).json("User is not exists");
+                return res.status(200).json("User is not exists");
             }
             else {
-                res.status(200).json("Delete User Successfully");
+                return res.status(200).json("Delete User Successfully");
             }
         }
         catch (err) {
-            res.status(500).json(err);
+            return res.status(500).json(err);
         }
     }
 }
