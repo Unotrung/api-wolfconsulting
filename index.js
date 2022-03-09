@@ -24,7 +24,8 @@ mongoose.connect(process.env.MONGODB_URL, function (err) {
     else {
         console.log('Connect MongoDB Failure');
     }
-})
+}
+)
 
 // Setup body-parser 
 // const bodyParser = require('body-parser');

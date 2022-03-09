@@ -1,10 +1,128 @@
 const Auth = require('../models/User');
+const Otp = require('../models/Otp');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const _ = require('lodash');
+const otpGenerator = require('otp-generator');
 
 let refreshTokens = [];
 
 const AuthController = {
+
+    generateAccessToken: (user) => {
+        return jwt.sign(
+            {
+                id: user.id,
+            },
+            // Add a secret key to make it more secure
+            process.env.JWT_ACCESS_KEY,
+            // After 2 hours this accessoken will disappear and the user has to login again
+            { expiresIn: "2h" }
+        );
+    },
+
+    generateRefreshToken: (user) => {
+        return jwt.sign(
+            {
+                id: user.id,
+            },
+            process.env.JWT_REFRESH_KEY,
+            { expiresIn: "2h" }
+        );
+    },
+
+    sendOtp: async (req, res) => {
+        try {
+            const auth = await Auth.findOne({
+                $or: [{ phone: req.body.phone }, { email: req.body.email }]
+            });
+            if (auth) {
+                return res.status(401).json({
+                    message: "This account already exists ! Please Login",
+                    isExist: true
+                });
+            }
+            else {
+                const USERNAME = req.body.username;
+                const EMAIL = req.body.email;
+                const PHONE = req.body.phone;
+                const OTP = otpGenerator.generate(6, {
+                    digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
+                });
+                if (USERNAME !== null && EMAIL !== null && PHONE !== null && OTP !== null) {
+                    // Mã hóa filed otp trong đối tượng otp
+                    const salt = await bcrypt.genSalt(10);
+                    const hashed = await bcrypt.hash(OTP, salt);
+                    const dataTemp = new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: hashed });
+                    const result = await dataTemp.save();
+                    const { otp, ...others } = result._doc;
+                    return res.status(200).json({
+                        "data": [
+                            {
+                                message: "Send OTP Successfully",
+                                otp: OTP,
+                                isExist: false,
+                                data: { ...others }
+                            }
+                        ]
+                    });
+                }
+            }
+        }
+        catch (err) {
+            return res.status(500).json({
+                "data": [
+                    {
+                        message: "Send OTP Failure",
+                        status: false,
+                        err: err,
+                    }
+                ]
+            });
+        }
+    },
+
+    verifyOtp: async (req, res) => {
+        try {
+            const otpUser = await Otp.find({ email: req.body.email, phone: req.body.phone, username: req.body.username });
+            if (otpUser.length === 0) {
+                return res.status(401).json({ message: "Expired OTP ! Please Resend OTP" });
+            }
+            // Get last otp. 
+            const lastOtp = otpUser[otpUser.length - 1];
+            const validUser = await bcrypt.compare(req.body.otp, lastOtp.otp);
+            if (lastOtp.phone === req.body.phone && validUser) {
+                let username = req.body.username;
+                let email = req.body.email;
+                let phone = req.body.phone;
+                let user = {
+                    username: username,
+                    email: email,
+                    phone: phone
+                };
+                const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone });
+                return res.status(200).json({
+                    data: [
+                        {
+                            message: "OTP VALID",
+                            user: user,
+                            status: true
+                        }
+                    ]
+                });
+            }
+            else {
+                return res.status(401).json({
+                    message: "OTP INVALID",
+                    status: false
+                });
+            }
+        }
+        catch (err) {
+            return res.status(500).json({ err: err });
+        }
+    },
+
     register: async (req, res) => {
         try {
             // Get data from User
@@ -24,84 +142,87 @@ const AuthController = {
             });
             // Save To DB
             const user = await newUser.save();
-            return res.status(200).json(user);
+            return res.status(200).json({
+                data: [
+                    {
+                        message: "Register Successfully",
+                        user: user,
+                        status: true
+                    }
+                ]
+            });
         }
         catch (err) {
-            return res.status(500).json(err);
+            return res.status(500).json({
+                data: [
+                    {
+                        message: "Register Failure",
+                        err: err,
+                        status: false
+                    }
+                ]
+            });
         }
-    },
-
-    generateAccessToken: (auth) => {
-        return jwt.sign(
-            {
-                id: auth.id,
-                admin: auth.admin,
-            },
-            // Thêm 1 mã secret key để nó an toàn hơn
-            process.env.JWT_ACCESS_KEY,
-            // Mã access token này sẽ tồn tại trong khoảng thời gian bao lâu 
-            // Sau 2h mã access token này sẽ biến mất và người dùng phải đăng nhập lại
-            { expiresIn: "30s" }
-        );
-    },
-
-    generateRefreshToken: (auth) => {
-        return jwt.sign(
-            {
-                id: auth.id,
-                admin: auth.admin,
-            },
-            // Thêm 1 mã secret key để nó an toàn hơn
-            process.env.JWT_REFRESH_KEY,
-            // Sau 2h mã access token này sẽ biến mất và người dùng phải đăng nhập lại
-            { expiresIn: "2h" }
-        );
     },
 
     login: async (req, res) => {
         try {
-            // Vì phone là unique => Chỉ cần tìm 1 
             const auth = await Auth.findOne({ phone: req.body.phone });
             if (!auth) {
-                return res.status(401).json("Wrong phone!");
+                return res.status(401).json({ message: "Wrong phone !" });
             }
-            // So sánh mk của người dùng và mk trong db (so sánh 2 cái mk được mã hóa)
+            // Compare user password and db password (compare 2 encrypted password)
             const validPassword = await bcrypt.compare(req.body.password, auth.password);
             if (!validPassword) {
-                return res.status(401).json("Wrong Password!");
+                return res.status(401).json({ message: "Wrong Password !" });
             }
             if (auth && validPassword) {
-                // Nếu auth và validPassword hợp lệ thì gắn token kèm theo
+                // If auth and validPassword are valid, attach the accessToken
                 const accessToken = AuthController.generateAccessToken(auth);
-                // Khi accessToken của người dùng hết hạn thì nó sẽ tự động Refresh lại
+                // When the user's accessToken expires, it will automatically Refresh
                 const refreshToken = AuthController.generateRefreshToken(auth);
-                // Lưu trữ refreshToken
+                // Store refreshToken
                 refreshTokens.push(refreshToken);
-                // Lưu refresh token vào cookie
+                // Save refreshToken to cookie
                 res.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
-                    secure: false, // Khi deploy lên server nên đổi lại là true
-                    path: '/', // Có cũng được không có cũng không sao
-                    sameSite: 'strict', // Ngăn chặn cách tấn công. Những cái http Request chỉ được đến từ site này thôi
+                    secure: false, // When deploying to the server, change it back to true
+                    path: '/', // It's okay to have it or not
+                    sameSite: 'strict', // Prevent the attack. Http Requests can only come from this site
                 });
                 const { password, ...others } = auth._doc;
                 // Khi trả thông tin người dùng về thì ta không nên trả về password kèm theo chỉ cần trả về những thông tin khác ngoại trừ password
-                // đồng thời gắn kèm theo token và refreshToken
+                // đồng thời gắn kèm theo accessToken và refreshToken
                 // Bởi vì ta đã lưu cái refreshToken này trong cookie òi nên mình không cần trả về front end. Mặc định khi đăng nhập ta sẽ luôn có 1 cookie
                 // chứa refreshToken
                 // return res.status(200).json({ ...others, accessToken, refreshToken });
-                return res.status(200).json({ ...others, accessToken });
+                return res.status(200).json({
+                    "data": [
+                        {
+                            "message": "Login Successfully",
+                            "accessToken": accessToken,
+                            "data": { ...others }
+                        }
+                    ]
+                });
             }
         }
         catch (err) {
-            return res.status(500).json(err);
+            return res.status(500).json({
+                "data": [
+                    {
+                        "message": "Login Failure",
+                        "err": err
+                    }
+                ]
+            });
         }
     },
 
     requestRefreshToken: async (req, res) => {
         // accessToken là ngắn hạn, refreshToken là dài hạn
         // Khi mà accessToken hết hạn thì mình không dùng nó được nữa, còn refreshToken là lâu dài nên mình sẽ sử dụng chủ yếu thằng này
-        // Take Refresh Token From User 
+        // Take RefreshToken From User 
         // Nãy ở trên lưu cookies ta đặt tên là gì thì gọi về như vậy
         const refreshToken = req.cookies.refreshToken;
         // refreshToken không tồn tại
@@ -140,7 +261,7 @@ const AuthController = {
         res.clearCookie("refreshToken");
         refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
         return res.status(200).json('Logged out success !');
-    }
+    },
 }
 
 module.exports = AuthController;
