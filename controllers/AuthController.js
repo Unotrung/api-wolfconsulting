@@ -16,8 +16,8 @@ const AuthController = {
             },
             // Add a secret key to make it more secure
             process.env.JWT_ACCESS_KEY,
-            // After 2 hours this accessoken will disappear and the user has to login again
-            { expiresIn: "2h" }
+            // After 7 hours this accessoken will disappear and the user has to login again
+            { expiresIn: "7h" }
         );
     },
 
@@ -27,7 +27,7 @@ const AuthController = {
                 id: user.id,
             },
             process.env.JWT_REFRESH_KEY,
-            { expiresIn: "2h" }
+            { expiresIn: "7h" }
         );
     },
 
@@ -57,27 +57,19 @@ const AuthController = {
                     const result = await dataTemp.save();
                     const { otp, ...others } = result._doc;
                     return res.status(200).json({
-                        "data": [
-                            {
-                                message: "Send OTP Successfully",
-                                otp: OTP,
-                                isExist: false,
-                                data: { ...others }
-                            }
-                        ]
+                        message: "Send OTP Successfully",
+                        otp: OTP,
+                        isExist: false,
+                        data: { ...others }
                     });
                 }
             }
         }
         catch (err) {
             return res.status(500).json({
-                "data": [
-                    {
-                        message: "Send OTP Failure",
-                        status: false,
-                        err: err,
-                    }
-                ]
+                message: "Send OTP Failure",
+                status: false,
+                err: err,
             });
         }
     },
@@ -102,13 +94,9 @@ const AuthController = {
                 };
                 const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone });
                 return res.status(200).json({
-                    data: [
-                        {
-                            message: "OTP VALID",
-                            user: user,
-                            status: true
-                        }
-                    ]
+                    message: "OTP VALID",
+                    user: user,
+                    status: true
                 });
             }
             else {
@@ -143,24 +131,16 @@ const AuthController = {
             // Save To DB
             const user = await newUser.save();
             return res.status(200).json({
-                data: [
-                    {
-                        message: "Register Successfully",
-                        user: user,
-                        status: true
-                    }
-                ]
+                message: "Register Successfully",
+                user: user,
+                status: true
             });
         }
         catch (err) {
             return res.status(500).json({
-                data: [
-                    {
-                        message: "Register Failure",
-                        err: err,
-                        status: false
-                    }
-                ]
+                message: "Register Failure",
+                err: err,
+                status: false
             });
         }
     },
@@ -197,24 +177,16 @@ const AuthController = {
                 // chứa refreshToken
                 // return res.status(200).json({ ...others, accessToken, refreshToken });
                 return res.status(200).json({
-                    "data": [
-                        {
-                            "message": "Login Successfully",
-                            "accessToken": accessToken,
-                            "data": { ...others }
-                        }
-                    ]
+                    message: "Login Successfully",
+                    accessToken: accessToken,
+                    data: { ...others }
                 });
             }
         }
         catch (err) {
             return res.status(500).json({
-                "data": [
-                    {
-                        "message": "Login Failure",
-                        "err": err
-                    }
-                ]
+                message: "Login Failure",
+                err: err
             });
         }
     },

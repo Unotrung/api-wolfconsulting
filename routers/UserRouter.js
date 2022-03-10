@@ -1,10 +1,10 @@
-const middlewareController = require('../controllers/MiddlewareController');
+const MiddlewareController = require('../controllers/MiddlewareController');
 const UserController = require('../controllers/UserController');
 
 const router = require("express").Router();
 
-// router.get("/", middlewareController.verifyToken, UserController.getAllUser);
-// router.get("/:phone", UserController.getUser);
-// router.delete("/deleteUser/:id", middlewareController.VerifyTokenByMySelfAndAdmin, UserController.deleteUser);
+router.get("/", UserController.getAllUser);
+router.put("/:id", MiddlewareController.verifyToken, UserController.updateUser);
+router.get("/:phone", MiddlewareController.verifyToken, UserController.getUser);
 
 module.exports = router;
