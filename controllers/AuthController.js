@@ -34,7 +34,7 @@ const AuthController = {
     sendOtp: async (req, res) => {
         try {
             const auth = await Auth.findOne({
-                $or: [{ phone: req.body.phone }, { email: req.body.email }]
+                $or: [{ phone: req.body.phone }, { email: req.body.email }, { username: req.body.username }]
             });
             if (auth) {
                 return res.status(401).json({
