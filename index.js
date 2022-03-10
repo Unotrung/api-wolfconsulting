@@ -6,6 +6,8 @@ const cookieParser = require('cookie-parser');
 // Routes
 const authRoute = require('./routers/AuthRouter');
 const userRoute = require('./routers/UserRouter');
+const transactionRoute = require('./routers/TransactionRouter');
+const repaymentRoute = require('./routers/RepaymentRouter');
 
 // Sử dụng các biến trong file .env
 dotenv.config();
@@ -34,6 +36,8 @@ mongoose.connect(process.env.MONGODB_URL, function (err) {
 // ROUTES
 app.use('/v1/auth', authRoute);
 app.use('/v1/user', userRoute);
+app.use('/v1/transaction', transactionRoute);
+app.use('/v1/repayment', repaymentRoute);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {

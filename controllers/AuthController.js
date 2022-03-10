@@ -234,6 +234,7 @@ const AuthController = {
         refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
         return res.status(200).json('Logged out success !');
     },
+
 }
 
 module.exports = AuthController;
