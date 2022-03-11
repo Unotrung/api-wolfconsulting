@@ -10,6 +10,7 @@ const TransactionController = {
             let page = req.query.page;
             // Lấy ra trường sort
             let sort = req.query.sort;
+            sort = parseInt(sort);
             // Tổng số item
             const totalItem = await Transaction.countDocuments({});
             // Tổng số trang

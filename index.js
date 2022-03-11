@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 // Routes
 const authRoute = require('./routers/AuthRouter');
 const userRoute = require('./routers/UserRouter');
@@ -13,6 +14,10 @@ const repaymentRoute = require('./routers/RepaymentRouter');
 dotenv.config();
 
 const app = express();
+
+// Khi người dùng truy xuất đến đường dẫn public, thì chúng ta sẽ được server đưa đến folder public. Lúc này người dùng có thể sử dụng các file, folder con
+// trong thư mục public đã được công khai này. Chỉ những folder nào được static thì người dùng mới có thể truy cập trực tiếp
+app.use('/public', express.static(path.join(__dirname, '/public')));
 
 app.use(cors());
 app.use(cookieParser());
