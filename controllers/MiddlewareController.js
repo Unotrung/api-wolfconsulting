@@ -3,8 +3,9 @@ const jwt = require('jsonwebtoken');
 const middlewareController = {
     // VerifyToken: Xác nhận có phải bạn đang truy cập hay không hay là người nào khác dùng tài khoản của bạn đăng nhập
     verifyToken: (req, res, next) => {
-        // Lấy token từ người dùng thông qua headers
-        const token = req.headers.token;
+        // Lấy token từ người dùng thông qua authorization
+        const token = req.headers['Authorization'];
+        console.log(token);
         if (token) {
             const accessToken = token.split(" ")[1];
             // Chứng nhận token 

@@ -4,53 +4,54 @@ const TransactionController = {
 
     getTransactions: async (req, res) => {
         try {
-            // Số item trong 1 page
-            const PAGE_SIZE = 3;
-            // page hiện tại
-            let page = req.query.page;
-            // Lấy ra trường sort
-            let sort = req.query.sort;
-            sort = parseInt(sort);
-            // Tổng số item
             const totalItem = await Transaction.countDocuments({});
-            // Tổng số trang
+            console.log("Total Item:", totalItem);
+
+            const PAGE_SIZE = req.query.pageSize;
+            console.log("Page Size:", PAGE_SIZE);
+
             const totalPage = Math.ceil(totalItem / PAGE_SIZE);
-            if (page) {
-                page = parseInt(page);
-                if (page < 1) {
-                    page = 1
-                };
-                if (page > totalPage) {
-                    page = totalPage
-                }
-                // Bỏ qua n phần tử 
-                var skipItem = (page - 1) * PAGE_SIZE;
-                const result = await Transaction.find({}).skip(skipItem).limit(PAGE_SIZE).sort({ price: sort });
-                return res.status(200).json({
-                    data: result,
-                    totalItem: totalItem,
-                    totalPage: totalPage,
-                    currentPage: page,
-                    status: true,
-                    sortPage: sort
-                })
+            console.log("Total Page:", totalPage);
+
+            let page = req.query.page || 1;
+            if (page < 1) {
+                page = 1
+            };
+            if (page > totalPage) {
+                page = totalPage
             }
-            else {
-                const result = await Transaction.find({}).sort({ price: sort });
-                return res.status(200).json({
-                    data: result,
-                    totalItem: totalItem,
-                    totalPage: totalPage,
-                    currentPage: 1,
-                    status: true,
-                    sortPage: sort
-                })
-            }
+            page = parseInt(page);
+            console.log("Page:", page);
+
+            let sortByField = req.query.sortByField;
+            console.log("Sort By Field:", sortByField);
+
+            let sortValue = req.query.sortValue;
+            sortValue = parseInt(sortValue);
+            console.log("Sort Value:", sortValue);
+
+            var skipItem = (page - 1) * PAGE_SIZE;
+            console.log("Skip Item:", skipItem);
+
+            const sort = sortValue === 1 ? `${sortByField}` : `-${(sortByField)}`;
+            console.log("Sort:", sort);
+
+            const result = await Transaction.find({}).skip(skipItem).limit(PAGE_SIZE).sort(sort);
+
+            return res.status(200).json({
+                data: result,
+                totalItem: totalItem,
+                totalPage: totalPage,
+                currentPage: page,
+                status: true,
+                sortByField: sortByField,
+                sortValue: sortValue
+            })
         }
         catch (err) {
             return res.status(500).json({
                 err: err,
-                status: false
+                status: false,
             })
         }
     }
