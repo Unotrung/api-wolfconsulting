@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const createError = require('http-errors');
-const logEvents = require('./helpers/logEvent');
+const logEvents = require('./helpers/logEvents');
 const { v4: uuid } = require('uuid');
 
 const authRoute = require('./routers/AuthRouter');
