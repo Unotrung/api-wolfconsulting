@@ -19,7 +19,7 @@ const AuthController = {
             // Add a secret key to make it more secure
             process.env.JWT_ACCESS_KEY,
             // After 7 hours this accessoken will disappear and the user has to login again
-            { expiresIn: "7h" }
+            { expiresIn: "1h" }
         );
     },
 
@@ -31,7 +31,7 @@ const AuthController = {
                 phone: user.phone
             },
             process.env.JWT_REFRESH_KEY,
-            { expiresIn: "7h" }
+            { expiresIn: "1h" }
         );
     },
 
@@ -52,11 +52,9 @@ const AuthController = {
                     digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
                 });
                 if (USERNAME !== null && EMAIL !== null && PHONE !== null && OTP !== null) {
-                    const salt = await bcrypt.genSalt(10);
-                    const hashed = await bcrypt.hash(OTP, salt);
-                    const dataTemp = new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: hashed });
+                    const dataTemp = new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP });
                     const result = await dataTemp.save();
-                    const { otp, ...others } = result._doc;
+                    const { otp, password, ...others } = result._doc;
                     return res.status(200).json({
                         message: "Send OTP Successfully",
                         otp: OTP,
@@ -83,8 +81,7 @@ const AuthController = {
             }
             // Get last otp. 
             const lastOtp = otpUser[otpUser.length - 1];
-            const validUser = await bcrypt.compare(req.body.otp, lastOtp.otp);
-            if (lastOtp.phone === req.body.phone && validUser) {
+            if (lastOtp.phone === req.body.phone && lastOtp.otp === req.body.otp) {
                 let username = req.body.username;
                 let email = req.body.email;
                 let phone = req.body.phone;
@@ -226,6 +223,110 @@ const AuthController = {
         res.clearCookie("refreshToken");
         refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
         return res.status(200).json({ message: 'Logged out success !' });
+    },
+
+    checkPhoneExist: async (req, res) => {
+        try {
+            const auth = await Auth.findOne({ phone: req.body.phone });
+            if (!auth) {
+                return res.status(401).json({
+                    message: "This account does not exists ! Please Register",
+                    isExist: false
+                });
+            }
+            else {
+                return res.status(200).json({
+                    phone: req.body.phone,
+                    isExist: true,
+                    status: true
+                });
+            }
+        }
+        catch (err) {
+            return res.status(500).json({
+                isExist: false,
+                status: false
+            });
+        }
+    },
+
+    forgotPassword: async (req, res) => {
+        try {
+            const PHONE = req.body.phone;
+            const OTP = otpGenerator.generate(6, {
+                digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
+            });
+            if (PHONE !== null && OTP !== null) {
+                const dataTemp = new Otp({ phone: PHONE, otp: OTP });
+                const result = await dataTemp.save();
+                return res.status(200).json({
+                    message: "Send OTP Successfully",
+                    data: {
+                        phone: PHONE,
+                        otp: OTP
+                    },
+                    status: true,
+                });
+            }
+        }
+        catch (err) {
+            return res.status(500).json({
+                message: "Send OTP Failure",
+                status: false,
+                err: err,
+            });
+        }
+    },
+
+    verifyOtpPassword: async (req, res) => {
+        try {
+            const otpUser = await Otp.find({ phone: req.body.phone });
+            console.log("PHONE:", req.body.phone);
+            if (otpUser.length === 0) {
+                return res.status(401).json({ message: "Expired OTP ! Please Resend OTP" });
+            }
+            // Get last otp. 
+            const lastOtp = otpUser[otpUser.length - 1];
+            if (lastOtp.phone === req.body.phone && lastOtp.otp === req.body.otp) {
+                const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone });
+                return res.status(200).json({
+                    message: "OTP VALID",
+                    phone: req.body.phone,
+                    status: true
+                });
+            }
+            else {
+                return res.status(401).json({
+                    message: "OTP INVALID",
+                    status: false
+                });
+            }
+        }
+        catch (err) {
+            return res.status(500).json({ err: err });
+        }
+    },
+
+    updatePassword: async (req, res) => {
+        try {
+            const user = await Auth.findOne({ phone: req.body.phone });
+            if (user) {
+                const salt = await bcrypt.genSalt(10);
+                const hashed = await bcrypt.hash(req.body.password, salt);
+                await user.updateOne({ $set: { password: hashed } });
+                return res.status(200).json({
+                    message: "Update Password Successfully",
+                    status: true
+                });
+            }
+        }
+        catch (err) {
+            return res.status(500).json({
+                message: "Update Password Failure",
+                status: false,
+                err: err
+            });
+        }
     },
 
 }

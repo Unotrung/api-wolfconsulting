@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 const middlewareController = {
+
     verifyToken: (req, res, next) => {
         // Lấy token từ người dùng thông qua authorization
         const token = req.header('authorization');
@@ -31,6 +32,7 @@ const middlewareController = {
             }
         })
     }
+
 }
 
 module.exports = middlewareController;

@@ -7,3 +7,5 @@
 13-03-2022	18::16::03-----Id_Log: fe533ca0-cf61-479e-a1e4-5bbc1d4260af --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
 13-03-2022	18::19::01-----Id_Log: 88c0e2f0-3c1f-4a5b-8e8b-3844d80d4fee --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
 13-03-2022	18::19::02-----Id_Log: f75c18e5-098e-4be4-9f3d-41ed52ed4628 --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
+13-03-2022	23::25::32-----Id_Log: 033594e2-ea78-4504-a14c-e1c4728df483 --- Router: /v1/auth/checkPhoneExist --- Method: GET --- Message: This route dose not exists !
+13-03-2022	23::39::21-----Id_Log: 69e95c80-89be-4244-aa26-69cbf5b3dc70 --- Router: /v1/auth/verifyOtpPassword --- Method: GET --- Message: This route dose not exists !

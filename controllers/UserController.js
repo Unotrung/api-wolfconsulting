@@ -1,6 +1,7 @@
 const User = require('../models/User');
 
 const UserController = {
+
     getAllUser: async (req, res) => {
         try {
             const users = await User.find();
@@ -66,6 +67,7 @@ const UserController = {
             return res.status(500).json({ err: err });
         }
     }
+
 }
 
 module.exports = UserController;
