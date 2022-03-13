@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 const otpGenerator = require('otp-generator');
-const nodemailer = require("nodemailer");
 
 let refreshTokens = [];
 
@@ -58,49 +57,18 @@ const AuthController = {
                     const dataTemp = new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: hashed });
                     const result = await dataTemp.save();
                     const { otp, ...others } = result._doc;
-                    console.log("OTP:", otp);
-                    let transporter = nodemailer.createTransport({
-                        service: "gmail",
-                        auth: {
-                            user: process.env.USERNAME_EMAIL,
-                            pass: process.env.PASSWORD_EMAIL,
-                        },
-                        tls: {
-                            rejectUnauthorized: false,
-                        }
-                    });
-
-                    let mailOptions = {
-                        from: process.env.USERNAME_EMAIL,
-                        to: EMAIL,
-                        subject: "SEND OTP ✔",
-                        text: "Plesea verify otp",
-                        html: `<b>Your Otp is ${OTP}</b>`,
-                    }
-                    console.log("SEND EMAIL:", otp);
-                    await transporter.sendMail(mailOptions, (err) => {
-                        if (err) {
-                            return res.status(500).json({
-                                message: `Fail to send otp to ${EMAIL}!`,
-                                status: false,
-                                isExist: false,
-                                err: err
-                            });
-                        }
-                        else {
-                            return res.status(200).json({
-                                message: `Success to send otp to ${EMAIL}!`,
-                                status: true,
-                                isExist: false,
-                                data: { ...others }
-                            });
-                        }
+                    return res.status(200).json({
+                        message: "Send OTP Successfully",
+                        otp: OTP,
+                        isExist: false,
+                        data: { ...others }
                     });
                 }
             }
         }
         catch (err) {
             return res.status(500).json({
+                message: "Send OTP Failure",
                 status: false,
                 err: err,
             });
