@@ -13,6 +13,8 @@ const AuthController = {
         return jwt.sign(
             {
                 id: user.id,
+                email: user.email,
+                phone: user.phone
             },
             // Add a secret key to make it more secure
             process.env.JWT_ACCESS_KEY,
@@ -25,6 +27,8 @@ const AuthController = {
         return jwt.sign(
             {
                 id: user.id,
+                email: user.email,
+                phone: user.phone
             },
             process.env.JWT_REFRESH_KEY,
             { expiresIn: "7h" }
@@ -33,9 +37,7 @@ const AuthController = {
 
     sendOtp: async (req, res) => {
         try {
-            const auth = await Auth.findOne({
-                $or: [{ phone: req.body.phone }, { email: req.body.email }, { username: req.body.username }]
-            });
+            const auth = await Auth.findOne({ $or: [{ phone: req.body.phone }, { email: req.body.email }] });
             if (auth) {
                 return res.status(401).json({
                     message: "This account already exists ! Please Login",
@@ -50,7 +52,6 @@ const AuthController = {
                     digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
                 });
                 if (USERNAME !== null && EMAIL !== null && PHONE !== null && OTP !== null) {
-                    // Mã hóa filed otp trong đối tượng otp
                     const salt = await bcrypt.genSalt(10);
                     const hashed = await bcrypt.hash(OTP, salt);
                     const dataTemp = new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: hashed });
@@ -175,7 +176,6 @@ const AuthController = {
                 // đồng thời gắn kèm theo accessToken và refreshToken
                 // Bởi vì ta đã lưu cái refreshToken này trong cookie òi nên mình không cần trả về front end. Mặc định khi đăng nhập ta sẽ luôn có 1 cookie
                 // chứa refreshToken
-                // return res.status(200).json({ ...others, accessToken, refreshToken });
                 return res.status(200).json({
                     message: "Login Successfully",
                     accessToken: accessToken,
@@ -192,16 +192,12 @@ const AuthController = {
     },
 
     requestRefreshToken: async (req, res) => {
-        // accessToken là ngắn hạn, refreshToken là dài hạn
-        // Khi mà accessToken hết hạn thì mình không dùng nó được nữa, còn refreshToken là lâu dài nên mình sẽ sử dụng chủ yếu thằng này
         // Take RefreshToken From User 
-        // Nãy ở trên lưu cookies ta đặt tên là gì thì gọi về như vậy
+        // Ta lưu cookies với name là refreshToken thì khi gọi về cũng phải là req.cookies.refreshToken
         const refreshToken = req.cookies.refreshToken;
-        // refreshToken không tồn tại
         if (!refreshToken) {
             return res.status(401).json('You are not authenticated');
         }
-        // refreshToken không hợp lệ
         if (!refreshTokens.includes(refreshToken)) {
             return res.status(403).json('Refresh Token is not valid');
         }
@@ -212,12 +208,9 @@ const AuthController = {
             }
             // Lọc refreshToken cũ đi trước khi thêm refreshToken mới vào
             refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
-            // Nếu refreshToken này hợp lệ nó sẽ trả lại người dùng đồng thời khởi tạo 1 accessToken mới với refreshToken mới luôn
             const newAccessToken = AuthController.generateAccessToken(user);
             const newRefreshToken = AuthController.generateRefreshToken(user);
             refreshTokens.push(newRefreshToken);
-            // Sau đó lưu cái refreshToken này lên cookie lại
-            // Lưu refresh token vào cookie. Trả về 1 access token mới và cookie mới
             res.cookie("refreshToken", newRefreshToken, {
                 httpOnly: true,
                 secure: false, // Khi deploy lên server nên đổi lại là true
@@ -232,7 +225,7 @@ const AuthController = {
     logout: async (req, res) => {
         res.clearCookie("refreshToken");
         refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
-        return res.status(200).json('Logged out success !');
+        return res.status(200).json({ message: 'Logged out success !' });
     },
 
 }

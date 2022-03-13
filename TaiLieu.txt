@@ -1,4 +1,0 @@
-+ Khi đăng nhập thì nó sẽ trả về cho chúng ta 1 cái token
-+ Khi test trên postman các api mà có gắn middleware ta phải vào header truyền thêm: token: Bearer 123456789
-    Nhớ thay 123456789 bằng cái accessToken của chúng ta mà khi login nó trả về
-+ Ta có api Get All User, Delete User là chỉ lấy về tất cả các user trong trường hợp nếu như accessToken hợp lệ
