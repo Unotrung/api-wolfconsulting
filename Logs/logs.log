@@ -1,0 +1,9 @@
+13-03-2022	17::32::53-----Id_Log: 5f3751fe-7555-4139-bef3-b97c4b80b4aa --- Router: /v1/auth/12345 --- Method: GET --- Message: This route dose not exists !
+13-03-2022	17::33::51-----Id_Log: 155ec607-3ed9-4a3b-97f9-1c231cb8f18c --- Router: /v1/auth/98765 --- Method: GET --- Message: This route dose not exists !
+13-03-2022	17::34::10-----Id_Log: f032d6d5-7683-43aa-8153-00f457a37b9a --- Router: /v1/auth/7654321 --- Method: GET --- Message: This route dose not exists !
+13-03-2022	18::14::04-----Id_Log: 259f3a11-56c7-4af2-ae16-acd7790e8c19 --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
+13-03-2022	18::14::13-----Id_Log: 78ab598d-e08d-40dc-86be-4a6265c5fc89 --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
+13-03-2022	18::14::19-----Id_Log: d77ca88d-9d39-405e-897b-8282acaba6de --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
+13-03-2022	18::16::03-----Id_Log: fe533ca0-cf61-479e-a1e4-5bbc1d4260af --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
+13-03-2022	18::19::01-----Id_Log: 88c0e2f0-3c1f-4a5b-8e8b-3844d80d4fee --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
+13-03-2022	18::19::02-----Id_Log: f75c18e5-098e-4be4-9f3d-41ed52ed4628 --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !

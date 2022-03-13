@@ -8,6 +8,8 @@ const path = require('path');
 const createError = require('http-errors');
 const logEvents = require('./helpers/logEvents');
 const { v4: uuid } = require('uuid');
+const bcrypt = require('bcrypt');
+const compression = require('compression');
 
 const authRoute = require('./routers/AuthRouter');
 const userRoute = require('./routers/UserRouter');
@@ -17,6 +19,9 @@ const repaymentRoute = require('./routers/RepaymentRouter');
 dotenv.config();
 
 const app = express();
+
+// Nó sẽ nén dữ liệu về thấp nhất có thể trước khi gửi dữ liệu đến người dùng
+app.use(compression());
 
 // Khi người dùng truy xuất đến đường dẫn public, thì chúng ta sẽ được server đưa đến folder public. Lúc này người dùng có thể sử dụng các file, folder con
 // trong thư mục public đã được công khai này. Chỉ những folder nào được static thì người dùng mới có thể truy cập trực tiếp
@@ -49,6 +54,12 @@ app.use('/v1/auth', authRoute);
 app.use('/v1/user', userRoute);
 app.use('/v1/transaction', transactionRoute);
 app.use('/v1/repayment', repaymentRoute);
+
+// Test
+app.get('/', async (req, res) => {
+    const password = await bcrypt.hash('This is a password', 10);
+    return res.send(password.repeat(1000));
+})
 
 // Handle Error Not Found
 app.use((req, res, next) => {
