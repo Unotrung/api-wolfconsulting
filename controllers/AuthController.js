@@ -242,16 +242,6 @@ const AuthController = {
                 if (PHONE !== null && OTP !== null) {
                     const dataTemp = new Otp({ phone: PHONE, otp: OTP });
                     const result = await dataTemp.save();
-                    const token = jwt.sign(
-                        {
-                            id: result.id,
-                            phone: result.phone
-                        },
-                        // Add a secret key to make it more secure
-                        process.env.JWT_ACCESS_KEY,
-                        // After 7 hours this accessoken will disappear and the user has to login again
-                        { expiresIn: "60s" }
-                    );
                     return res.status(200).json({
                         message: "Send OTP Successfully",
                         data: {
@@ -283,6 +273,16 @@ const AuthController = {
             // Get last otp. 
             const lastOtp = otpUser[otpUser.length - 1];
             if (lastOtp.phone === req.body.phone && lastOtp.otp === req.body.otp) {
+                const token = jwt.sign(
+                    {
+                        id: lastOtp.id,
+                        phone: lastOtp.phone
+                    },
+                    // Add a secret key to make it more secure
+                    process.env.JWT_ACCESS_KEY,
+                    // After 7 hours this accessoken will disappear and the user has to login again
+                    { expiresIn: "60s" }
+                );
                 const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone });
                 return res.status(200).json({
                     message: "OTP VALID",

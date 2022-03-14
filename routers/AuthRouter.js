@@ -10,7 +10,7 @@ router.post("/login", AuthController.login);
 router.post("/requestRefreshToken", AuthController.requestRefreshToken);
 router.get("/logout", MiddlewareController.verifyToken, AuthController.logout);
 router.post("/forgotPassword", AuthController.forgotPassword);
-router.post("/verifyOtpPassword", MiddlewareController.verifyToken, AuthController.verifyOtpPassword);
-router.put("/updatePassword", AuthController.updatePassword);
+router.post("/verifyOtpPassword", AuthController.verifyOtpPassword);
+router.put("/updatePassword", MiddlewareController.verifyToken, AuthController.updatePassword);
 
 module.exports = router;
