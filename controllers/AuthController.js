@@ -248,7 +248,6 @@ const AuthController = {
                             phone: PHONE,
                             otp: OTP
                         },
-                        token: token,
                         status: true,
                     });
                 }
