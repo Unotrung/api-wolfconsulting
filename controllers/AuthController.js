@@ -286,6 +286,7 @@ const AuthController = {
                 return res.status(200).json({
                     message: "OTP VALID",
                     phone: req.body.phone,
+                    token: token,
                     status: true
                 });
             }
