@@ -225,7 +225,7 @@ const AuthController = {
         return res.status(200).json({ message: 'Logged out success !' });
     },
 
-    checkPhoneExist: async (req, res) => {
+    forgotPassword: async (req, res) => {
         try {
             const auth = await Auth.findOne({ phone: req.body.phone });
             if (!auth) {
@@ -235,38 +235,33 @@ const AuthController = {
                 });
             }
             else {
-                return res.status(200).json({
-                    phone: req.body.phone,
-                    isExist: true,
-                    status: true
+                const PHONE = req.body.phone;
+                const OTP = otpGenerator.generate(6, {
+                    digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
                 });
-            }
-        }
-        catch (err) {
-            return res.status(500).json({
-                isExist: false,
-                status: false
-            });
-        }
-    },
-
-    forgotPassword: async (req, res) => {
-        try {
-            const PHONE = req.body.phone;
-            const OTP = otpGenerator.generate(6, {
-                digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
-            });
-            if (PHONE !== null && OTP !== null) {
-                const dataTemp = new Otp({ phone: PHONE, otp: OTP });
-                const result = await dataTemp.save();
-                return res.status(200).json({
-                    message: "Send OTP Successfully",
-                    data: {
-                        phone: PHONE,
-                        otp: OTP
-                    },
-                    status: true,
-                });
+                if (PHONE !== null && OTP !== null) {
+                    const dataTemp = new Otp({ phone: PHONE, otp: OTP });
+                    const result = await dataTemp.save();
+                    const token = jwt.sign(
+                        {
+                            id: result.id,
+                            phone: result.phone
+                        },
+                        // Add a secret key to make it more secure
+                        process.env.JWT_ACCESS_KEY,
+                        // After 7 hours this accessoken will disappear and the user has to login again
+                        { expiresIn: "60s" }
+                    );
+                    return res.status(200).json({
+                        message: "Send OTP Successfully",
+                        data: {
+                            phone: PHONE,
+                            otp: OTP
+                        },
+                        token: token,
+                        status: true,
+                    });
+                }
             }
         }
         catch (err) {
