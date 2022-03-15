@@ -1,5 +1,5 @@
 {
-  "name": "EAP",
+  "name": "eap",
   "version": "1.0.0",
   "description": "backend of nguyen trung kien",
   "main": "index.js",

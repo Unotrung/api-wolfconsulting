@@ -20,26 +20,20 @@ dotenv.config();
 
 const app = express();
 
-// Nó sẽ nén dữ liệu về thấp nhất có thể trước khi gửi dữ liệu đến người dùng
 app.use(compression());
 
-// Khi người dùng truy xuất đến đường dẫn public, thì chúng ta sẽ được server đưa đến folder public. Lúc này người dùng có thể sử dụng các file, folder con
-// trong thư mục public đã được công khai này. Chỉ những folder nào được static thì người dùng mới có thể truy cập trực tiếp
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cors());
 
 app.use(cookieParser());
 
-// Chúng ta sẽ đưa các object, array về format chung 1 kiểu là json
 app.use(express.urlencoded({ extended: true }));
 
 app.use(express.json());
 
-// HTTP logger (morgan): Chức năng: Khi ta request để biết nó đã được gửi lên server hay chưa thì ở terminal sẽ hiển thị ra thông báo 
 app.use(morgan('combined'));
 
-// Setup Mongoose
 mongoose.connect(process.env.MONGODB_URL, function (err) {
     if (!err) {
         console.log('Connect MongoDB Successfully');
@@ -54,12 +48,6 @@ app.use('/v1/auth', authRoute);
 app.use('/v1/user', userRoute);
 app.use('/v1/transaction', transactionRoute);
 app.use('/v1/repayment', repaymentRoute);
-
-// Test
-app.get('/', async (req, res) => {
-    const password = await bcrypt.hash('This is a password', 10);
-    return res.send(password.repeat(1000));
-})
 
 // Handle Error Not Found
 app.use((req, res, next) => {

@@ -79,7 +79,6 @@ const AuthController = {
             if (otpUser.length === 0) {
                 return res.status(401).json({ message: "Expired OTP ! Please Resend OTP" });
             }
-            // Get last otp. 
             const lastOtp = otpUser[otpUser.length - 1];
             if (lastOtp.phone === req.body.phone && lastOtp.otp === req.body.otp) {
                 let username = req.body.username;
@@ -111,22 +110,18 @@ const AuthController = {
 
     register: async (req, res) => {
         try {
-            // Get data from User
             let username = req.body.username;
             let email = req.body.email;
             let phone = req.body.phone;
             let password = req.body.password;
-            // Encryption password with bcrypt
             const salt = await bcrypt.genSalt(10);
             const hashed = await bcrypt.hash(password, salt);
-            // Create New User 
             const newUser = await new Auth({
                 username: username,
                 email: email,
                 phone: phone,
                 password: hashed
             });
-            // Save To DB
             const user = await newUser.save();
             return res.status(200).json({
                 message: "Register Successfully",
@@ -149,30 +144,21 @@ const AuthController = {
             if (!auth) {
                 return res.status(401).json({ message: "Wrong phone !" });
             }
-            // Compare user password and db password (compare 2 encrypted password)
             const validPassword = await bcrypt.compare(req.body.password, auth.password);
             if (!validPassword) {
                 return res.status(401).json({ message: "Wrong Password !" });
             }
             if (auth && validPassword) {
-                // If auth and validPassword are valid, attach the accessToken
                 const accessToken = AuthController.generateAccessToken(auth);
-                // When the user's accessToken expires, it will automatically Refresh
                 const refreshToken = AuthController.generateRefreshToken(auth);
-                // Store refreshToken
                 refreshTokens.push(refreshToken);
-                // Save refreshToken to cookie
                 res.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
-                    secure: false, // When deploying to the server, change it back to true
-                    path: '/', // It's okay to have it or not
-                    sameSite: 'strict', // Prevent the attack. Http Requests can only come from this site
+                    secure: false,
+                    path: '/',
+                    sameSite: 'strict',
                 });
                 const { password, ...others } = auth._doc;
-                // Khi trả thông tin người dùng về thì ta không nên trả về password kèm theo chỉ cần trả về những thông tin khác ngoại trừ password
-                // đồng thời gắn kèm theo accessToken và refreshToken
-                // Bởi vì ta đã lưu cái refreshToken này trong cookie òi nên mình không cần trả về front end. Mặc định khi đăng nhập ta sẽ luôn có 1 cookie
-                // chứa refreshToken
                 return res.status(200).json({
                     message: "Login Successfully",
                     accessToken: accessToken,
@@ -189,8 +175,6 @@ const AuthController = {
     },
 
     requestRefreshToken: async (req, res) => {
-        // Take RefreshToken From User 
-        // Ta lưu cookies với name là refreshToken thì khi gọi về cũng phải là req.cookies.refreshToken
         const refreshToken = req.cookies.refreshToken;
         if (!refreshToken) {
             return res.status(401).json('You are not authenticated');
@@ -198,21 +182,19 @@ const AuthController = {
         if (!refreshTokens.includes(refreshToken)) {
             return res.status(403).json('Refresh Token is not valid');
         }
-        // Xác minh refreshToken này có hợp lệ không?
         jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
             if (err) {
                 console.log(err);
             }
-            // Lọc refreshToken cũ đi trước khi thêm refreshToken mới vào
             refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
             const newAccessToken = AuthController.generateAccessToken(user);
             const newRefreshToken = AuthController.generateRefreshToken(user);
             refreshTokens.push(newRefreshToken);
             res.cookie("refreshToken", newRefreshToken, {
                 httpOnly: true,
-                secure: false, // Khi deploy lên server nên đổi lại là true
-                path: '/', // Có cũng được không có cũng không sao
-                sameSite: 'strict', // Ngăn chặn cách tấn công. Những cái http Request chỉ được đến từ site này thôi
+                secure: false,
+                path: '/',
+                sameSite: 'strict',
             });
             return res.status(200).json({ accessToken: newAccessToken });
         }
@@ -269,7 +251,6 @@ const AuthController = {
             if (otpUser.length === 0) {
                 return res.status(401).json({ message: "Expired OTP ! Please Resend OTP" });
             }
-            // Get last otp. 
             const lastOtp = otpUser[otpUser.length - 1];
             if (lastOtp.phone === req.body.phone && lastOtp.otp === req.body.otp) {
                 const token = jwt.sign(
@@ -277,9 +258,7 @@ const AuthController = {
                         id: lastOtp.id,
                         phone: lastOtp.phone
                     },
-                    // Add a secret key to make it more secure
                     process.env.JWT_ACCESS_KEY,
-                    // After 7 hours this accessoken will disappear and the user has to login again
                     { expiresIn: "60s" }
                 );
                 const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone });
