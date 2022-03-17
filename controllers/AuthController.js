@@ -287,7 +287,7 @@ const AuthController = {
                 }
                 else {
                     const salt = await bcrypt.genSalt(10);
-                    const hashed = await bcrypt.hash(req.body.password, salt);
+                    const hashed = await bcrypt.hash(req.body.new_password, salt);
                     await user.updateOne({ $set: { password: hashed } });
                     return res.status(200).json({
                         message: "Update Password Successfully",
