@@ -2,7 +2,7 @@ const User = require('../models/User');
 
 const UserController = {
 
-    getAllUser: async (req, res) => {
+    getAllUser: async (req, res, next) => {
         try {
             const users = await User.find();
             if (users.length > 0) {
@@ -20,11 +20,11 @@ const UserController = {
             }
         }
         catch (err) {
-            return res.status(500).json({ err: err });
+            next(err);
         }
     },
 
-    getUser: async (req, res) => {
+    getUser: async (req, res, next) => {
         try {
             const user = await User.findOne({ phone: req.params.phone });
             if (user) {
@@ -42,11 +42,11 @@ const UserController = {
             }
         }
         catch (err) {
-            return res.status(500).json({ err: err });
+            next(err);
         }
     },
 
-    updateUser: async (req, res) => {
+    updateUser: async (req, res, next) => {
         try {
             const user = await User.findById(req.params.id);
             if (user) {
@@ -64,7 +64,7 @@ const UserController = {
             }
         }
         catch (err) {
-            return res.status(500).json({ err: err });
+            next(err);
         }
     }
 

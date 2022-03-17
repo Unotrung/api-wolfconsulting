@@ -8,8 +8,8 @@ const path = require('path');
 const createError = require('http-errors');
 const logEvents = require('./helpers/logEvents');
 const { v4: uuid } = require('uuid');
-const bcrypt = require('bcrypt');
 const compression = require('compression');
+const helmet = require('helmet');
 
 const authRoute = require('./routers/AuthRouter');
 const userRoute = require('./routers/UserRouter');
@@ -19,6 +19,8 @@ const repaymentRoute = require('./routers/RepaymentRouter');
 dotenv.config();
 
 const app = express();
+
+app.use(helmet());
 
 app.use(compression());
 

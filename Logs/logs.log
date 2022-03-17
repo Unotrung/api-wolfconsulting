@@ -1,11 +1,5 @@
-13-03-2022	17::32::53-----Id_Log: 5f3751fe-7555-4139-bef3-b97c4b80b4aa --- Router: /v1/auth/12345 --- Method: GET --- Message: This route dose not exists !
-13-03-2022	17::33::51-----Id_Log: 155ec607-3ed9-4a3b-97f9-1c231cb8f18c --- Router: /v1/auth/98765 --- Method: GET --- Message: This route dose not exists !
-13-03-2022	17::34::10-----Id_Log: f032d6d5-7683-43aa-8153-00f457a37b9a --- Router: /v1/auth/7654321 --- Method: GET --- Message: This route dose not exists !
-13-03-2022	18::14::04-----Id_Log: 259f3a11-56c7-4af2-ae16-acd7790e8c19 --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
-13-03-2022	18::14::13-----Id_Log: 78ab598d-e08d-40dc-86be-4a6265c5fc89 --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
-13-03-2022	18::14::19-----Id_Log: d77ca88d-9d39-405e-897b-8282acaba6de --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
-13-03-2022	18::16::03-----Id_Log: fe533ca0-cf61-479e-a1e4-5bbc1d4260af --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
-13-03-2022	18::19::01-----Id_Log: 88c0e2f0-3c1f-4a5b-8e8b-3844d80d4fee --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
-13-03-2022	18::19::02-----Id_Log: f75c18e5-098e-4be4-9f3d-41ed52ed4628 --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
-13-03-2022	23::25::32-----Id_Log: 033594e2-ea78-4504-a14c-e1c4728df483 --- Router: /v1/auth/checkPhoneExist --- Method: GET --- Message: This route dose not exists !
-13-03-2022	23::39::21-----Id_Log: 69e95c80-89be-4244-aa26-69cbf5b3dc70 --- Router: /v1/auth/verifyOtpPassword --- Method: GET --- Message: This route dose not exists !
+15-03-2022	23::30::49-----Id_Log: 0ef7080d-60de-4093-a288-5a71d54fad1a --- Router: /v1/auth/sendOtp --- Method: POST --- Message: Operation `users.findOne()` buffering timed out after 10000ms
+15-03-2022	23::31::24-----Id_Log: 94984f51-6917-4bc7-b08f-adddf6df88c9 --- Router: /v1/auth/sendOtp --- Method: POST --- Message: Operation `users.findOne()` buffering timed out after 10000ms
+15-03-2022	23::32::08-----Id_Log: 963dd016-c328-4d82-ab68-74dee2db321a --- Router: /v1/auth/sendOtp --- Method: POST --- Message: Operation `users.findOne()` buffering timed out after 10000ms
+15-03-2022	23::33::09-----Id_Log: 05630acb-12ee-4c49-9109-65055e6c5592 --- Router: /v1/auth/sendOtp --- Method: POST --- Message: Operation `users.findOne()` buffering timed out after 10000ms
+15-03-2022	23::33::54-----Id_Log: 8918e3e2-af59-4870-9065-3463f8a014e8 --- Router: /v1/auth/sendOtp --- Method: POST --- Message: Operation `users.findOne()` buffering timed out after 10000ms

@@ -16,10 +16,8 @@ const AuthController = {
                 email: user.email,
                 phone: user.phone
             },
-            // Add a secret key to make it more secure
             process.env.JWT_ACCESS_KEY,
-            // After 7 hours this accessoken will disappear and the user has to login again
-            { expiresIn: "1h" }
+            { expiresIn: "20m" }
         );
     },
 
@@ -31,11 +29,11 @@ const AuthController = {
                 phone: user.phone
             },
             process.env.JWT_REFRESH_KEY,
-            { expiresIn: "1h" }
+            { expiresIn: "20m" }
         );
     },
 
-    sendOtp: async (req, res) => {
+    sendOtp: async (req, res, next) => {
         try {
             const auth = await Auth.findOne({ $or: [{ phone: req.body.phone }, { email: req.body.email }] });
             if (auth) {
@@ -65,15 +63,11 @@ const AuthController = {
             }
         }
         catch (err) {
-            return res.status(500).json({
-                message: "Send OTP Failure",
-                status: false,
-                err: err,
-            });
+            next(err);
         }
     },
 
-    verifyOtp: async (req, res) => {
+    verifyOtp: async (req, res, next) => {
         try {
             const otpUser = await Otp.find({ email: req.body.email, phone: req.body.phone, username: req.body.username });
             if (otpUser.length === 0) {
@@ -104,11 +98,11 @@ const AuthController = {
             }
         }
         catch (err) {
-            return res.status(500).json({ err: err });
+            next(err);
         }
     },
 
-    register: async (req, res) => {
+    register: async (req, res, next) => {
         try {
             let username = req.body.username;
             let email = req.body.email;
@@ -130,15 +124,11 @@ const AuthController = {
             });
         }
         catch (err) {
-            return res.status(500).json({
-                message: "Register Failure",
-                err: err,
-                status: false
-            });
+            next(err);
         }
     },
 
-    login: async (req, res) => {
+    login: async (req, res, next) => {
         try {
             const auth = await Auth.findOne({ phone: req.body.phone });
             if (!auth) {
@@ -167,47 +157,54 @@ const AuthController = {
             }
         }
         catch (err) {
-            return res.status(500).json({
-                message: "Login Failure",
-                err: err
-            });
+            next(err);
         }
     },
 
-    requestRefreshToken: async (req, res) => {
-        const refreshToken = req.cookies.refreshToken;
-        if (!refreshToken) {
-            return res.status(401).json('You are not authenticated');
-        }
-        if (!refreshTokens.includes(refreshToken)) {
-            return res.status(403).json('Refresh Token is not valid');
-        }
-        jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
-            if (err) {
-                console.log(err);
+    requestRefreshToken: async (req, res, next) => {
+        try {
+            const refreshToken = req.cookies.refreshToken;
+            if (!refreshToken) {
+                return res.status(401).json('You are not authenticated');
             }
-            refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
-            const newAccessToken = AuthController.generateAccessToken(user);
-            const newRefreshToken = AuthController.generateRefreshToken(user);
-            refreshTokens.push(newRefreshToken);
-            res.cookie("refreshToken", newRefreshToken, {
-                httpOnly: true,
-                secure: false,
-                path: '/',
-                sameSite: 'strict',
-            });
-            return res.status(200).json({ accessToken: newAccessToken });
+            if (!refreshTokens.includes(refreshToken)) {
+                return res.status(403).json('Refresh Token is not valid');
+            }
+            jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
+                if (err) {
+                    console.log(err);
+                }
+                refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
+                const newAccessToken = AuthController.generateAccessToken(user);
+                const newRefreshToken = AuthController.generateRefreshToken(user);
+                refreshTokens.push(newRefreshToken);
+                res.cookie("refreshToken", newRefreshToken, {
+                    httpOnly: true,
+                    secure: false,
+                    path: '/',
+                    sameSite: 'strict',
+                });
+                return res.status(200).json({ accessToken: newAccessToken });
+            }
+            )
         }
-        )
+        catch (err) {
+            next(err);
+        }
     },
 
-    logout: async (req, res) => {
-        res.clearCookie("refreshToken");
-        refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
-        return res.status(200).json({ message: 'Logged out success !' });
+    logout: async (req, res, next) => {
+        try {
+            res.clearCookie("refreshToken");
+            refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
+            return res.status(200).json({ message: 'Logged out success !' });
+        }
+        catch (err) {
+            next(err);
+        }
     },
 
-    forgotPassword: async (req, res) => {
+    forgotPassword: async (req, res, next) => {
         try {
             const auth = await Auth.findOne({ phone: req.body.phone });
             if (!auth) {
@@ -236,15 +233,11 @@ const AuthController = {
             }
         }
         catch (err) {
-            return res.status(500).json({
-                message: "Send OTP Failure",
-                status: false,
-                err: err,
-            });
+            next(err);
         }
     },
 
-    verifyOtpPassword: async (req, res) => {
+    verifyOtpPassword: async (req, res, next) => {
         try {
             const otpUser = await Otp.find({ phone: req.body.phone });
             console.log("PHONE:", req.body.phone);
@@ -277,29 +270,34 @@ const AuthController = {
             }
         }
         catch (err) {
-            return res.status(500).json({ err: err });
+            next(err);
         }
     },
 
-    updatePassword: async (req, res) => {
+    updatePassword: async (req, res, next) => {
         try {
             const user = await Auth.findOne({ phone: req.body.phone });
             if (user) {
-                const salt = await bcrypt.genSalt(10);
-                const hashed = await bcrypt.hash(req.body.password, salt);
-                await user.updateOne({ $set: { password: hashed } });
-                return res.status(200).json({
-                    message: "Update Password Successfully",
-                    status: true
-                });
+                const password = await Auth.findOne({ password: req.body.password });
+                if (!password) {
+                    return res.status(400).json({
+                        message: "Your Old Password Is Not Correct",
+                        status: true
+                    });
+                }
+                else {
+                    const salt = await bcrypt.genSalt(10);
+                    const hashed = await bcrypt.hash(req.body.password, salt);
+                    await user.updateOne({ $set: { password: hashed } });
+                    return res.status(200).json({
+                        message: "Update Password Successfully",
+                        status: true
+                    });
+                }
             }
         }
         catch (err) {
-            return res.status(500).json({
-                message: "Update Password Failure",
-                status: false,
-                err: err
-            });
+            next(err);
         }
     },
 
