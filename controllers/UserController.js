@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const bcrypt = require('bcrypt');
 
 const UserController = {
 
@@ -50,15 +51,35 @@ const UserController = {
         try {
             const user = await User.findById(req.params.id);
             if (user) {
-                await user.updateOne({ $set: req.body });
-                return res.status(200).json({
-                    message: "Update User Successfully",
-                    status: true
-                });
+                if (req.body.password) {
+                    const password = await User.findOne({ password: req.body.password });
+                    if (!password) {
+                        return res.status(200).json({
+                            message: "Your Old Password Is Not Correct ! Please Try Again",
+                            status: true
+                        });
+                    }
+                    else {
+                        const salt = await bcrypt.genSalt(10);
+                        const hashed = await bcrypt.hash(req.body.new_password, salt);
+                        await user.updateOne({ $set: { password: hashed } });
+                        return res.status(200).json({
+                            message: `Update Password Successfully`,
+                            status: true
+                        });
+                    }
+                }
+                else {
+                    await user.updateOne({ $set: req.body });
+                    return res.status(200).json({
+                        message: `Update ${req.body} Successfully`,
+                        status: true
+                    });
+                }
             }
             else {
                 return res.status(200).json({
-                    message: "User does not exists",
+                    message: "This account is not exists !",
                     status: false
                 });
             }

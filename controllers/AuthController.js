@@ -2,7 +2,6 @@ const Auth = require('../models/User');
 const Otp = require('../models/Otp');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const _ = require('lodash');
 const otpGenerator = require('otp-generator');
 
 let refreshTokens = [];
@@ -278,22 +277,13 @@ const AuthController = {
         try {
             const user = await Auth.findOne({ phone: req.body.phone });
             if (user) {
-                const password = await Auth.findOne({ password: req.body.password });
-                if (!password) {
-                    return res.status(400).json({
-                        message: "Your Old Password Is Not Correct",
-                        status: true
-                    });
-                }
-                else {
-                    const salt = await bcrypt.genSalt(10);
-                    const hashed = await bcrypt.hash(req.body.new_password, salt);
-                    await user.updateOne({ $set: { password: hashed } });
-                    return res.status(200).json({
-                        message: "Update Password Successfully",
-                        status: true
-                    });
-                }
+                const salt = await bcrypt.genSalt(10);
+                const hashed = await bcrypt.hash(req.body.password, salt);
+                await user.updateOne({ $set: { password: hashed } });
+                return res.status(200).json({
+                    message: "Update Password Successfully",
+                    status: true
+                });
             }
         }
         catch (err) {
