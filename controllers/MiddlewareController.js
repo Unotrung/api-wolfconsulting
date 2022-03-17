@@ -26,7 +26,7 @@ const middlewareController = {
         }
     },
 
-    VerifyTokenByMySelfAndAdmin: (req, res, next) => {
+    VerifyTokenByMySelf: (req, res, next) => {
         try {
             middlewareController.verifyToken(req, res, () => {
                 if (req.user.id === req.params.id || req.user.phone === req.body.phone || req.user.email === req.body.email) {

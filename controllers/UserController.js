@@ -52,9 +52,9 @@ const UserController = {
             const user = await User.findById(req.params.id);
             if (user) {
                 if (req.body.password) {
-                    const password = await User.findOne({ password: req.body.password });
-                    if (!password) {
-                        return res.status(200).json({
+                    const validPassword = await bcrypt.compare(req.body.password, user.password);
+                    if (!validPassword) {
+                        return res.status(400).json({
                             message: "Your Old Password Is Not Correct ! Please Try Again",
                             status: true
                         });

@@ -3,3 +3,4 @@
 15-03-2022	23::32::08-----Id_Log: 963dd016-c328-4d82-ab68-74dee2db321a --- Router: /v1/auth/sendOtp --- Method: POST --- Message: Operation `users.findOne()` buffering timed out after 10000ms
 15-03-2022	23::33::09-----Id_Log: 05630acb-12ee-4c49-9109-65055e6c5592 --- Router: /v1/auth/sendOtp --- Method: POST --- Message: Operation `users.findOne()` buffering timed out after 10000ms
 15-03-2022	23::33::54-----Id_Log: 8918e3e2-af59-4870-9065-3463f8a014e8 --- Router: /v1/auth/sendOtp --- Method: POST --- Message: Operation `users.findOne()` buffering timed out after 10000ms
+17-03-2022	10::35::00-----Id_Log: 08c46c3b-6aba-4b7d-be1a-434ef35a55d0 --- Router: /v1/auth/register/123 --- Method: POST --- Message: This route dose not exists !
