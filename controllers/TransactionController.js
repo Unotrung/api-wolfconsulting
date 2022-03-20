@@ -1,4 +1,5 @@
 const Transaction = require('../models/Transaction');
+const TransactionDetail = require('../models/TransactionDetail');
 
 const TransactionController = {
 
@@ -58,6 +59,28 @@ const TransactionController = {
                     message: "You do not have any transaction",
                     status: true
                 });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
+    getTransactionDetail: async (req, res, next) => {
+        try {
+            let id = req.params.id;
+            let result = await TransactionDetail.findOne({ transaction_id: id });
+            if (result) {
+                return res.status(200).json({
+                    data: result,
+                    status: true
+                })
+            }
+            else {
+                return res.status(400).json({
+                    message: "This Transaction Id is not exists",
+                    status: false
+                })
             }
         }
         catch (err) {

@@ -11,3 +11,12 @@
 20-03-2022	14::16::12-----Id_Log: 28788edd-684a-4bfc-8b6a-6ee70fee6ea5 --- Router: /v1/repayment?page=2&pageSize=5&sortByField=provider&sortValue=1 --- Method: GET --- Message: This route dose not exists !
 20-03-2022	14::25::32-----Id_Log: 513847b8-d521-46ef-b4a4-fbfb720c6187 --- Router: /v1/transaction?page=1&pageSize=5&sortByField=product&sortValue=1 --- Method: GET --- Message: This route dose not exists !
 20-03-2022	14::25::36-----Id_Log: 41adbaa7-9b81-4416-ad7f-9e2b8a75b721 --- Router: /v1/repayment?page=2&pageSize=5&sortByField=provider&sortValue=1 --- Method: GET --- Message: This route dose not exists !
+20-03-2022	16::31::04-----Id_Log: 97ec30b7-27c1-4e1d-8139-4167a8b8d6e1 --- Router: /v1/auth/register/ --- Method: POST --- Message: E11000 duplicate key error collection: WolfConsulting.users index: username_1 dup key: { username: "nguyen van a" }
+20-03-2022	16::31::23-----Id_Log: 1022a81c-0569-492a-84f0-6e665786b62f --- Router: /v1/auth/register/ --- Method: POST --- Message: E11000 duplicate key error collection: WolfConsulting.users index: username_1 dup key: { username: "nguyen van a" }
+20-03-2022	16::31::41-----Id_Log: 75d9baa3-ede4-4c2f-9b59-1efc3b3f64e4 --- Router: /v1/auth/register/ --- Method: POST --- Message: User validation failed: phone: Phone number must be 10 digits
+20-03-2022	16::31::53-----Id_Log: d53aa0ca-e07e-425b-85ab-9c72b7985d8f --- Router: /v1/auth/register/ --- Method: POST --- Message: E11000 duplicate key error collection: WolfConsulting.users index: username_1 dup key: { username: "nguyen van a" }
+20-03-2022	16::32::43-----Id_Log: e2bc7256-ed18-428d-8105-b6495569ff89 --- Router: /v1/auth/register/ --- Method: POST --- Message: E11000 duplicate key error collection: WolfConsulting.users index: username_1 dup key: { username: "nguyen van a" }
+20-03-2022	17::13::25-----Id_Log: 3932337a-d7c0-4820-ba48-b355cb2fb7c9 --- Router: /v1/auth/requestRefreshToken --- Method: POST --- Message: Cannot read properties of undefined (reading 'includes')
+20-03-2022	17::16::18-----Id_Log: 1d943d03-8c62-4c89-9bce-49a058180e6a --- Router: /v1/auth/requestRefreshToken --- Method: POST --- Message: Cannot read properties of undefined (reading '0')
+20-03-2022	18::06::56-----Id_Log: b6fd6482-c078-4dd9-ba4d-a19187535c5f --- Router: /v1/auth/Logout --- Method: GET --- Message: Assignment to constant variable.
+20-03-2022	18::07::02-----Id_Log: bc8b9352-43a7-48f1-a97e-ba5c15baef3d --- Router: /v1/auth/Logout --- Method: GET --- Message: Assignment to constant variable.

@@ -65,7 +65,7 @@ const RepaymentController = {
         catch (err) {
             next(err);
         }
-    }
+    },
 
 }
 

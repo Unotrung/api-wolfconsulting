@@ -150,7 +150,7 @@ const AuthController = {
                 const { password, ...others } = auth._doc;
                 return res.status(200).json({
                     message: "Login Successfully",
-                    accessToken: accessToken,
+                    token: accessToken,
                     data: { ...others }
                 });
             }
@@ -160,54 +160,57 @@ const AuthController = {
         }
     },
 
-    requestRefreshToken: async (req, res, next) => {
-        try {
-            const refreshToken = req.cookies.refreshToken;
-            const refreshTokens = await RefreshToken.find();
-            if (!refreshToken) {
-                return res.status(401).json('You are not authenticated');
-            }
-            if (!refreshTokens.includes(refreshToken)) {
-                return res.status(403).json('Refresh Token is not valid');
-            }
-            jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, async (err, user) => {
-                if (err) {
-                    console.log(err);
-                }
-                refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
-                const newAccessToken = AuthController.generateAccessToken(user);
-                const newRefreshToken = AuthController.generateRefreshToken(user);
-                const result = new RefreshToken({ refreshToken: newRefreshToken });
-                await result.save();
-                res.cookie("refreshToken", newRefreshToken, {
-                    httpOnly: true,
-                    secure: false,
-                    path: '/',
-                    sameSite: 'strict',
-                });
-                return res.status(200).json({
-                    token: newAccessToken,
-                    status: true
-                });
-            }
-            )
-        }
-        catch (err) {
-            next(err);
-        }
-    },
+    // requestRefreshToken: async (req, res, next) => {
+    //     try {
+    //         // Get refreshToken from cookie
+    //         const refreshToken = req.cookies.refreshToken;
+    //         const refreshTokens = await RefreshToken.find();
+    //         if (!refreshToken) {
+    //             return res.status(401).json('You are not authenticated');
+    //         }
+    //         let data = refreshTokens.find((x) => x.refreshToken === refreshToken);
+    //         if (!data) {
+    //             return res.status(403).json('Refresh Token is not valid');
+    //         }
+    //         jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, async (err, user) => {
+    //             if (err) {
+    //                 console.log(err);
+    //             }
+    //             refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
+    //             let answer = refreshTokens.filter((x) => x !== refreshToken);
+    //             const newAccessToken = AuthController.generateAccessToken(user);
+    //             const newRefreshToken = AuthController.generateRefreshToken(user);
+    //             const result = new RefreshToken({ refreshToken: newRefreshToken });
+    //             await result.save();
+    //             res.cookie("refreshToken", newRefreshToken, {
+    //                 httpOnly: true,
+    //                 secure: false,
+    //                 path: '/',
+    //                 sameSite: 'strict',
+    //             });
+    //             return res.status(200).json({
+    //                 token: newAccessToken,
+    //                 status: true
+    //             });
+    //         }
+    //         )
+    //     }
+    //     catch (err) {
+    //         next(err);
+    //     }
+    // },
 
-    logout: async (req, res, next) => {
-        try {
-            res.clearCookie("refreshToken");
-            const refreshTokens = await RefreshToken.find();
-            refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
-            return res.status(200).json({ message: 'Logged out success !' });
-        }
-        catch (err) {
-            next(err);
-        }
-    },
+    // logout: async (req, res, next) => {
+    //     try {
+    //         res.clearCookie("refreshToken");
+    //         const refreshTokens = await RefreshToken.find();
+    //         refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
+    //         return res.status(200).json({ message: 'Logged out success !' });
+    //     }
+    //     catch (err) {
+    //         next(err);
+    //     }
+    // },
 
     forgotPassword: async (req, res, next) => {
         try {
