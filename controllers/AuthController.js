@@ -1,10 +1,9 @@
 const Auth = require('../models/User');
 const Otp = require('../models/Otp');
+const RefreshToken = require('../models/RefreshToken');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const otpGenerator = require('otp-generator');
-
-let refreshTokens = [];
 
 const AuthController = {
 
@@ -28,7 +27,7 @@ const AuthController = {
                 phone: user.phone
             },
             process.env.JWT_REFRESH_KEY,
-            { expiresIn: "20m" }
+            { expiresIn: "5h" }
         );
     },
 
@@ -37,7 +36,7 @@ const AuthController = {
             const auth = await Auth.findOne({ $or: [{ phone: req.body.phone }, { email: req.body.email }] });
             if (auth) {
                 return res.status(401).json({
-                    message: "This account already exists ! Please Login",
+                    message: "This account is already exists ! Please Login",
                     isExist: true
                 });
             }
@@ -54,9 +53,9 @@ const AuthController = {
                     const { otp, password, ...others } = result._doc;
                     return res.status(200).json({
                         message: "Send OTP Successfully",
+                        data: { ...others },
                         otp: OTP,
-                        isExist: false,
-                        data: { ...others }
+                        isExist: false
                     });
                 }
             }
@@ -140,7 +139,8 @@ const AuthController = {
             if (auth && validPassword) {
                 const accessToken = AuthController.generateAccessToken(auth);
                 const refreshToken = AuthController.generateRefreshToken(auth);
-                refreshTokens.push(refreshToken);
+                const refreshTokens = new RefreshToken({ refreshToken: refreshToken });
+                await refreshTokens.save();
                 res.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
                     secure: false,
@@ -163,27 +163,32 @@ const AuthController = {
     requestRefreshToken: async (req, res, next) => {
         try {
             const refreshToken = req.cookies.refreshToken;
+            const refreshTokens = await RefreshToken.find();
             if (!refreshToken) {
                 return res.status(401).json('You are not authenticated');
             }
             if (!refreshTokens.includes(refreshToken)) {
                 return res.status(403).json('Refresh Token is not valid');
             }
-            jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
+            jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, async (err, user) => {
                 if (err) {
                     console.log(err);
                 }
                 refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
                 const newAccessToken = AuthController.generateAccessToken(user);
                 const newRefreshToken = AuthController.generateRefreshToken(user);
-                refreshTokens.push(newRefreshToken);
+                const result = new RefreshToken({ refreshToken: newRefreshToken });
+                await result.save();
                 res.cookie("refreshToken", newRefreshToken, {
                     httpOnly: true,
                     secure: false,
                     path: '/',
                     sameSite: 'strict',
                 });
-                return res.status(200).json({ accessToken: newAccessToken });
+                return res.status(200).json({
+                    token: newAccessToken,
+                    status: true
+                });
             }
             )
         }
@@ -195,6 +200,7 @@ const AuthController = {
     logout: async (req, res, next) => {
         try {
             res.clearCookie("refreshToken");
+            const refreshTokens = await RefreshToken.find();
             refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
             return res.status(200).json({ message: 'Logged out success !' });
         }
@@ -208,7 +214,7 @@ const AuthController = {
             const auth = await Auth.findOne({ phone: req.body.phone });
             if (!auth) {
                 return res.status(401).json({
-                    message: "This account does not exists ! Please Register",
+                    message: "This account is not exists ! Please Register",
                     isExist: false
                 });
             }
@@ -239,7 +245,6 @@ const AuthController = {
     verifyOtpPassword: async (req, res, next) => {
         try {
             const otpUser = await Otp.find({ phone: req.body.phone });
-            console.log("PHONE:", req.body.phone);
             if (otpUser.length === 0) {
                 return res.status(401).json({ message: "Expired OTP ! Please Resend OTP" });
             }
@@ -251,7 +256,7 @@ const AuthController = {
                         phone: lastOtp.phone
                     },
                     process.env.JWT_ACCESS_KEY,
-                    { expiresIn: "60s" }
+                    { expiresIn: "2m" }
                 );
                 const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone });
                 return res.status(200).json({
@@ -283,6 +288,12 @@ const AuthController = {
                 return res.status(200).json({
                     message: "Update Password Successfully",
                     status: true
+                });
+            }
+            else {
+                return res.status(401).json({
+                    message: "This account is not exists ! Please Register",
+                    status: false
                 });
             }
         }

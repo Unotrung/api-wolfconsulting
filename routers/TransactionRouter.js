@@ -3,6 +3,6 @@ const MiddlewareController = require("../controllers/MiddlewareController");
 
 const router = require("express").Router();
 
-router.get("/", MiddlewareController.verifyToken, TransactionController.getTransactions);
+router.get("/:id", MiddlewareController.VerifyTokenByMySelf, TransactionController.getTransactions);
 
 module.exports = router;

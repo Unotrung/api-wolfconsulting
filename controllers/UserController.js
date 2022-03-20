@@ -8,14 +8,14 @@ const UserController = {
             const users = await User.find();
             if (users.length > 0) {
                 return res.status(200).json({
+                    message: "Get List User Successfully",
                     users: users,
-                    message: "Get Users Successfully",
                     status: true
                 });
             }
             else {
-                return res.status(200).json({
-                    message: "Get Users Failure",
+                return res.status(401).json({
+                    message: "Get List User Failure",
                     status: false
                 });
             }
@@ -27,17 +27,17 @@ const UserController = {
 
     getUser: async (req, res, next) => {
         try {
-            const user = await User.findOne({ phone: req.params.phone });
+            const user = await User.findOne({ phone: req.params.id });
             if (user) {
                 return res.status(200).json({
-                    user: user,
                     message: "Get User Successfully",
+                    user: user,
                     status: true
                 });
             }
             else {
-                return res.status(200).json({
-                    message: "User does not exists",
+                return res.status(401).json({
+                    message: "This account is not exists !",
                     status: false
                 });
             }
@@ -54,7 +54,7 @@ const UserController = {
                 if (req.body.password) {
                     const validPassword = await bcrypt.compare(req.body.password, user.password);
                     if (!validPassword) {
-                        return res.status(400).json({
+                        return res.status(401).json({
                             message: "Your Old Password Is Not Correct ! Please Try Again",
                             status: true
                         });
@@ -64,7 +64,7 @@ const UserController = {
                         const hashed = await bcrypt.hash(req.body.new_password, salt);
                         await user.updateOne({ $set: { password: hashed } });
                         return res.status(200).json({
-                            message: `Update Password Successfully`,
+                            message: 'Update Password Successfully',
                             status: true
                         });
                     }

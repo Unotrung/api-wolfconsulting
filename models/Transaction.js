@@ -20,6 +20,9 @@ const transactionSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
+    },
+    user: {
+        type: String
     }
 }, { timestamps: true });
 
