@@ -10,7 +10,6 @@ const logEvents = require('./helpers/logEvents');
 const { v4: uuid } = require('uuid');
 const compression = require('compression');
 const helmet = require('helmet');
-require('../EAP/database/connections_redis');
 
 const authRoute = require('./routers/AuthRouter');
 const userRoute = require('./routers/UserRouter');

@@ -9,3 +9,5 @@
 20-03-2022	14::16::05-----Id_Log: 95f061d0-debc-46dd-9a94-d8727f94cb4f --- Router: /v1/transaction?page=1&pageSize=5&sortByField=product&sortValue=1 --- Method: GET --- Message: This route dose not exists !
 20-03-2022	14::16::10-----Id_Log: 2d2d0919-7c34-43d9-b79f-216285b6866e --- Router: /v1/transaction?page=1&pageSize=5&sortByField=product&sortValue=1 --- Method: GET --- Message: This route dose not exists !
 20-03-2022	14::16::12-----Id_Log: 28788edd-684a-4bfc-8b6a-6ee70fee6ea5 --- Router: /v1/repayment?page=2&pageSize=5&sortByField=provider&sortValue=1 --- Method: GET --- Message: This route dose not exists !
+20-03-2022	14::25::32-----Id_Log: 513847b8-d521-46ef-b4a4-fbfb720c6187 --- Router: /v1/transaction?page=1&pageSize=5&sortByField=product&sortValue=1 --- Method: GET --- Message: This route dose not exists !
+20-03-2022	14::25::36-----Id_Log: 41adbaa7-9b81-4416-ad7f-9e2b8a75b721 --- Router: /v1/repayment?page=2&pageSize=5&sortByField=provider&sortValue=1 --- Method: GET --- Message: This route dose not exists !
