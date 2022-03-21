@@ -27,7 +27,7 @@ const UserController = {
 
     getUser: async (req, res, next) => {
         try {
-            const user = await User.findOne({ id: req.params.id });
+            const user = await User.findById(req.params.id);
             if (user) {
                 return res.status(200).json({
                     message: "Get User Successfully",

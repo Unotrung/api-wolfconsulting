@@ -1,4 +1,5 @@
 const Repayment = require('../models/Repayment');
+const RepaymentDetail = require('../models/RepaymentDetail');
 
 const RepaymentController = {
 
@@ -67,6 +68,27 @@ const RepaymentController = {
         }
     },
 
+    getRepaymentDetail: async (req, res, next) => {
+        try {
+            let id = req.params.id;
+            let result = await RepaymentDetail.findOne({ repayment_id: id });
+            if (result) {
+                return res.status(200).json({
+                    data: result,
+                    status: true
+                })
+            }
+            else {
+                return res.status(400).json({
+                    message: "This Repayment Id is not exists",
+                    status: false
+                })
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    }
 }
 
 module.exports = RepaymentController;
