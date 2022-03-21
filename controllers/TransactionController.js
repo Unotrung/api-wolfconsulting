@@ -69,10 +69,12 @@ const TransactionController = {
     getTransactionDetail: async (req, res, next) => {
         try {
             let id = req.params.id;
+            let data = await Transaction.findOne({ id: id });
             let result = await TransactionDetail.findOne({ transaction_id: id });
             if (result) {
                 return res.status(200).json({
-                    data: result,
+                    transaction: data,
+                    transaction_detail: result,
                     status: true
                 })
             }

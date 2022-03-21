@@ -21,3 +21,5 @@
 20-03-2022	18::06::56-----Id_Log: b6fd6482-c078-4dd9-ba4d-a19187535c5f --- Router: /v1/auth/Logout --- Method: GET --- Message: Assignment to constant variable.
 20-03-2022	18::07::02-----Id_Log: bc8b9352-43a7-48f1-a97e-ba5c15baef3d --- Router: /v1/auth/Logout --- Method: GET --- Message: Assignment to constant variable.
 21-03-2022	10::14::30-----Id_Log: b5b705e3-3f4a-428a-8616-dec1f60226a7 --- Router: /v1/transaction/repaymentDetail/6229a08c6c2f91275de85e7a --- Method: GET --- Message: This route dose not exists !
+21-03-2022	11::33::01-----Id_Log: e0850f79-77dc-4a84-9ab7-39501a730c5e --- Router: /v1/transaction/transactionDetail/6229a08c6c2f91275de85e7a --- Method: GET --- Message: Cast to ObjectId failed for value "{ id: '6229a08c6c2f91275de85e7a' }" (type Object) at path "_id" for model "Transaction"
+21-03-2022	11::33::16-----Id_Log: 2e843b2a-c519-49da-a9bb-bb26b584d148 --- Router: /v1/transaction/transactionDetail/6229a08c6c2f91275de85e7a --- Method: GET --- Message: Cast to ObjectId failed for value "{ id: '6229a08c6c2f91275de85e7a' }" (type Object) at path "_id" for model "Transaction"

@@ -71,10 +71,12 @@ const RepaymentController = {
     getRepaymentDetail: async (req, res, next) => {
         try {
             let id = req.params.id;
+            let data = await Repayment.findOne({ id: id });
             let result = await RepaymentDetail.findOne({ repayment_id: id });
             if (result) {
                 return res.status(200).json({
-                    data: result,
+                    repayment: data,
+                    repayment_detail: result,
                     status: true
                 })
             }
