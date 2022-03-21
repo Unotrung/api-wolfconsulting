@@ -21,8 +21,25 @@ const transactionSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    type: {
+        type: String,
+        required: true,
+    },
+    ship: {
+        type: Number,
+        required: true,
+    },
+    conversionFee: {
+        type: Number,
+        required: true,
+    },
+    paymentTime: {
+        type: Number,
+        required: true,
+    },
     user: {
-        type: String
+        type: String,
+        required: true,
     }
 }, { timestamps: true });
 

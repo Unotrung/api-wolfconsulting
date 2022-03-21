@@ -1,4 +1,3 @@
-const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 
 const repaymentSchema = new mongoose.Schema({
@@ -18,9 +17,14 @@ const repaymentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    serviceCharge: {
+        type: Number,
+        required: true,
+    },
     user: {
-        type: String
-    }
+        type: String,
+        required: true,
+    },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Repayment', repaymentSchema);

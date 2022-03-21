@@ -1,5 +1,4 @@
 const Transaction = require('../models/Transaction');
-const TransactionDetail = require('../models/TransactionDetail');
 
 const TransactionController = {
 
@@ -68,13 +67,11 @@ const TransactionController = {
 
     getTransactionDetail: async (req, res, next) => {
         try {
-            let id = req.params.id;
-            let data = await Transaction.findOne({ id: id });
-            let result = await TransactionDetail.findOne({ transaction_id: id });
-            if (result) {
+            let idTransaction = req.params.idTransaction;
+            let data = await Transaction.findById(idTransaction);
+            if (data) {
                 return res.status(200).json({
-                    transaction: data,
-                    transaction_detail: result,
+                    data: data,
                     status: true
                 })
             }

@@ -1,5 +1,4 @@
 const Repayment = require('../models/Repayment');
-const RepaymentDetail = require('../models/RepaymentDetail');
 
 const RepaymentController = {
 
@@ -70,13 +69,11 @@ const RepaymentController = {
 
     getRepaymentDetail: async (req, res, next) => {
         try {
-            let id = req.params.id;
-            let data = await Repayment.findOne({ id: id });
-            let result = await RepaymentDetail.findOne({ repayment_id: id });
-            if (result) {
+            let idRepayment = req.params.idRepayment;
+            let data = await Repayment.findById(idRepayment);
+            if (data) {
                 return res.status(200).json({
-                    repayment: data,
-                    repayment_detail: result,
+                    data: data,
                     status: true
                 })
             }
@@ -91,6 +88,7 @@ const RepaymentController = {
             next(err);
         }
     }
+
 }
 
 module.exports = RepaymentController;
