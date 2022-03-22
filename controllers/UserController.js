@@ -1,21 +1,21 @@
-const User = require('../models/User');
+const Customer = require('../models/eap_customers');
 const bcrypt = require('bcrypt');
 
 const UserController = {
 
     getAllUser: async (req, res, next) => {
         try {
-            const users = await User.find();
+            const users = await Customer.find();
             if (users.length > 0) {
                 return res.status(200).json({
-                    message: "Get List User Successfully",
+                    message: "Get List Customer Successfully",
                     users: users,
                     status: true
                 });
             }
             else {
                 return res.status(401).json({
-                    message: "Get List User Failure",
+                    message: "Get List Customer Failure",
                     status: false
                 });
             }
@@ -27,7 +27,7 @@ const UserController = {
 
     getUser: async (req, res, next) => {
         try {
-            const user = await User.findById(req.params.id);
+            const user = await Customer.findById(req.params.id);
             if (user) {
                 return res.status(200).json({
                     message: "Get User Successfully",
@@ -49,7 +49,7 @@ const UserController = {
 
     updateUser: async (req, res, next) => {
         try {
-            const user = await User.findById(req.params.id);
+            const user = await Customer.findById(req.params.id);
             if (user) {
                 if (req.body.password) {
                     const validPassword = await bcrypt.compare(req.body.password, user.password);
@@ -62,7 +62,7 @@ const UserController = {
                     else {
                         const salt = await bcrypt.genSalt(10);
                         const hashed = await bcrypt.hash(req.body.new_password, salt);
-                        await user.updateOne({ $set: { password: hashed } });
+                        await Customer.updateOne({ $set: { password: hashed } });
                         return res.status(200).json({
                             message: 'Update Password Successfully',
                             status: true
@@ -70,7 +70,7 @@ const UserController = {
                     }
                 }
                 else {
-                    await user.updateOne({ $set: req.body });
+                    await Customer.updateOne({ $set: req.body });
                     return res.status(200).json({
                         message: `Update ${req.body} Successfully`,
                         status: true

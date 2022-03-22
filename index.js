@@ -46,10 +46,10 @@ mongoose.connect(process.env.MONGODB_URL, function (err) {
 }
 )
 
-app.use('/v1/auth', authRoute);
-app.use('/v1/user', userRoute);
-app.use('/v1/transaction', transactionRoute);
-app.use('/v1/repayment', repaymentRoute);
+app.use('/v1/eap/auth', authRoute);
+app.use('/v1/eap/user', userRoute);
+app.use('/v1/eap/transaction', transactionRoute);
+app.use('/v1/eap/repayment', repaymentRoute);
 
 // Handle Error Not Found
 app.use((req, res, next) => {

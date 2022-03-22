@@ -1,11 +1,11 @@
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 
-const RefreshTokenSchema = new mongoose.Schema({
+const eap_refreshtokensSchema = new mongoose.Schema({
     refreshToken: {
         type: String,
         required: true,
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model('RefreshToken', RefreshTokenSchema);
+module.exports = mongoose.model('eap_refreshtokens', eap_refreshtokensSchema);

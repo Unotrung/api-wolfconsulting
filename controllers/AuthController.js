@@ -1,6 +1,6 @@
-const Auth = require('../models/User');
-const Otp = require('../models/Otp');
-const RefreshToken = require('../models/RefreshToken');
+const Customer = require('../models/eap_customers');
+const Otp = require('../models/eap_otps');
+const RefreshToken = require('../models/eap_refreshtokens');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const otpGenerator = require('otp-generator');
@@ -33,7 +33,7 @@ const AuthController = {
 
     sendOtp: async (req, res, next) => {
         try {
-            const auth = await Auth.findOne({ $or: [{ phone: req.body.phone }, { email: req.body.email }] });
+            const auth = await Customer.findOne({ $or: [{ phone: req.body.phone }, { email: req.body.email }] });
             if (auth) {
                 return res.status(401).json({
                     message: "This account is already exists ! Please Login",
@@ -108,7 +108,7 @@ const AuthController = {
             let password = req.body.password;
             const salt = await bcrypt.genSalt(10);
             const hashed = await bcrypt.hash(password, salt);
-            const newUser = await new Auth({
+            const newUser = await new Customer({
                 username: username,
                 email: email,
                 phone: phone,
@@ -128,7 +128,7 @@ const AuthController = {
 
     login: async (req, res, next) => {
         try {
-            const auth = await Auth.findOne({ phone: req.body.phone });
+            const auth = await Customer.findOne({ phone: req.body.phone });
             if (!auth) {
                 return res.status(401).json({ message: "Wrong phone !" });
             }
@@ -214,7 +214,7 @@ const AuthController = {
 
     forgotPassword: async (req, res, next) => {
         try {
-            const auth = await Auth.findOne({ phone: req.body.phone });
+            const auth = await Customer.findOne({ phone: req.body.phone });
             if (!auth) {
                 return res.status(401).json({
                     message: "This account is not exists ! Please Register",
@@ -283,7 +283,7 @@ const AuthController = {
 
     updatePassword: async (req, res, next) => {
         try {
-            const user = await Auth.findOne({ phone: req.body.phone });
+            const user = await Customer.findOne({ phone: req.body.phone });
             if (user) {
                 const salt = await bcrypt.genSalt(10);
                 const hashed = await bcrypt.hash(req.body.password, salt);
