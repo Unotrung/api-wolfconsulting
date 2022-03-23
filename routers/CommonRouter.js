@@ -1,4 +1,5 @@
 const CommonController = require('../controllers/CommonController');
+const MiddlewareController = require('../controllers/MiddlewareController');
 
 const router = require("express").Router();
 

@@ -160,45 +160,49 @@ const AuthController = {
         }
     },
 
-    // requestRefreshToken: async (req, res, next) => {
-    //     try {
-    //         // Get refreshToken from cookie
-    //         const refreshToken = req.cookies.refreshToken;
-    //         const refreshTokens = await RefreshToken.find();
-    //         if (!refreshToken) {
-    //             return res.status(401).json('You are not authenticated');
-    //         }
-    //         let data = refreshTokens.find((x) => x.refreshToken === refreshToken);
-    //         if (!data) {
-    //             return res.status(403).json('Refresh Token is not valid');
-    //         }
-    //         jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, async (err, user) => {
-    //             if (err) {
-    //                 console.log(err);
-    //             }
-    //             refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
-    //             let answer = refreshTokens.filter((x) => x !== refreshToken);
-    //             const newAccessToken = AuthController.generateAccessToken(user);
-    //             const newRefreshToken = AuthController.generateRefreshToken(user);
-    //             const result = new RefreshToken({ refreshToken: newRefreshToken });
-    //             await result.save();
-    //             res.cookie("refreshToken", newRefreshToken, {
-    //                 httpOnly: true,
-    //                 secure: false,
-    //                 path: '/',
-    //                 sameSite: 'strict',
-    //             });
-    //             return res.status(200).json({
-    //                 token: newAccessToken,
-    //                 status: true
-    //             });
-    //         }
-    //         )
-    //     }
-    //     catch (err) {
-    //         next(err);
-    //     }
-    // },
+    requestRefreshToken: async (req, res, next) => {
+        try {
+            // Get refreshToken from cookie
+            const refreshToken = req.cookies.refreshToken;
+            const refreshTokens = await RefreshToken.find();
+            console.log("RefreshTokens Find: ", refreshTokens);
+            if (!refreshToken) {
+                return res.status(401).json('You are not authenticated');
+            }
+            let data = refreshTokens.find((x) => x.refreshToken === refreshToken);
+            console.log("Data: ", data);
+            if (!data) {
+                return res.status(403).json('Refresh Token is not valid');
+            }
+            jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, async (err, user) => {
+                if (err) {
+                    console.log(err);
+                }
+                refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
+                console.log("RefreshTokens Filter: ", refreshTokens);
+                let answer = refreshTokens.filter((x) => x !== refreshToken);
+                console.log("Answer: ", answer);
+                const newAccessToken = AuthController.generateAccessToken(user);
+                const newRefreshToken = AuthController.generateRefreshToken(user);
+                const result = new RefreshToken({ refreshToken: newRefreshToken });
+                await result.save();
+                res.cookie("refreshToken", newRefreshToken, {
+                    httpOnly: true,
+                    secure: false,
+                    path: '/',
+                    sameSite: 'strict',
+                });
+                return res.status(200).json({
+                    token: newAccessToken,
+                    status: true
+                });
+            }
+            )
+        }
+        catch (err) {
+            next(err);
+        }
+    },
 
     // logout: async (req, res, next) => {
     //     try {
