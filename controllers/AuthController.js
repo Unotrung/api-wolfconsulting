@@ -15,7 +15,7 @@ const AuthController = {
                 phone: user.phone
             },
             process.env.JWT_ACCESS_KEY,
-            { expiresIn: "20m" }
+            { expiresIn: "40m" }
         );
     },
 
@@ -27,7 +27,7 @@ const AuthController = {
                 phone: user.phone
             },
             process.env.JWT_REFRESH_KEY,
-            { expiresIn: "5h" }
+            { expiresIn: "10m" }
         );
     },
 
