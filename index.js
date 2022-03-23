@@ -15,6 +15,7 @@ const authRoute = require('./routers/AuthRouter');
 const userRoute = require('./routers/UserRouter');
 const transactionRoute = require('./routers/TransactionRouter');
 const repaymentRoute = require('./routers/RepaymentRouter');
+const commonRoute = require('./routers/CommonRouter');
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ app.use('/v1/eap/auth', authRoute);
 app.use('/v1/eap/user', userRoute);
 app.use('/v1/eap/transaction', transactionRoute);
 app.use('/v1/eap/repayment', repaymentRoute);
+app.use('/v1/eap/common', commonRoute);
 
 // Handle Error Not Found
 app.use((req, res, next) => {
