@@ -25,3 +25,4 @@
 21-03-2022	11::33::16-----Id_Log: 2e843b2a-c519-49da-a9bb-bb26b584d148 --- Router: /v1/transaction/transactionDetail/6229a08c6c2f91275de85e7a --- Method: GET --- Message: Cast to ObjectId failed for value "{ id: '6229a08c6c2f91275de85e7a' }" (type Object) at path "_id" for model "Transaction"
 21-03-2022	21::32::25-----Id_Log: e19d9b91-251b-4e16-9af2-851b0719d913 --- Router: /v1/repayment/repaymentDetail/6229cae24f472333cd37f13f --- Method: GET --- Message: result is not defined
 23-03-2022	11::08::27-----Id_Log: e2a4b287-8a3d-4bc6-a7c9-d979787c7698 --- Router: /v1/auth/eap/requestRefreshToken --- Method: POST --- Message: This route dose not exists !
+23-03-2022	13::30::43-----Id_Log: e9595b9d-79df-4e09-b563-6a8f7b72e2cc --- Router: /v1/eap/auth/requestRefreshToken --- Method: POST --- Message: This route dose not exists !
