@@ -69,10 +69,10 @@ const UserController = {
                         });
                     }
                 }
-                else {
-                    await Customer.updateOne({ $set: req.body });
+                else if (req.body.username) {
+                    await Customer.updateOne({ $set: { username: req.body.username } });
                     return res.status(200).json({
-                        message: `Update ${req.body} Successfully`,
+                        message: 'Update Username Successfully',
                         status: true
                     });
                 }
