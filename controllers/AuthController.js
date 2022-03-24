@@ -378,6 +378,7 @@ const AuthController = {
 
     updateEmail: async (req, res, next) => {
         try {
+            const token = req.body.token;
             const user = await Customer.findOne({ email: req.body.email });
             if (user) {
                 await user.updateOne({ $set: { email: req.body.new_email } });
