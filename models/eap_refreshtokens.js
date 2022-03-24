@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
-const eap_refreshtokensSchema = new mongoose.Schema({
+const eap_refreshtokenSchema = new mongoose.Schema({
     refreshToken: {
         type: String,
         required: true,
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model('eap_refreshtokens', eap_refreshtokensSchema);
+module.exports = mongoose.model('eap_refreshtoken', eap_refreshtokenSchema);
