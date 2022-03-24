@@ -351,7 +351,7 @@ const AuthController = {
                 const token = jwt.sign(
                     {
                         id: lastOtp.id,
-                        phone: lastOtp.email,
+                        email: lastOtp.email,
                     },
                     process.env.JWT_ACCESS_KEY,
                     { expiresIn: "1m" }
@@ -359,7 +359,7 @@ const AuthController = {
                 const deleteOTP = await Otp.deleteMany({ phone: lastOtp.email });
                 return res.status(200).json({
                     message: "OTP VALID",
-                    phone_email: req.body.email,
+                    email: req.body.email,
                     token: token,
                     status: true
                 });
