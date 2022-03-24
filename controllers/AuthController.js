@@ -128,7 +128,7 @@ const AuthController = {
 
     login: async (req, res, next) => {
         try {
-            const auth = await Customer.findOne({ $or: [{ phone: req.body.phone }, { email: req.body.email }] });
+            const auth = await Customer.findOne({ $or: [{ phone: req.body.phone_email }, { email: req.body.phone_email }] });
             if (!auth) {
                 return res.status(401).json({ message: "Wrong phone/Email !" });
             }
@@ -178,7 +178,7 @@ const AuthController = {
                 if (err) {
                     console.log(err);
                 }
-                let listRefreshToken = refreshTokens.filter((x) => x.refreshToken !== refreshToken);;
+                let listRefreshToken = refreshTokens.filter((x) => x.refreshToken !== refreshToken);
                 console.log("List RefreshToken: ", listRefreshToken);
                 const newAccessToken = AuthController.generateAccessToken(user);
                 const newRefreshToken = AuthController.generateRefreshToken(user);
@@ -201,17 +201,18 @@ const AuthController = {
         }
     },
 
-    // logout: async (req, res, next) => {
-    //     try {
-    //         res.clearCookie("refreshToken");
-    //         const refreshTokens = await RefreshToken.find();
-    //         refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
-    //         return res.status(200).json({ message: 'Logged out success !' });
-    //     }
-    //     catch (err) {
-    //         next(err);
-    //     }
-    // },
+    logout: async (req, res, next) => {
+        try {
+            res.clearCookie("refreshToken");
+            const refreshTokens = await RefreshToken.find();
+            let listRefreshToken = refreshTokens.filter((x) => x.token !== req.cookies.refreshToken);
+            // refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
+            return res.status(200).json({ message: 'Logged out success !' });
+        }
+        catch (err) {
+            next(err);
+        }
+    },
 
     forgotPassword: async (req, res, next) => {
         try {
