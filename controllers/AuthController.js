@@ -249,7 +249,7 @@ const AuthController = {
 
     verifyOtpPassword: async (req, res, next) => {
         try {
-            const otpUser = await Otp.find({ $or: [{ phone: req.body.phone_email }] });
+            const otpUser = await Otp.find({ phone: req.body.phone_email });
             if (otpUser.length === 0) {
                 return res.status(401).json({ message: "Expired OTP ! Please Resend OTP" });
             }
