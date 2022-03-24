@@ -14,6 +14,6 @@ router.post("/verifyOtpPassword", AuthController.verifyOtpPassword);
 router.put("/updatePassword", MiddlewareController.VerifyTokenByMySelf, AuthController.updatePassword);
 router.post("/sendOTPEmail", MiddlewareController.VerifyTokenByMySelf, AuthController.sendOTPEmail);
 router.post("/verifyOTPEmail", MiddlewareController.VerifyTokenByMySelf, AuthController.verifyOTPEmail);
-router.put("/updateEmail", MiddlewareController.VerifyTokenByMySelf, AuthController.updateEmail);
+router.put("/updateEmail", MiddlewareController.VerifyTokenByMySelfBody, AuthController.updateEmail);
 
 module.exports = router;
