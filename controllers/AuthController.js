@@ -307,6 +307,97 @@ const AuthController = {
         }
     },
 
+    sendOTPEmail: async (req, res, next) => {
+        try {
+            const auth = await Customer.findOne({ email: req.body.email });
+            if (!auth) {
+                return res.status(401).json({
+                    message: "This account is not exists ! Please Register",
+                    isExist: false
+                });
+            }
+            else {
+                const EMAIL = req.body.email;
+                const OTP = otpGenerator.generate(6, {
+                    digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
+                });
+                if (EMAIL !== null && OTP !== null) {
+                    const dataTemp = new Otp({ email: EMAIL, otp: OTP });
+                    const result = await dataTemp.save();
+                    return res.status(200).json({
+                        message: "Send OTP Successfully",
+                        data: {
+                            email: EMAIL,
+                            otp: OTP
+                        },
+                        status: true,
+                    });
+                }
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
+    verifyOTPEmail: async (req, res, next) => {
+        try {
+            const otpUser = await Otp.find({ email: req.body.email });
+            if (otpUser.length === 0) {
+                return res.status(401).json({ message: "Expired OTP ! Please Resend OTP" });
+            }
+            const lastOtp = otpUser[otpUser.length - 1];
+            if ((lastOtp.email === req.body.email && lastOtp.otp === req.body.otp)) {
+                const token = jwt.sign(
+                    {
+                        id: lastOtp.id,
+                        phone: lastOtp.email,
+                    },
+                    process.env.JWT_ACCESS_KEY,
+                    { expiresIn: "1m" }
+                );
+                const deleteOTP = await Otp.deleteMany({ phone: lastOtp.email });
+                return res.status(200).json({
+                    message: "OTP VALID",
+                    phone_email: req.body.email,
+                    token: token,
+                    status: true
+                });
+            }
+            else {
+                return res.status(401).json({
+                    message: "OTP INVALID",
+                    status: false
+                });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
+    updateEmail: async (req, res, next) => {
+        try {
+            const user = await Customer.findOne({ email: req.body.email });
+            if (user) {
+                await user.updateOne({ $set: { email: req.body.new_email } });
+                return res.status(200).json({
+                    message: "Update Email Successfully",
+                    status: true
+                });
+            }
+            else {
+                return res.status(401).json({
+                    message: "This account is not exists ! Please Register",
+                    status: false
+                });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
 }
 
 module.exports = AuthController;
