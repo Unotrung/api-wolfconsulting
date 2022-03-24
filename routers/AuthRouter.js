@@ -7,7 +7,7 @@ router.post("/sendOtp", AuthController.sendOtp);
 router.post("/verifyOtp", AuthController.verifyOtp);
 router.post("/register", AuthController.register);
 router.post("/login", AuthController.login);
-router.post("/requestRefreshToken", MiddlewareController.verifyToken, AuthController.requestRefreshToken);
+router.get("/:id/requestRefreshToken", MiddlewareController.VerifyTokenByMySelf, AuthController.requestRefreshToken);
 // router.get("/logout", MiddlewareController.verifyToken, AuthController.logout);
 router.post("/forgotPassword", AuthController.forgotPassword);
 router.post("/verifyOtpPassword", AuthController.verifyOtpPassword);

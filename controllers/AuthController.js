@@ -27,7 +27,7 @@ const AuthController = {
                 phone: user.phone
             },
             process.env.JWT_REFRESH_KEY,
-            { expiresIn: "10m" }
+            { expiresIn: "3h" }
         );
     },
 
@@ -50,7 +50,7 @@ const AuthController = {
                 if (USERNAME !== null && EMAIL !== null && PHONE !== null && OTP !== null) {
                     const dataTemp = new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP });
                     const result = await dataTemp.save();
-                    const { otp, password, ...others } = result._doc;
+                    const { otp, ...others } = result._doc;
                     return res.status(200).json({
                         message: "Send OTP Successfully",
                         data: { ...others },
@@ -128,9 +128,9 @@ const AuthController = {
 
     login: async (req, res, next) => {
         try {
-            const auth = await Customer.findOne({ phone: req.body.phone });
+            const auth = await Customer.findOne({ $or: [{ phone: req.body.phone }, { email: req.body.email }] });
             if (!auth) {
-                return res.status(401).json({ message: "Wrong phone !" });
+                return res.status(401).json({ message: "Wrong phone/Email !" });
             }
             const validPassword = await bcrypt.compare(req.body.password, auth.password);
             if (!validPassword) {
@@ -178,14 +178,11 @@ const AuthController = {
                 if (err) {
                     console.log(err);
                 }
-                refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
-                console.log("RefreshTokens Filter: ", refreshTokens);
-                let answer = refreshTokens.filter((x) => x !== refreshToken);
-                console.log("Answer: ", answer);
+                let listRefreshToken = refreshTokens.filter((x) => x.refreshToken !== refreshToken);;
+                console.log("List RefreshToken: ", listRefreshToken);
                 const newAccessToken = AuthController.generateAccessToken(user);
                 const newRefreshToken = AuthController.generateRefreshToken(user);
-                const result = new RefreshToken({ refreshToken: newRefreshToken });
-                await result.save();
+                await RefreshToken.updateOne({ refreshToken: data.refreshToken }, { refreshToken: newRefreshToken });
                 res.cookie("refreshToken", newRefreshToken, {
                     httpOnly: true,
                     secure: false,

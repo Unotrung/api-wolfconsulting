@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const eap_customersSchema = new mongoose.Schema({
     username: {
         type: String,
-        unique: false,
         required: [true, 'Username is required'],
         minlength: [6, 'The minimum length of username is 6 characters'],
         maxlength: [64, 'The maximum length of username is 64 characters'],
