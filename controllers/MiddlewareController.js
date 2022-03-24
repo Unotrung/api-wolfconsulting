@@ -29,7 +29,7 @@ const middlewareController = {
     VerifyTokenByMySelf: (req, res, next) => {
         try {
             middlewareController.verifyToken(req, res, () => {
-                if (req.user.id === req.params.id || req.user.phone === req.body.phone || req.user.email === req.body.email) {
+                if (req.user.id === req.params.id || req.user.phone === req.body.phone || req.user.email === req.body.email || req.user.phone === req.body.phone_email || req.user.email === req.body.phone_email) {
                     next();
                 }
                 else {

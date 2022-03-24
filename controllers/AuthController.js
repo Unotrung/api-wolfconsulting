@@ -203,11 +203,11 @@ const AuthController = {
 
     logout: async (req, res, next) => {
         try {
-            res.clearCookie("refreshToken");
-            const refreshTokens = await RefreshToken.find();
-            let listRefreshToken = refreshTokens.filter((x) => x.token !== req.cookies.refreshToken);
+            // res.clearCookie("refreshToken");
+            // const refreshTokens = await RefreshToken.find();
+            // let listRefreshToken = refreshTokens.filter((x) => x.token !== req.cookies.refreshToken);
             // refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
-            return res.status(200).json({ message: 'Logged out success !' });
+            // return res.status(200).json({ message: 'Logged out success !' });
         }
         catch (err) {
             next(err);
@@ -216,7 +216,7 @@ const AuthController = {
 
     forgotPassword: async (req, res, next) => {
         try {
-            const auth = await Customer.findOne({ phone: req.body.phone });
+            const auth = await Customer.findOne({ $or: [{ phone: req.body.phone_email }, { email: req.body.phone_email }] });
             if (!auth) {
                 return res.status(401).json({
                     message: "This account is not exists ! Please Register",
@@ -224,7 +224,7 @@ const AuthController = {
                 });
             }
             else {
-                const PHONE = req.body.phone;
+                const PHONE = req.body.phone_email;
                 const OTP = otpGenerator.generate(6, {
                     digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
                 });
@@ -234,7 +234,7 @@ const AuthController = {
                     return res.status(200).json({
                         message: "Send OTP Successfully",
                         data: {
-                            phone: PHONE,
+                            phone_email: PHONE,
                             otp: OTP
                         },
                         status: true,
@@ -249,24 +249,24 @@ const AuthController = {
 
     verifyOtpPassword: async (req, res, next) => {
         try {
-            const otpUser = await Otp.find({ phone: req.body.phone });
+            const otpUser = await Otp.find({ $or: [{ phone: req.body.phone_email }, { email: req.body.phone_email }] });
             if (otpUser.length === 0) {
                 return res.status(401).json({ message: "Expired OTP ! Please Resend OTP" });
             }
             const lastOtp = otpUser[otpUser.length - 1];
-            if (lastOtp.phone === req.body.phone && lastOtp.otp === req.body.otp) {
+            if ((lastOtp.phone === req.body.phone_email && lastOtp.otp === req.body.otp)) {
                 const token = jwt.sign(
                     {
                         id: lastOtp.id,
-                        phone: lastOtp.phone
+                        phone: lastOtp.phone,
                     },
                     process.env.JWT_ACCESS_KEY,
-                    { expiresIn: "2m" }
+                    { expiresIn: "1m" }
                 );
-                const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone });
+                const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone_email });
                 return res.status(200).json({
                     message: "OTP VALID",
-                    phone: req.body.phone,
+                    phone_email: req.body.phone_email,
                     token: token,
                     status: true
                 });
@@ -285,7 +285,7 @@ const AuthController = {
 
     updatePassword: async (req, res, next) => {
         try {
-            const user = await Customer.findOne({ phone: req.body.phone });
+            const user = await Customer.findOne({ $or: [{ phone: req.body.phone_email }, { email: req.body.phone_email }] });
             if (user) {
                 const salt = await bcrypt.genSalt(10);
                 const hashed = await bcrypt.hash(req.body.password, salt);
