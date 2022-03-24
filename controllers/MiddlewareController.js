@@ -48,7 +48,7 @@ const middlewareController = {
             if (token) {
                 jwt.verify(token, process.env.JWT_ACCESS_KEY, (err, user) => {
                     if (err) {
-                        return res.status(403).json("Token is not valid");
+                        return res.status(403).json("Token is not valid (Body)");
                     }
                     // Trả về user
                     req.user = user;
@@ -56,7 +56,7 @@ const middlewareController = {
                 });
             }
             else {
-                return res.status(200).json("You're not authenticated");
+                return res.status(200).json("You're not authenticated (Body)");
             }
         }
         catch (err) {
@@ -71,7 +71,7 @@ const middlewareController = {
                     next();
                 }
                 else {
-                    return res.status(403).json('You are not allowed to do this action');
+                    return res.status(403).json('You are not allowed to do this action (Body)');
                 }
             })
         }
