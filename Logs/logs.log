@@ -26,3 +26,8 @@
 21-03-2022	21::32::25-----Id_Log: e19d9b91-251b-4e16-9af2-851b0719d913 --- Router: /v1/repayment/repaymentDetail/6229cae24f472333cd37f13f --- Method: GET --- Message: result is not defined
 23-03-2022	11::08::27-----Id_Log: e2a4b287-8a3d-4bc6-a7c9-d979787c7698 --- Router: /v1/auth/eap/requestRefreshToken --- Method: POST --- Message: This route dose not exists !
 23-03-2022	13::30::43-----Id_Log: e9595b9d-79df-4e09-b563-6a8f7b72e2cc --- Router: /v1/eap/auth/requestRefreshToken --- Method: POST --- Message: This route dose not exists !
+24-03-2022	22::12::39-----Id_Log: e2daad71-67fe-4586-89c3-991c6cc25eda --- Router: / --- Method: GET --- Message: This route dose not exists !
+24-03-2022	22::12::43-----Id_Log: d10bba7b-8dae-4cc7-ac25-a7df5c3b4b6d --- Router: /favicon.ico --- Method: GET --- Message: This route dose not exists !
+24-03-2022	22::52::41-----Id_Log: 9a5d520f-1a05-4370-92c9-208aad527840 --- Router: /api --- Method: GET --- Message: Cannot access 'ttl' before initialization
+24-03-2022	22::53::27-----Id_Log: b834dda1-6a72-4f7c-9ae0-c4c5ed48919d --- Router: /api --- Method: GET --- Message: Cannot access 'ttl' before initialization
+24-03-2022	22::53::51-----Id_Log: 15722748-562a-4a06-befa-a50d98f1b3f6 --- Router: /api --- Method: GET --- Message: Cannot access 'ttl' before initialization

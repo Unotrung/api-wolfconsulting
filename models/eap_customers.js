@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const eap_customerSchema = new mongoose.Schema({
+
     username: {
         type: String,
         required: [true, 'Username is required'],
@@ -27,6 +28,7 @@ const eap_customerSchema = new mongoose.Schema({
         minlength: [6, 'The minimum length of password is 8 characters'],
         maxlength: [64, 'The maximum length of password is 64 characters'],
     },
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('eap_customer', eap_customerSchema);

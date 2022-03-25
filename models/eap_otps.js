@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const eap_otpSchema = new mongoose.Schema({
+
     username: {
         type: String,
     },
@@ -20,6 +21,7 @@ const eap_otpSchema = new mongoose.Schema({
         index: { expires: 300 }
     }
     // After 5 minutes it deleted automatically from the database
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('eap_otp', eap_otpSchema);
