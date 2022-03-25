@@ -309,7 +309,8 @@ const AuthController = {
 
     sendOTPEmail: async (req, res, next) => {
         try {
-            const EMAIL = req.body.email;
+            const oldEmail = req.body.email;
+            const EMAIL = req.body.new_email;
             const OTP = otpGenerator.generate(6, {
                 digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
             });
@@ -333,12 +334,13 @@ const AuthController = {
 
     verifyOTPEmail: async (req, res, next) => {
         try {
-            const otpUser = await Otp.find({ email: req.body.email });
+            const oldEmail = req.body.email;
+            const otpUser = await Otp.find({ email: req.body.new_email });
             if (otpUser.length === 0) {
                 return res.status(401).json({ message: "Expired OTP ! Please Resend OTP" });
             }
             const lastOtp = otpUser[otpUser.length - 1];
-            if ((lastOtp.email === req.body.email && lastOtp.otp === req.body.otp)) {
+            if (lastOtp.email === req.body.new_email && lastOtp.otp === req.body.otp) {
                 const token = jwt.sign(
                     {
                         id: lastOtp.id,
@@ -371,7 +373,7 @@ const AuthController = {
             const token = req.body.token;
             const user = await Customer.findById(req.body.id);
             if (user) {
-                await user.updateOne({ $set: { email: req.body.email } });
+                await user.updateOne({ $set: { email: req.body.new_email } });
                 return res.status(200).json({
                     message: "Update Email Successfully",
                     status: true
