@@ -4,6 +4,7 @@ const RefreshToken = require('../models/eap_refreshtokens');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const otpGenerator = require('otp-generator');
+const { NIL } = require('uuid');
 
 const AuthController = {
 
@@ -359,7 +360,7 @@ const AuthController = {
             }
             else {
                 return res.status(200).json({
-                    message: "Please enter your email/phone and OTP. Do not leave any fields blank !",
+                    message: "Please enter your email/phone and OTP code. Do not leave any fields blank !",
                     status: false
                 });
             }
@@ -372,34 +373,43 @@ const AuthController = {
     updatePassword: async (req, res, next) => {
         try {
             let PHONE_EMAIL = req.body.phone_email;
-            const user = await Customer.findOne({ $or: [{ phone: PHONE_EMAIL }, { email: PHONE_EMAIL }] });
-            if (user) {
-                const salt = await bcrypt.genSalt(10);
-                const hashed = await bcrypt.hash(req.body.password, salt);
-                await user.updateOne({ $set: { password: hashed } }, (err) => {
-                    if (!err) {
-                        return res.status(201).json({
-                            message: "Update Password Successfully",
-                            status: true
-                        });
-                    }
-                    else {
+            let NEW_PASSWORD = req.body.password;
+            if (PHONE_EMAIL !== null && NEW_PASSWORD !== null && PHONE_EMAIL !== '' && NEW_PASSWORD !== '') {
+                const user = await Customer.findOne({ $or: [{ phone: PHONE_EMAIL }, { email: PHONE_EMAIL }] });
+                if (user) {
+                    const salt = await bcrypt.genSalt(10);
+                    const hashed = await bcrypt.hash(NEW_PASSWORD, salt);
+                    await user.updateOne({ $set: { password: hashed } }, (err) => {
+                        if (!err) {
+                            return res.status(201).json({
+                                message: "Update Password Successfully",
+                                status: true
+                            });
+                        }
+                        else {
+                            return res.status(200).json({
+                                message: "Update Password Failure",
+                                status: false
+                            });
+                        }
+                    }).clone().catch((err) => {
                         return res.status(200).json({
-                            message: "Update Password Failure",
-                            status: false
-                        });
-                    }
-                }).clone().catch((err) => {
+                            err: err,
+                            messsage: "Something is wrong in update password !",
+                            status: false,
+                        })
+                    });
+                }
+                else {
                     return res.status(200).json({
-                        err: err,
-                        messsage: "Something is wrong in update password !",
-                        status: false,
-                    })
-                });
+                        message: "This account is not exists. Please Register !",
+                        status: false
+                    });
+                }
             }
             else {
                 return res.status(200).json({
-                    message: "This account is not exists ! Please Register",
+                    message: "Please enter your phone/email and new password. Do not leave any fields blank !",
                     status: false
                 });
             }
