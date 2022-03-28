@@ -18,7 +18,7 @@ const middlewareController = {
                 });
             }
             else {
-                return res.status(200).json("You're not authenticated");
+                return res.status(401).json("You're not authenticated");
             }
         }
         catch (err) {
@@ -56,7 +56,7 @@ const middlewareController = {
                 });
             }
             else {
-                return res.status(200).json("You're not authenticated (Body)");
+                return res.status(401).json("You're not authenticated (Body)");
             }
         }
         catch (err) {
@@ -67,7 +67,7 @@ const middlewareController = {
     VerifyTokenByMySelfBody: (req, res, next) => {
         try {
             middlewareController.verifyTokenBody(req, res, () => {
-                if (req.user.phone === req.body.phone || req.user.email === req.body.email) {
+                if (req.user.phone === req.body.phone || req.user.email === req.body.email || req.user.phone === req.body.phone_email || req.user.email === req.body.phone_email) {
                     next();
                 }
                 else {

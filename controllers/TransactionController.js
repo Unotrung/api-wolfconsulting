@@ -10,10 +10,10 @@ const TransactionController = {
             let data = await Transaction.find({ user: id });
             console.log("Data: ", data.length);
 
-            if (data.length > 0) {
-                const totalItem = await Transaction.countDocuments({ user: id });
-                console.log("Total Item: ", totalItem);
+            const totalItem = await Transaction.countDocuments({ user: id });
+            console.log("Total Item: ", totalItem);
 
+            if (data.length > 0) {
                 const PAGE_SIZE = req.query.pageSize;
                 console.log("Page Size: ", PAGE_SIZE);
 
@@ -44,19 +44,21 @@ const TransactionController = {
                 const result = await Transaction.find({ user: id }).skip(skipItem).limit(PAGE_SIZE).sort(sort);
 
                 return res.status(200).json({
+                    message: "Get Transaction List Success",
                     data: result,
                     totalItem: totalItem,
                     totalPage: totalPage,
                     currentPage: page,
-                    status: true,
                     sortByField: sortByField,
-                    sortValue: sortValue
+                    sortValue: sortValue,
+                    status: true
                 })
             }
             else {
                 return res.status(200).json({
                     message: "You do not have any transaction",
-                    status: true
+                    totalItem: totalItem,
+                    status: false
                 });
             }
         }
@@ -71,12 +73,13 @@ const TransactionController = {
             let data = await Transaction.findById(idTransaction);
             if (data) {
                 return res.status(200).json({
+                    message: "Get Transaction Detail Success",
                     data: data,
                     status: true
                 })
             }
             else {
-                return res.status(400).json({
+                return res.status(200).json({
                     message: "This Transaction Id is not exists",
                     status: false
                 })

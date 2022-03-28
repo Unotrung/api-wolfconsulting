@@ -35,7 +35,7 @@ const AuthController = {
         try {
             const auth = await Customer.findOne({ $or: [{ phone: req.body.phone }, { email: req.body.email }] });
             if (auth) {
-                return res.status(401).json({
+                return res.status(200).json({
                     message: "This account is already exists ! Please Login",
                     isExist: true
                 });
@@ -69,7 +69,7 @@ const AuthController = {
         try {
             const otpUser = await Otp.find({ email: req.body.email, phone: req.body.phone, username: req.body.username });
             if (otpUser.length === 0) {
-                return res.status(401).json({ message: "Expired OTP ! Please Resend OTP" });
+                return res.status(200).json({ message: "Expired OTP ! Please Resend OTP" });
             }
             const lastOtp = otpUser[otpUser.length - 1];
             if (lastOtp.phone === req.body.phone && lastOtp.otp === req.body.otp) {
@@ -89,7 +89,7 @@ const AuthController = {
                 });
             }
             else {
-                return res.status(401).json({
+                return res.status(200).json({
                     message: "OTP INVALID",
                     status: false
                 });
@@ -130,11 +130,11 @@ const AuthController = {
         try {
             const auth = await Customer.findOne({ $or: [{ phone: req.body.phone_email }, { email: req.body.phone_email }] });
             if (!auth) {
-                return res.status(401).json({ message: "Wrong phone/Email !" });
+                return res.status(200).json({ message: "Wrong phone/Email !" });
             }
             const validPassword = await bcrypt.compare(req.body.password, auth.password);
             if (!validPassword) {
-                return res.status(401).json({ message: "Wrong Password !" });
+                return res.status(200).json({ message: "Wrong Password !" });
             }
             if (auth && validPassword) {
                 const accessToken = AuthController.generateAccessToken(auth);
@@ -218,7 +218,7 @@ const AuthController = {
         try {
             const auth = await Customer.findOne({ $or: [{ phone: req.body.phone_email }, { email: req.body.phone_email }] });
             if (!auth) {
-                return res.status(401).json({
+                return res.status(200).json({
                     message: "This account is not exists ! Please Register",
                     isExist: false
                 });
@@ -251,7 +251,7 @@ const AuthController = {
         try {
             const otpUser = await Otp.find({ phone: req.body.phone_email });
             if (otpUser.length === 0) {
-                return res.status(401).json({ message: "Expired OTP ! Please Resend OTP" });
+                return res.status(200).json({ message: "Expired OTP ! Please Resend OTP" });
             }
             const lastOtp = otpUser[otpUser.length - 1];
             if ((lastOtp.phone === req.body.phone_email && lastOtp.otp === req.body.otp)) {
@@ -272,7 +272,7 @@ const AuthController = {
                 });
             }
             else {
-                return res.status(401).json({
+                return res.status(200).json({
                     message: "OTP INVALID",
                     status: false
                 });
@@ -296,7 +296,7 @@ const AuthController = {
                 });
             }
             else {
-                return res.status(401).json({
+                return res.status(200).json({
                     message: "This account is not exists ! Please Register",
                     status: false
                 });
@@ -337,7 +337,7 @@ const AuthController = {
             const oldEmail = req.body.email;
             const otpUser = await Otp.find({ email: req.body.new_email });
             if (otpUser.length === 0) {
-                return res.status(401).json({ message: "Expired OTP ! Please Resend OTP" });
+                return res.status(200).json({ message: "Expired OTP ! Please Resend OTP" });
             }
             const lastOtp = otpUser[otpUser.length - 1];
             if (lastOtp.email === req.body.new_email && lastOtp.otp === req.body.otp) {
@@ -357,7 +357,7 @@ const AuthController = {
                 });
             }
             else {
-                return res.status(401).json({
+                return res.status(200).json({
                     message: "OTP INVALID",
                     status: false
                 });
@@ -380,7 +380,7 @@ const AuthController = {
                 });
             }
             else {
-                return res.status(401).json({
+                return res.status(200).json({
                     message: "This account is not exists ! Please Register",
                     status: false
                 });

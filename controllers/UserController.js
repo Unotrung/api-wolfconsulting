@@ -10,12 +10,13 @@ const UserController = {
                 return res.status(200).json({
                     message: "Get List Customer Successfully",
                     users: users,
+                    count: users.length,
                     status: true
                 });
             }
             else {
-                return res.status(401).json({
-                    message: "Get List Customer Failure",
+                return res.status(200).json({
+                    message: "List User EAP Is Empty",
                     status: false
                 });
             }
@@ -36,7 +37,7 @@ const UserController = {
                 });
             }
             else {
-                return res.status(401).json({
+                return res.status(200).json({
                     message: "This account is not exists !",
                     status: false
                 });

@@ -5,6 +5,6 @@ const router = require("express").Router();
 
 router.get("/", UserController.getAllUser);
 router.get("/:id", MiddlewareController.VerifyTokenByMySelf, UserController.getUser);
-router.put("/:id", UserController.updateUser);
+router.put("/:id", MiddlewareController.VerifyTokenByMySelf, UserController.updateUser);
 
 module.exports = router;
