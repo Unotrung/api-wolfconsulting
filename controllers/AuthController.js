@@ -324,34 +324,42 @@ const AuthController = {
         try {
             let PHONE_EMAIL = req.body.phone_email;
             let OTP = req.body.otp;
-            const otpUser = await Otp.find({ phone: PHONE_EMAIL });
-            if (otpUser.length === 0) {
-                return res.status(200).json({
-                    message: "Expired OTP. Please Resend OTP !",
-                    status: false
-                });
-            }
-            const lastOtp = otpUser[otpUser.length - 1];
-            if ((lastOtp.phone === PHONE_EMAIL && lastOtp.otp === OTP)) {
-                const token = jwt.sign(
-                    {
-                        id: lastOtp.id,
-                        phone: lastOtp.phone,
-                    },
-                    process.env.JWT_ACCESS_KEY,
-                    { expiresIn: "1m" }
-                );
-                const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone_email });
-                return res.status(200).json({
-                    message: "OTP VALID",
-                    phone_email: req.body.phone_email,
-                    token: token,
-                    status: true
-                });
+            if (PHONE_EMAIL !== null && OTP !== null && PHONE_EMAIL !== '' && OTP !== '') {
+                const otpUser = await Otp.find({ phone: PHONE_EMAIL });
+                if (otpUser.length === 0) {
+                    return res.status(200).json({
+                        message: "Expired OTP. Please Resend OTP !",
+                        status: false
+                    });
+                }
+                const lastOtp = otpUser[otpUser.length - 1];
+                if ((lastOtp.phone === PHONE_EMAIL && lastOtp.otp === OTP)) {
+                    const token = jwt.sign(
+                        {
+                            id: lastOtp.id,
+                            phone: lastOtp.phone,
+                        },
+                        process.env.JWT_ACCESS_KEY,
+                        { expiresIn: "1m" }
+                    );
+                    const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone_email });
+                    return res.status(200).json({
+                        message: "Successfully. OTP VALID !",
+                        phone_email: req.body.phone_email,
+                        token: token,
+                        status: true
+                    });
+                }
+                else {
+                    return res.status(200).json({
+                        message: "Failure. OTP INVALID !",
+                        status: false
+                    });
+                }
             }
             else {
                 return res.status(200).json({
-                    message: "Failure. OTP INVALID !",
+                    message: "Please enter your email/phone and OTP. Do not leave any fields blank !",
                     status: false
                 });
             }
