@@ -3,7 +3,7 @@ const MiddlewareController = require('../controllers/MiddlewareController');
 
 const router = require("express").Router();
 
-router.get("/generateContract", MiddlewareController.verifyToken, CommonController.generateContract);
-router.get("/generateProviders", MiddlewareController.verifyToken, CommonController.generateProviders);
+router.get("/:id/generateContract", MiddlewareController.VerifyTokenByMySelf, CommonController.generateContract);
+router.get("/:id/generateProviders", MiddlewareController.VerifyTokenByMySelf, CommonController.generateProviders);
 
 module.exports = router;

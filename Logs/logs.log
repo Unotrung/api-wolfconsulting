@@ -31,3 +31,6 @@
 24-03-2022	22::52::41-----Id_Log: 9a5d520f-1a05-4370-92c9-208aad527840 --- Router: /api --- Method: GET --- Message: Cannot access 'ttl' before initialization
 24-03-2022	22::53::27-----Id_Log: b834dda1-6a72-4f7c-9ae0-c4c5ed48919d --- Router: /api --- Method: GET --- Message: Cannot access 'ttl' before initialization
 24-03-2022	22::53::51-----Id_Log: 15722748-562a-4a06-befa-a50d98f1b3f6 --- Router: /api --- Method: GET --- Message: Cannot access 'ttl' before initialization
+28-03-2022	14::37::29-----Id_Log: 3440a463-bd5c-4633-b351-2a0c69cb5536 --- Router: /v1/auth/sendOtp --- Method: POST --- Message: This route dose not exists !
+28-03-2022	15::12::21-----Id_Log: f886e48e-cdfb-434b-adc3-dc0a2986c6b7 --- Router: /v1/auth/verifyOtp --- Method: POST --- Message: This route dose not exists !
+28-03-2022	17::43::33-----Id_Log: 6793a197-cd6e-4d44-a4b7-a5e2608cd766 --- Router: /v1/auth/forgotPassword --- Method: POST --- Message: This route dose not exists !
