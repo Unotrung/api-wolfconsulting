@@ -90,7 +90,10 @@ const AuthController = {
             if (USERNAME !== null && EMAIL !== null && PHONE !== null && USERNAME !== '' && EMAIL !== '' && PHONE !== '') {
                 const otpUser = await Otp.find({ email: EMAIL, phone: PHONE, username: USERNAME });
                 if (otpUser.length === 0) {
-                    return res.status(200).json({ message: "Expired OTP ! Please Resend OTP", status: false });
+                    return res.status(200).json({
+                        message: "Expired OTP. Please Resend OTP !",
+                        status: false
+                    });
                 }
                 const lastOtp = otpUser[otpUser.length - 1];
                 if (lastOtp.phone === PHONE && lastOtp.email === EMAIL && lastOtp.otp === OTP) {
@@ -343,9 +346,9 @@ const AuthController = {
                         process.env.JWT_ACCESS_KEY,
                         { expiresIn: "1m" }
                     );
-                    const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone });
+                    await Otp.deleteMany({ phone: lastOtp.phone });
                     return res.status(200).json({
-                        message: "Successfully. OTP VALID !",
+                        message: "Successfully. OTP VALID",
                         phone_email: req.body.phone_email,
                         token: token,
                         status: true
@@ -353,7 +356,7 @@ const AuthController = {
                 }
                 else {
                     return res.status(200).json({
-                        message: "Failure. OTP INVALID !",
+                        message: "Failure. OTP INVALID",
                         status: false
                     });
                 }
@@ -370,7 +373,7 @@ const AuthController = {
         }
     },
 
-    updatePassword: async (req, res, next) => {
+    resetPassword: async (req, res, next) => {
         try {
             let PHONE_EMAIL = req.body.phone_email;
             let NEW_PASSWORD = req.body.password;
@@ -421,21 +424,36 @@ const AuthController = {
 
     sendOTPEmail: async (req, res, next) => {
         try {
-            const oldEmail = req.body.email;
-            const EMAIL = req.body.new_email;
+            const OLD_EMAIL = req.body.email;
+            const NEW_EMAIL = req.body.new_email;
             const OTP = otpGenerator.generate(6, {
                 digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
             });
-            if (EMAIL !== null && OTP !== null) {
-                const dataTemp = new Otp({ email: EMAIL, otp: OTP });
-                const result = await dataTemp.save();
+            if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '') {
+                const dataTemp = new Otp({ email: NEW_EMAIL, otp: OTP });
+                await dataTemp.save((err) => {
+                    if (!err) {
+                        return res.status(200).json({
+                            message: "Send OTP Successfully",
+                            data: {
+                                email: NEW_EMAIL,
+                                otp: OTP
+                            },
+                            status: true,
+                        });
+                    }
+                    else {
+                        return res.status(200).json({
+                            message: "Send OTP Failure",
+                            status: false,
+                        });
+                    }
+                });
+            }
+            else {
                 return res.status(200).json({
-                    message: "Send OTP Successfully",
-                    data: {
-                        email: EMAIL,
-                        otp: OTP
-                    },
-                    status: true,
+                    message: "Please enter your old email and new email. Do not leave any fields blank !",
+                    status: false
                 });
             }
         }
@@ -446,31 +464,45 @@ const AuthController = {
 
     verifyOTPEmail: async (req, res, next) => {
         try {
-            const oldEmail = req.body.email;
-            const otpUser = await Otp.find({ email: req.body.new_email });
-            if (otpUser.length === 0) {
-                return res.status(200).json({ message: "Expired OTP ! Please Resend OTP" });
-            }
-            const lastOtp = otpUser[otpUser.length - 1];
-            if (lastOtp.email === req.body.new_email && lastOtp.otp === req.body.otp) {
-                const token = jwt.sign(
-                    {
-                        id: lastOtp.id,
-                        email: lastOtp.email,
-                    },
-                    process.env.JWT_ACCESS_KEY,
-                    { expiresIn: "1m" }
-                );
-                const deleteOTP = await Otp.deleteMany({ email: lastOtp.email });
-                return res.status(200).json({
-                    message: "OTP VALID",
-                    token: token,
-                    status: true
-                });
+            const OLD_EMAIL = req.body.email;
+            const NEW_EMAIL = req.body.new_email;
+            const OTP = req.body.otp;
+            if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '' && OTP !== null && OTP !== '') {
+                const otpUser = await Otp.find({ email: NEW_EMAIL });
+                if (otpUser.length === 0) {
+                    return res.status(200).json({
+                        message: "Expired OTP. Please Resend OTP !",
+                        status: false
+                    });
+                }
+                const lastOtp = otpUser[otpUser.length - 1];
+                if (lastOtp.email === NEW_EMAIL && lastOtp.otp === OTP) {
+                    const token = jwt.sign(
+                        {
+                            id: lastOtp.id,
+                            email: lastOtp.email,
+                        },
+                        process.env.JWT_ACCESS_KEY,
+                        { expiresIn: "1m" }
+                    );
+                    await Otp.deleteMany({ email: lastOtp.email });
+                    return res.status(200).json({
+                        message: "Successfully. OTP VALID",
+                        email: NEW_EMAIL,
+                        token: token,
+                        status: true
+                    });
+                }
+                else {
+                    return res.status(200).json({
+                        message: "Failure. OTP INVALID",
+                        status: false
+                    });
+                }
             }
             else {
                 return res.status(200).json({
-                    message: "OTP INVALID",
+                    message: "Please enter your old email, new email and otp code. Do not leave any fields blank !",
                     status: false
                 });
             }
@@ -482,18 +514,43 @@ const AuthController = {
 
     updateEmail: async (req, res, next) => {
         try {
+            const OLD_EMAIL = req.body.email;
+            const NEW_EMAIL = req.body.new_email;
             const token = req.body.token;
-            const user = await Customer.findOne({ email: req.body.email });
-            if (user) {
-                await user.updateOne({ $set: { email: req.body.new_email } });
-                return res.status(200).json({
-                    message: "Update Email Successfully",
-                    status: true
-                });
+            if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '' && token !== null && token !== '') {
+                const user = await Customer.findOne({ email: OLD_EMAIL });
+                if (user) {
+                    await user.updateOne({ $set: { email: NEW_EMAIL } }, (err) => {
+                        if (!err) {
+                            return res.status(201).json({
+                                message: "Update Email Successfully",
+                                status: true
+                            });
+                        }
+                        else {
+                            return res.status(200).json({
+                                message: "Update Email Failure",
+                                status: false
+                            });
+                        }
+                    }).clone().catch((err) => {
+                        return res.status(200).json({
+                            err: err,
+                            messsage: "Something is wrong in update email !",
+                            status: false,
+                        })
+                    });;
+                }
+                else {
+                    return res.status(200).json({
+                        message: "This account is not exists !",
+                        status: false
+                    });
+                }
             }
             else {
                 return res.status(200).json({
-                    message: "This account is not exists ! Please Register",
+                    message: "Please enter your old email, new email and token. Do not leave any fields blank !",
                     status: false
                 });
             }

@@ -11,7 +11,7 @@ router.get("/:id/requestRefreshToken", MiddlewareController.VerifyTokenByMySelf,
 // router.get("/logout", MiddlewareController.verifyToken, AuthController.logout);
 router.post("/forgotPassword", AuthController.forgotPassword);
 router.post("/verifyOtpPassword", AuthController.verifyOtpPassword);
-router.put("/updatePassword", MiddlewareController.VerifyTokenByMySelf, AuthController.updatePassword);
+router.put("/resetPassword", MiddlewareController.VerifyTokenByMySelf, AuthController.resetPassword);
 router.post("/sendOTPEmail", MiddlewareController.VerifyTokenByMySelf, AuthController.sendOTPEmail);
 router.post("/verifyOTPEmail", MiddlewareController.VerifyTokenByMySelf, AuthController.verifyOTPEmail);
 router.put("/updateEmail", MiddlewareController.VerifyTokenByMySelf, MiddlewareController.VerifyTokenByMySelfBody, AuthController.updateEmail);
