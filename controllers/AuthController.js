@@ -371,14 +371,30 @@ const AuthController = {
 
     updatePassword: async (req, res, next) => {
         try {
-            const user = await Customer.findOne({ $or: [{ phone: req.body.phone_email }, { email: req.body.phone_email }] });
+            let PHONE_EMAIL = req.body.phone_email;
+            const user = await Customer.findOne({ $or: [{ phone: PHONE_EMAIL }, { email: PHONE_EMAIL }] });
             if (user) {
                 const salt = await bcrypt.genSalt(10);
                 const hashed = await bcrypt.hash(req.body.password, salt);
-                await user.updateOne({ $set: { password: hashed } });
-                return res.status(200).json({
-                    message: "Update Password Successfully",
-                    status: true
+                await user.updateOne({ $set: { password: hashed } }, (err) => {
+                    if (!err) {
+                        return res.status(201).json({
+                            message: "Update Password Successfully",
+                            status: true
+                        });
+                    }
+                    else {
+                        return res.status(200).json({
+                            message: "Update Password Failure",
+                            status: false
+                        });
+                    }
+                }).clone().catch((err) => {
+                    return res.status(200).json({
+                        err: err,
+                        messsage: "Something is wrong in update password !",
+                        status: false,
+                    })
                 });
             }
             else {
