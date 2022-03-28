@@ -342,7 +342,7 @@ const AuthController = {
                         process.env.JWT_ACCESS_KEY,
                         { expiresIn: "1m" }
                     );
-                    const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone_email });
+                    const deleteOTP = await Otp.deleteMany({ phone: lastOtp.phone });
                     return res.status(200).json({
                         message: "Successfully. OTP VALID !",
                         phone_email: req.body.phone_email,
