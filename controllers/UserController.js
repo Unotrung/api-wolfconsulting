@@ -90,7 +90,7 @@ const UserController = {
                     }
                 }
                 else if (USERNAME !== null && USERNAME !== '') {
-                    await Customer.updateOne({ $set: { username: USERNAME } }, (err) => {
+                    await user.updateOne({ $set: { username: USERNAME } }, (err) => {
                         if (!err) {
                             return res.status(201).json({
                                 message: "Update Username Successfully",
