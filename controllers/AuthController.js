@@ -539,7 +539,7 @@ const AuthController = {
                             messsage: "Something is wrong in update email !",
                             status: false,
                         })
-                    });;
+                    });
                 }
                 else {
                     return res.status(200).json({
