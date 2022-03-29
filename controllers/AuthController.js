@@ -299,7 +299,7 @@ const AuthController = {
                         if (!err) {
                             return res.status(200).json({
                                 message: "Send OTP Successfully",
-                                phone_email: PHONE_EMAIL
+                                phone_email: PHONE_EMAIL,
                                 otp: OTP,
                                 status: true
                             });
