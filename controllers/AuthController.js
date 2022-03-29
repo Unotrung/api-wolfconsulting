@@ -45,7 +45,7 @@ const AuthController = {
                 if (auth) {
                     return res.status(200).json({
                         message: "Email/phone is already exists. Please Login !",
-                        status: true
+                        status: false
                     });
                 }
                 else {
@@ -350,7 +350,7 @@ const AuthController = {
                     await Otp.deleteMany({ phone: lastOtp.phone });
                     return res.status(200).json({
                         message: "Successfully. OTP VALID",
-                        phone_email: req.body.phone_email,
+                        phone_email: PHONE_EMAIL,
                         token: token,
                         status: true
                     });
