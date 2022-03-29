@@ -56,7 +56,7 @@ const UserController = {
             // if ((OLD_PASSWORD !== null && OLD_PASSWORD !== '' && NEW_PASSWORD !== null && NEW_PASSWORD !== '') || (USERNAME !== null && USERNAME !== '')) {
             const user = await Customer.findById(req.params.id);
             if (user) {
-                if (OLD_PASSWORD !== null && OLD_PASSWORD !== '' && NEW_PASSWORD !== null && NEW_PASSWORD !== '') {
+                if (OLD_PASSWORD && NEW_PASSWORD) {
                     const validPassword = await bcrypt.compare(OLD_PASSWORD, user.password);
                     if (!validPassword) {
                         return res.status(200).json({
@@ -89,7 +89,7 @@ const UserController = {
                         });
                     }
                 }
-                else if (USERNAME !== null && USERNAME !== '') {
+                else if (USERNAME) {
                     await user.updateOne({ $set: { username: USERNAME } }, (err) => {
                         if (!err) {
                             return res.status(201).json({

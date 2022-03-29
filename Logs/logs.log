@@ -34,3 +34,4 @@
 28-03-2022	14::37::29-----Id_Log: 3440a463-bd5c-4633-b351-2a0c69cb5536 --- Router: /v1/auth/sendOtp --- Method: POST --- Message: This route dose not exists !
 28-03-2022	15::12::21-----Id_Log: f886e48e-cdfb-434b-adc3-dc0a2986c6b7 --- Router: /v1/auth/verifyOtp --- Method: POST --- Message: This route dose not exists !
 28-03-2022	17::43::33-----Id_Log: 6793a197-cd6e-4d44-a4b7-a5e2608cd766 --- Router: /v1/auth/forgotPassword --- Method: POST --- Message: This route dose not exists !
+29-03-2022	11::16::14-----Id_Log: d93b5668-1027-48b5-a4dc-3c22a3f6519e --- Router: /v1/eap/user/6241d74014683dc217102f63 --- Method: PUT --- Message: data and hash arguments required
