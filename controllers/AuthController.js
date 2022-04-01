@@ -424,6 +424,7 @@ const AuthController = {
 
     sendOTPEmail: async (req, res, next) => {
         try {
+            const PHONE = req.body.phone;
             const OLD_EMAIL = req.body.email;
             const NEW_EMAIL = req.body.new_email;
             const OTP = otpGenerator.generate(6, {
@@ -473,6 +474,7 @@ const AuthController = {
 
     verifyOTPEmail: async (req, res, next) => {
         try {
+            const PHONE = req.body.phone;
             const OLD_EMAIL = req.body.email;
             const NEW_EMAIL = req.body.new_email;
             const OTP = req.body.otp;
@@ -532,6 +534,7 @@ const AuthController = {
 
     updateEmail: async (req, res, next) => {
         try {
+            const PHONE = req.body.phone;
             const OLD_EMAIL = req.body.email;
             const NEW_EMAIL = req.body.new_email;
             const token = req.body.token;
