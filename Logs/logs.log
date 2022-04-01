@@ -35,3 +35,12 @@
 28-03-2022	15::12::21-----Id_Log: f886e48e-cdfb-434b-adc3-dc0a2986c6b7 --- Router: /v1/auth/verifyOtp --- Method: POST --- Message: This route dose not exists !
 28-03-2022	17::43::33-----Id_Log: 6793a197-cd6e-4d44-a4b7-a5e2608cd766 --- Router: /v1/auth/forgotPassword --- Method: POST --- Message: This route dose not exists !
 29-03-2022	11::16::14-----Id_Log: d93b5668-1027-48b5-a4dc-3c22a3f6519e --- Router: /v1/eap/user/6241d74014683dc217102f63 --- Method: PUT --- Message: data and hash arguments required
+29-03-2022	15::34::29-----Id_Log: 2a94c4d7-cb5c-4752-af89-ec297c49de2a --- Router: /v1/bnpl/personal/0999888777 --- Method: GET --- Message: This route dose not exists !
+29-03-2022	15::35::16-----Id_Log: 00ff2a66-0839-4270-b8b4-9e2109996630 --- Router: /v1/bnpl/personal/0999888777 --- Method: GET --- Message: This route dose not exists !
+29-03-2022	15::36::01-----Id_Log: b6888b7a-4a4c-44fa-88aa-764b77fadbf3 --- Router: //v1/bnpl/personal/0981284476 --- Method: GET --- Message: This route dose not exists !
+29-03-2022	15::36::27-----Id_Log: ec2a36f1-1fd2-4763-a2db-03ae231d37de --- Router: //v1/bnpl/personal/0981284476 --- Method: GET --- Message: This route dose not exists !
+29-03-2022	15::37::45-----Id_Log: 57fcf6ca-83c8-4deb-9e99-379ce19a8797 --- Router: //v1/bnpl/personal/0981284476 --- Method: GET --- Message: This route dose not exists !
+29-03-2022	15::37::56-----Id_Log: d648ca34-98fe-48a6-8b46-df384f8e3178 --- Router: /v1/bnpl/personal/0981284476 --- Method: GET --- Message: This route dose not exists !
+29-03-2022	15::39::03-----Id_Log: e2dd1077-42b7-43f5-a09b-9c6507475692 --- Router: /v1/bnpl/personal/0981284476 --- Method: GET --- Message: This route dose not exists !
+29-03-2022	15::40::09-----Id_Log: d29d450b-84d2-4c02-bf3c-491577faeb4c --- Router: /v1/bnpl/personal/0981284476 --- Method: GET --- Message: This route dose not exists !
+29-03-2022	15::40::38-----Id_Log: 82e34808-98fe-47ad-a313-e7c0f28f0749 --- Router: /v1/bnpl/personal/0981284476 --- Method: GET --- Message: This route dose not exists !

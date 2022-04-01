@@ -4,7 +4,6 @@ const RefreshToken = require('../models/eap_refreshtokens');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const otpGenerator = require('otp-generator');
-const { NIL } = require('uuid');
 
 const AuthController = {
 
@@ -431,25 +430,34 @@ const AuthController = {
                 digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
             });
             if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '') {
-                const dataTemp = new Otp({ email: NEW_EMAIL, otp: OTP });
-                await dataTemp.save((err) => {
-                    if (!err) {
-                        return res.status(200).json({
-                            message: "Send OTP Successfully",
-                            data: {
-                                email: NEW_EMAIL,
-                                otp: OTP
-                            },
-                            status: true,
-                        });
-                    }
-                    else {
-                        return res.status(200).json({
-                            message: "Send OTP Failure",
-                            status: false,
-                        });
-                    }
-                });
+                const validEmail = await Customer.findOne({ email: OLD_EMAIL });
+                if (validEmail) {
+                    const dataTemp = new Otp({ email: NEW_EMAIL, otp: OTP });
+                    await dataTemp.save((err) => {
+                        if (!err) {
+                            return res.status(200).json({
+                                message: "Send OTP Successfully",
+                                data: {
+                                    email: NEW_EMAIL,
+                                    otp: OTP
+                                },
+                                status: true,
+                            });
+                        }
+                        else {
+                            return res.status(200).json({
+                                message: "Send OTP Failure",
+                                status: false,
+                            });
+                        }
+                    });
+                }
+                else {
+                    return res.status(200).json({
+                        message: "Cannot find this email to update !",
+                        status: false
+                    });
+                }
             }
             else {
                 return res.status(200).json({
@@ -469,34 +477,43 @@ const AuthController = {
             const NEW_EMAIL = req.body.new_email;
             const OTP = req.body.otp;
             if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '' && OTP !== null && OTP !== '') {
-                const otpUser = await Otp.find({ email: NEW_EMAIL });
-                if (otpUser.length === 0) {
-                    return res.status(200).json({
-                        message: "Expired OTP. Please Resend OTP !",
-                        status: false
-                    });
-                }
-                const lastOtp = otpUser[otpUser.length - 1];
-                if (lastOtp.email === NEW_EMAIL && lastOtp.otp === OTP) {
-                    const token = jwt.sign(
-                        {
-                            id: lastOtp.id,
-                            email: lastOtp.email,
-                        },
-                        process.env.JWT_ACCESS_KEY,
-                        { expiresIn: "1m" }
-                    );
-                    await Otp.deleteMany({ email: lastOtp.email });
-                    return res.status(200).json({
-                        message: "Successfully. OTP VALID",
-                        email: NEW_EMAIL,
-                        token: token,
-                        status: true
-                    });
+                const validEmail = await Customer.findOne({ email: OLD_EMAIL });
+                if (validEmail) {
+                    const otpUser = await Otp.find({ email: NEW_EMAIL });
+                    if (otpUser.length === 0) {
+                        return res.status(200).json({
+                            message: "Expired OTP. Please Resend OTP !",
+                            status: false
+                        });
+                    }
+                    const lastOtp = otpUser[otpUser.length - 1];
+                    if (lastOtp.email === NEW_EMAIL && lastOtp.otp === OTP) {
+                        const token = jwt.sign(
+                            {
+                                id: lastOtp.id,
+                                email: lastOtp.email,
+                            },
+                            process.env.JWT_ACCESS_KEY,
+                            { expiresIn: "5m" }
+                        );
+                        await Otp.deleteMany({ email: lastOtp.email });
+                        return res.status(200).json({
+                            message: "Successfully. OTP VALID",
+                            email: NEW_EMAIL,
+                            token: token,
+                            status: true
+                        });
+                    }
+                    else {
+                        return res.status(200).json({
+                            message: "Failure. OTP INVALID",
+                            status: false
+                        });
+                    }
                 }
                 else {
                     return res.status(200).json({
-                        message: "Failure. OTP INVALID",
+                        message: "Cannot find this email to update !",
                         status: false
                     });
                 }
@@ -544,7 +561,7 @@ const AuthController = {
                 }
                 else {
                     return res.status(200).json({
-                        message: "This account is not exists !",
+                        message: "Cannot find this email to update !",
                         status: false
                     });
                 }
