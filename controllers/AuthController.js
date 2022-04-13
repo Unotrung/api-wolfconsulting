@@ -52,7 +52,13 @@ const AuthController = {
                     const dataTemp = await new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP });
                     await dataTemp.save((err, data) => {
                         if (!err) {
-                            sendMail(EMAIL, 'GET OTP FORM SYSTEM VOOLOO', OTP);
+                            const { otp, ...others } = data._doc;
+                            sendMail(EMAIL, "GET OTP FORM SYSTEM VOOLOO", OTP);
+                            return res.status(200).json({
+                                message: "Send OTP Successfully",
+                                data: { ...others },
+                                status: true
+                            });
                         }
                         else {
                             return res.status(200).json({
