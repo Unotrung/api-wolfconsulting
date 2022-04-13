@@ -4,6 +4,7 @@ const RefreshToken = require('../models/eap_refreshtokens');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const otpGenerator = require('otp-generator');
+const sendMail = require('../helpers/sendMail');
 
 const AuthController = {
 
@@ -51,13 +52,7 @@ const AuthController = {
                     const dataTemp = await new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP });
                     await dataTemp.save((err, data) => {
                         if (!err) {
-                            const { otp, ...others } = data._doc;
-                            return res.status(200).json({
-                                message: "Send OTP Successfully",
-                                data: { ...others },
-                                otp: OTP,
-                                status: true
-                            });
+                            sendMail(EMAIL, 'GET OTP FORM SYSTEM VOOLOO', OTP);
                         }
                         else {
                             return res.status(200).json({
