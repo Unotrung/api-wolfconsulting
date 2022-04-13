@@ -19,12 +19,21 @@ const CommonController = {
 
     generateProviders: async (req, res, next) => {
         try {
-            const providers = await Provider.find({});
-            return res.status(200).json({
-                message: "Get Providers Successfully",
-                data: providers,
-                status: true
-            })
+            const providers = await Provider.find();
+            if (providers.length > 0) {
+                return res.status(200).json({
+                    count: providers.length,
+                    data: providers,
+                    message: "Get list provider success",
+                    status: true
+                })
+            }
+            else {
+                return res.status(200).json({
+                    message: "List provider is empty",
+                    status: false
+                })
+            }
         }
         catch (err) {
             next(err);
