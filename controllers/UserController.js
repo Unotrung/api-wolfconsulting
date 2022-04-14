@@ -86,13 +86,13 @@ const UserController = {
                                 await user.save()
                                     .then((data) => {
                                         return res.status(201).json({
-                                            message: "Update pin successfully",
+                                            message: "Update password successfully",
                                             status: true
                                         })
                                     })
                                     .catch((err) => {
                                         return res.status(409).json({
-                                            message: "Update pin failure",
+                                            message: "Update password failure",
                                             status: false,
                                             errorStatus: err.status || 500,
                                             errorMessage: err.message
