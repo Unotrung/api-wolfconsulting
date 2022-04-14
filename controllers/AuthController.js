@@ -229,7 +229,7 @@ const AuthController = {
                     const auths = await Customer.find();
                     const auth = auths.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
                     if (!auth) {
-                        return res.status(404).json({ message: "Wrong phone. Please try again !", status: false });
+                        return res.status(404).json({ message: "Wrong phone/email. Please try again !", status: false });
                     }
                     const validPassword = await bcrypt.compare(PASSWORD, auth.password);
                     if (!validPassword) {
