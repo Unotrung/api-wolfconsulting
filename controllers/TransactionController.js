@@ -53,7 +53,7 @@ const TransactionController = {
             let id = req.params.id;
             let idTransaction = req.params.idTransaction;
             let data = await Transaction.find({ user: id, _id: idTransaction });
-            if (data) {
+            if (data.length > 0) {
                 return res.status(200).json({
                     message: "Get transaction detail success",
                     data: data,

@@ -53,7 +53,7 @@ const RepaymentController = {
             let id = req.params.id;
             let idRepayment = req.params.idRepayment;
             let data = await Repayment.find({ user: id, _id: idRepayment });
-            if (data) {
+            if (data.length > 0) {
                 return res.status(200).json({
                     message: "Get repayment detail success",
                     data: data,
