@@ -57,11 +57,7 @@ router.post("/register",
     ],
     AuthController.register);
 
-router.post("/login",
-    [
-        check('password').matches(formatPassword).withMessage(errMessagePassword),
-    ],
-    AuthController.login);
+router.post("/login", AuthController.login);
 // router.get("/:id/requestRefreshToken", MiddlewareController.VerifyTokenByMySelf, AuthController.requestRefreshToken);
 // router.get("/logout", MiddlewareController.verifyToken, AuthController.logout);
 router.post("/forgotPassword", AuthController.forgotPassword);
