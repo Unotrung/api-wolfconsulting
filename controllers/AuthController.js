@@ -233,7 +233,7 @@ const AuthController = {
                     }
                     const validPassword = await bcrypt.compare(PASSWORD, auth.password);
                     if (!validPassword) {
-                        return res.status(404).json({ message: "Wrong pin. Please try again !", status: false });
+                        return res.status(404).json({ message: "Wrong password. Please try again !", status: false });
                     }
                     if (auth && validPassword) {
                         const accessToken = AuthController.generateAccessToken(auth);
