@@ -101,13 +101,10 @@ app.use('/v1/eap/common', commonRoute);
 // Handle Error Not Found
 
 app.use((req, res, next) => {
-    // All Not Found errors will be handled centrally here
     next(createError.NotFound('This route dose not exists !'));
 })
 
 app.use((err, req, res, next) => {
-    // Any middleware that fails will run down to this middleware for processing
-    // Log errors in logs.log . file
     logEvents(`Id_Log: ${uuid()} --- Router: ${req.url} --- Method: ${req.method} --- Message: ${err.message}`);
     return res.json({
         status: err.status || 500,
