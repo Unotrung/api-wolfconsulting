@@ -50,8 +50,9 @@ const RepaymentController = {
 
     getRepaymentDetail: async (req, res, next) => {
         try {
+            let id = req.params.id;
             let idRepayment = req.params.idRepayment;
-            let data = await Repayment.findById(idRepayment);
+            let data = await Repayment.find({ user: id, _id: idRepayment });
             if (data) {
                 return res.status(200).json({
                     message: "Get repayment detail success",
@@ -60,7 +61,7 @@ const RepaymentController = {
                 })
             }
             else {
-                return res.status(200).json({
+                return res.status(404).json({
                     message: "This repayment id is not exists",
                     status: false
                 })

@@ -6,11 +6,11 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const createError = require('http-errors');
-const logEvents = require('./helpers/logEvents');
+// const logEvents = require('./helpers/logEvents');
 const { v4: uuid } = require('uuid');
 const compression = require('compression');
 const helmet = require('helmet');
-const { incr, expire, ttl } = require('./helpers/limiter');
+// const { incr, expire, ttl } = require('./helpers/limiter');
 
 const authRoute = require('./routers/AuthRouter');
 const userRoute = require('./routers/UserRouter');
@@ -105,7 +105,7 @@ app.use((req, res, next) => {
 })
 
 app.use((err, req, res, next) => {
-    logEvents(`Id_Log: ${uuid()} --- Router: ${req.url} --- Method: ${req.method} --- Message: ${err.message}`);
+    // logEvents(`Id_Log: ${uuid()} --- Router: ${req.url} --- Method: ${req.method} --- Message: ${err.message}`);
     return res.json({
         status: err.status || 500,
         message: err.message

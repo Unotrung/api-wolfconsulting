@@ -50,8 +50,9 @@ const TransactionController = {
 
     getTransactionDetail: async (req, res, next) => {
         try {
+            let id = req.params.id;
             let idTransaction = req.params.idTransaction;
-            let data = await Transaction.findById(idTransaction);
+            let data = await Transaction.find({ user: id, _id: idTransaction });
             if (data) {
                 return res.status(200).json({
                     message: "Get transaction detail success",
@@ -60,7 +61,7 @@ const TransactionController = {
                 })
             }
             else {
-                return res.status(200).json({
+                return res.status(404).json({
                     message: "This transaction id is not exists",
                     status: false
                 })
