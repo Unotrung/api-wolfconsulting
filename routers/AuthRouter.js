@@ -4,7 +4,7 @@ const { check } = require('express-validator');
 const router = require("express").Router();
 
 const formatPhone = /^(09|03|07|08|05)+([0-9]{8}$)/;
-const formatPassword = /^(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*#?&~^\\-+_\\(\\)]{6,}$/;
+const formatPassword = /^(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*#?&~^\-+_\(\)]{6,}$/;
 const errMessagePhone = 'Invalid phone number format';
 const errMessageMail = 'Invalid email format';
 const errMessageNewMail = 'Invalid new email format';

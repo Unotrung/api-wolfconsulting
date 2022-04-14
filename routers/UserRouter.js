@@ -3,12 +3,14 @@ const UserController = require('../controllers/UserController');
 const { check } = require('express-validator');
 const router = require("express").Router();
 
-const formatPassword = /^(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@$!%*#?&~^\\-+_\\(\\)]{6,}$/;
+const formatPassword = /^(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*#?&~^\-+_\(\)]{6,}$/;
 const errMessagePassword = 'Password must contain at least 1 uppercase letter and 1 number. The minimum password length is 6';
 const errMessageNewPassword = 'New password must contain at least 1 uppercase letter and 1 number. The minimum password length is 6';
 
 router.get("/", UserController.getAllUser);
+
 router.get("/:id", MiddlewareController.verifyTokenByMySelf, UserController.getUser);
+
 router.put("/:id",
     [
         check('username')

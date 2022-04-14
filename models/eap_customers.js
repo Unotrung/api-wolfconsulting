@@ -26,6 +26,6 @@ const eap_customerSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const secret = process.env.SECRET_MONGOOSE;
-bnpl_customerSchema.plugin(encrypt, { secret: secret, encryptedFields: ['username', 'email', 'phone'] });
+eap_customerSchema.plugin(encrypt, { secret: secret, encryptedFields: ['username', 'email', 'phone', 'password'] });
 
 module.exports = mongoose.model('eap_customer', eap_customerSchema);
