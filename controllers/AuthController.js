@@ -341,7 +341,7 @@ const AuthController = {
                     const dataTemp = await new Otp({ phone: PHONE_EMAIL, otp: OTP });
                     await dataTemp.save((err) => {
                         if (!err) {
-                            sendMail(PHONE_EMAIL, "Get OTP From System Voolo", OTP);
+                            sendMail(auth.email, "Get OTP From System Voolo", OTP);
                             return res.status(201).json({
                                 message: "Send otp successfully",
                                 phone_email: PHONE_EMAIL,
