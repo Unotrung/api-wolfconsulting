@@ -74,7 +74,7 @@ const UserController = {
                         if (OLD_PASSWORD && NEW_PASSWORD) {
                             const validPassword = await bcrypt.compare(OLD_PASSWORD, user.password);
                             if (!validPassword) {
-                                return res.status(200).json({
+                                return res.status(404).json({
                                     message: "Your old password is not correct. Please try again !",
                                     status: false
                                 });
