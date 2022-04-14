@@ -123,7 +123,7 @@ const AuthController = {
                             phone: PHONE
                         };
                         await Otp.deleteMany({ phone: lastOtp.phone, email: lastOtp.email });
-                        return res.status(204).json({
+                        return res.status(200).json({
                             message: "Successfully. OTP valid",
                             user: user,
                             status: true
@@ -396,7 +396,7 @@ const AuthController = {
                             { expiresIn: "1m" }
                         );
                         await Otp.deleteMany({ phone: lastOtp.phone });
-                        return res.status(204).json({
+                        return res.status(200).json({
                             message: "Successfully. OTP valid",
                             phone_email: PHONE_EMAIL,
                             token: token,
@@ -572,7 +572,7 @@ const AuthController = {
                                 { expiresIn: "1m" }
                             );
                             await Otp.deleteMany({ email: lastOtp.email });
-                            return res.status(204).json({
+                            return res.status(200).json({
                                 message: "Successfully. OTP valid",
                                 email: NEW_EMAIL,
                                 token: token,
