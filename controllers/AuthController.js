@@ -338,13 +338,12 @@ const AuthController = {
                     });
                 }
                 else {
-                    const dataTemp = await new Otp({ phone: PHONE_EMAIL, otp: OTP });
+                    const dataTemp = await new Otp({ phone: auth.phone, email: auth.email, otp: OTP });
                     await dataTemp.save((err) => {
                         if (!err) {
                             sendMail(auth.email, "Get OTP From System Voolo", OTP);
                             return res.status(201).json({
                                 message: "Send otp successfully",
-                                phone_email: PHONE_EMAIL,
                                 status: true
                             });
                         }
@@ -376,7 +375,7 @@ const AuthController = {
             let PHONE_EMAIL = req.body.phone_email;
             let OTP = req.body.otp;
             if (PHONE_EMAIL !== null && OTP !== null && PHONE_EMAIL !== '' && OTP !== '') {
-                const otpUser = await Otp.find({ phone: PHONE_EMAIL });
+                const otpUser = await Otp.find({ $or: [{ phone: PHONE_EMAIL }, { email: PHONE_EMAIL }] });
                 if (otpUser.length === 0) {
                     return res.status(401).json({
                         message: "Expired otp. Please resend otp !",
@@ -385,20 +384,19 @@ const AuthController = {
                 }
                 else {
                     const lastOtp = otpUser[otpUser.length - 1];
-                    if ((lastOtp.phone === PHONE_EMAIL && lastOtp.otp === OTP)) {
+                    if ((lastOtp.phone === PHONE_EMAIL || lastOtp.email === PHONE_EMAIL) && lastOtp.otp === OTP) {
                         const token = jwt.sign(
                             {
                                 id: lastOtp.id,
                                 phone: lastOtp.phone,
-                                email: lastOtp.phone,
+                                email: lastOtp.email,
                             },
                             process.env.JWT_ACCESS_KEY,
                             { expiresIn: "1m" }
                         );
-                        await Otp.deleteMany({ phone: lastOtp.phone });
+                        await Otp.deleteMany({ $or: [{ phone: lastOtp.phone }, { email: lastOtp.email }] });
                         return res.status(200).json({
                             message: "Successfully. OTP valid",
-                            phone_email: PHONE_EMAIL,
                             token: token,
                             status: true
                         });
