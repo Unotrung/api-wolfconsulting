@@ -1,6 +1,6 @@
 const AuthController = require("../controllers/AuthController");
 const MiddlewareController = require("../controllers/MiddlewareController");
-const { check } = require('express-validator');
+const { check, body } = require('express-validator');
 const router = require("express").Router();
 
 const formatPhone = /^(09|03|07|08|05)+([0-9]{8}$)/;
@@ -12,50 +12,50 @@ const errMessagePassword = 'Password must contain at least 1 uppercase letter an
 
 router.post("/sendOtp",
     [
-        check('username')
+        body('username')
             .isLength({ min: 3 }).withMessage('Minimum length of username is 3')
             .isLength({ max: 255 }).withMessage('Maximum length of username is 255'),
 
-        check('email')
+        body('email')
             .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
             .isEmail().withMessage(errMessageMail),
 
-        check('phone').matches(formatPhone).withMessage(errMessagePhone),
+        body('phone').matches(formatPhone).withMessage(errMessagePhone),
     ],
-    AuthController.sendOtp);
+    MiddlewareController.validateRequestSchema, AuthController.sendOtp);
 
 router.post("/verifyOtp",
     [
-        check('username')
+        body('username')
             .isLength({ min: 3 }).withMessage('Minimum length of username is 3')
             .isLength({ max: 255 }).withMessage('Maximum length of username is 255'),
 
-        check('email')
+        body('email')
             .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
             .isEmail().withMessage(errMessageMail),
 
-        check('phone').matches(formatPhone).withMessage(errMessagePhone),
+        body('phone').matches(formatPhone).withMessage(errMessagePhone),
     ],
-    AuthController.verifyOtp);
+    MiddlewareController.validateRequestSchema, AuthController.verifyOtp);
 
 router.post("/register",
     [
-        check('username')
+        body('username')
             .isLength({ min: 3 }).withMessage('Minimum length of username is 3')
             .isLength({ max: 255 }).withMessage('Maximum length of username is 255'),
 
-        check('email')
+        body('email')
             .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
             .isEmail().withMessage(errMessageMail),
 
-        check('phone').matches(formatPhone).withMessage(errMessagePhone),
+        body('phone').matches(formatPhone).withMessage(errMessagePhone),
 
-        check('password').matches(formatPassword).withMessage(errMessagePassword),
+        body('password').matches(formatPassword).withMessage(errMessagePassword),
     ],
-    AuthController.register);
+    MiddlewareController.validateRequestSchema, AuthController.register);
 
 router.post("/login", AuthController.login);
 // router.get("/:id/requestRefreshToken", MiddlewareController.VerifyTokenByMySelf, AuthController.requestRefreshToken);
@@ -67,50 +67,50 @@ router.post("/verifyOtpPassword", AuthController.verifyOtpPassword);
 
 router.put("/resetPassword",
     [
-        check('password').matches(formatPassword).withMessage(errMessagePassword),
+        body('password').matches(formatPassword).withMessage(errMessagePassword),
     ],
-    MiddlewareController.verifyTokenByMySelf, AuthController.resetPassword);
+    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, AuthController.resetPassword);
 
 router.post("/sendOTPEmail",
     [
-        check('email')
+        body('email')
             .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
             .isEmail().withMessage(errMessageMail),
 
-        check('new_email')
+        body('new_email')
             .isLength({ min: 13 }).withMessage('Minimum length of new email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of new email is 255')
             .isEmail().withMessage(errMessageNewMail),
     ],
-    MiddlewareController.verifyTokenByMySelf, AuthController.sendOTPEmail);
+    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, AuthController.sendOTPEmail);
 
 router.post("/verifyOTPEmail",
     [
-        check('email')
+        body('email')
             .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
             .isEmail().withMessage(errMessageMail),
 
-        check('new_email')
+        body('new_email')
             .isLength({ min: 13 }).withMessage('Minimum length of new email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of new email is 255')
             .isEmail().withMessage(errMessageNewMail),
     ],
-    MiddlewareController.verifyTokenByMySelf, AuthController.verifyOTPEmail);
+    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, AuthController.verifyOTPEmail);
 
 router.put("/updateEmail",
     [
-        check('email')
+        body('email')
             .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
             .isEmail().withMessage(errMessageMail),
 
-        check('new_email')
+        body('new_email')
             .isLength({ min: 13 }).withMessage('Minimum length of new email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of new email is 255')
             .isEmail().withMessage(errMessageNewMail),
     ],
-    MiddlewareController.verifyTokenByMySelf, MiddlewareController.verifyTokenByMySelfBody, AuthController.updateEmail);
+    MiddlewareController.verifyTokenByMySelf, MiddlewareController.verifyTokenByMySelfBody, MiddlewareController.validateRequestSchema, AuthController.updateEmail);
 
 module.exports = router;

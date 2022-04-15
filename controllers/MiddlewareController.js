@@ -84,10 +84,11 @@ const MiddlewareController = {
     validateRequestSchema: (req, res, next) => {
         try {
             const errors = validationResult(req);
-            if (!errors.isEmpty()) {
+            if (errors.errors.length > 0) {
                 return res.status(400).json({
-                    errors: errors.array()
-                })
+                    message: errors.errors[0].msg,
+                    status: false
+                });
             }
             else {
                 next();
