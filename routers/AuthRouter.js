@@ -60,6 +60,7 @@ router.post("/register",
 router.post("/login", AuthController.login);
 // router.get("/:id/requestRefreshToken", MiddlewareController.VerifyTokenByMySelf, AuthController.requestRefreshToken);
 // router.get("/logout", MiddlewareController.verifyToken, AuthController.logout);
+
 router.post("/forgotPassword", AuthController.forgotPassword);
 
 router.post("/verifyOtpPassword", AuthController.verifyOtpPassword);

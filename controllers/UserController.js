@@ -1,6 +1,5 @@
 const Customer = require('../models/eap_customers');
 const bcrypt = require('bcrypt');
-const { validationResult } = require('express-validator');
 
 const UserController = {
 
@@ -60,58 +59,31 @@ const UserController = {
             let OLD_PASSWORD = req.body.password;
             let NEW_PASSWORD = req.body.new_password;
             let USERNAME = req.body.username;
-            const validData = validationResult(req);
-            if (validData.errors.length > 0) {
-                return res.status(400).json({
-                    message: validData.errors[0].msg,
-                    status: false
-                });
-            }
-            else {
-                const user = await Customer.findById(req.params.id);
-                if ((OLD_PASSWORD !== null && OLD_PASSWORD !== '' && NEW_PASSWORD !== null && NEW_PASSWORD !== '') || (USERNAME !== null && USERNAME !== '')) {
-                    if (user) {
-                        if (OLD_PASSWORD && NEW_PASSWORD) {
-                            const validPassword = await bcrypt.compare(OLD_PASSWORD, user.password);
-                            if (!validPassword) {
-                                return res.status(404).json({
-                                    message: "Your old password is not correct. Please try again !",
-                                    status: false
-                                });
-                            }
-                            else {
-                                const salt = await bcrypt.genSalt(10);
-                                const hashed = await bcrypt.hash(NEW_PASSWORD, salt);
-                                user.password = hashed;
-                                await user.save()
-                                    .then((data) => {
-                                        return res.status(201).json({
-                                            message: "Update password successfully",
-                                            status: true
-                                        })
-                                    })
-                                    .catch((err) => {
-                                        return res.status(409).json({
-                                            message: "Update password failure",
-                                            status: false,
-                                            errorStatus: err.status || 500,
-                                            errorMessage: err.message
-                                        })
-                                    })
-                            }
+            const user = await Customer.findById(req.params.id);
+            if ((OLD_PASSWORD !== null && OLD_PASSWORD !== '' && NEW_PASSWORD !== null && NEW_PASSWORD !== '') || (USERNAME !== null && USERNAME !== '')) {
+                if (user) {
+                    if (OLD_PASSWORD && NEW_PASSWORD) {
+                        const validPassword = await bcrypt.compare(OLD_PASSWORD, user.password);
+                        if (!validPassword) {
+                            return res.status(404).json({
+                                message: "Your old password is not correct. Please try again !",
+                                status: false
+                            });
                         }
-                        else if (USERNAME) {
-                            user.username = USERNAME;
+                        else {
+                            const salt = await bcrypt.genSalt(10);
+                            const hashed = await bcrypt.hash(NEW_PASSWORD, salt);
+                            user.password = hashed;
                             await user.save()
                                 .then((data) => {
                                     return res.status(201).json({
-                                        message: "Update username successfully",
+                                        message: "Update password successfully",
                                         status: true
-                                    });
+                                    })
                                 })
                                 .catch((err) => {
                                     return res.status(409).json({
-                                        message: "Update username failure",
+                                        message: "Update password failure",
                                         status: false,
                                         errorStatus: err.status || 500,
                                         errorMessage: err.message
@@ -119,19 +91,37 @@ const UserController = {
                                 })
                         }
                     }
-                    else {
-                        return res.status(404).json({
-                            message: "This account is not exists !",
-                            status: false
-                        });
+                    else if (USERNAME) {
+                        user.username = USERNAME;
+                        await user.save()
+                            .then((data) => {
+                                return res.status(201).json({
+                                    message: "Update username successfully",
+                                    status: true
+                                });
+                            })
+                            .catch((err) => {
+                                return res.status(409).json({
+                                    message: "Update username failure",
+                                    status: false,
+                                    errorStatus: err.status || 500,
+                                    errorMessage: err.message
+                                })
+                            })
                     }
                 }
                 else {
-                    return res.status(400).json({
-                        message: "Please enter your old password and new password or username !",
+                    return res.status(404).json({
+                        message: "This account is not exists !",
                         status: false
                     });
                 }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your old password and new password or username !",
+                    status: false
+                });
             }
         }
         catch (err) {

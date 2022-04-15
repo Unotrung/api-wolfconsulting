@@ -41,51 +41,42 @@ const AuthController = {
             const OTP = otpGenerator.generate(6, {
                 digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
             });
-            const validData = validationResult(req);
-            if (validData.errors.length > 0) {
-                return res.status(400).json({
-                    message: validData.errors[0].msg,
-                    status: false
-                });
-            }
-            else {
-                if (USERNAME !== null && EMAIL !== null && PHONE !== null && USERNAME !== '' && EMAIL !== '' && PHONE !== '') {
-                    const customers = await Customer.find();
-                    const customer = customers.find(x => x.phone === PHONE || x.email === EMAIL);
-                    if (customer) {
-                        return res.status(409).json({
-                            message: "Email/Phone is already exists. Please login !",
-                            status: false
-                        });
-                    }
-                    else {
-                        const dataTemp = await new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP });
-                        await dataTemp.save()
-                            .then((data) => {
-                                const { otp, __v, ...others } = data._doc;
-                                sendMail(EMAIL, "Get OTP From System Voolo", OTP);
-                                return res.status(201).json({
-                                    message: "Send otp successfully",
-                                    data: { ...others },
-                                    status: true
-                                });
-                            })
-                            .catch((err) => {
-                                return res.status(409).json({
-                                    message: "Send otp failure",
-                                    status: false,
-                                    errorStatus: err.status || 500,
-                                    errorMessage: err.message
-                                })
-                            });
-                    }
-                }
-                else {
-                    return res.status(400).json({
-                        message: "Please enter your username, your email and your phone. Do not leave any fields blank !",
+            if (USERNAME !== null && EMAIL !== null && PHONE !== null && USERNAME !== '' && EMAIL !== '' && PHONE !== '') {
+                const customers = await Customer.find();
+                const customer = customers.find(x => x.phone === PHONE || x.email === EMAIL);
+                if (customer) {
+                    return res.status(409).json({
+                        message: "Email/Phone is already exists. Please login !",
                         status: false
                     });
                 }
+                else {
+                    const dataTemp = await new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP });
+                    await dataTemp.save()
+                        .then((data) => {
+                            const { otp, __v, ...others } = data._doc;
+                            sendMail(EMAIL, "Get OTP From System Voolo", OTP);
+                            return res.status(201).json({
+                                message: "Send otp successfully",
+                                data: { ...others },
+                                status: true
+                            });
+                        })
+                        .catch((err) => {
+                            return res.status(409).json({
+                                message: "Send otp failure",
+                                status: false,
+                                errorStatus: err.status || 500,
+                                errorMessage: err.message
+                            })
+                        });
+                }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your username, your email and your phone. Do not leave any fields blank !",
+                    status: false
+                });
             }
         }
         catch (err) {
@@ -99,49 +90,40 @@ const AuthController = {
             let PHONE = req.body.phone;
             let USERNAME = req.body.username;
             let OTP = req.body.otp;
-            const validData = validationResult(req);
-            if (validData.errors.length > 0) {
-                return res.status(400).json({
-                    message: validData.errors[0].msg,
-                    status: false
-                });
-            }
-            else {
-                if (USERNAME !== null && EMAIL !== null && PHONE !== null && USERNAME !== '' && EMAIL !== '' && PHONE !== '') {
-                    const otpUser = await Otp.find({ email: EMAIL, phone: PHONE, username: USERNAME });
-                    if (otpUser.length === 0) {
-                        return res.status(401).json({
-                            message: "Expired otp. Please resend otp !",
-                            status: false
-                        });
-                    }
-                    const lastOtp = otpUser[otpUser.length - 1];
-                    if (lastOtp.phone === PHONE && lastOtp.email === EMAIL && lastOtp.otp === OTP) {
-                        let user = {
-                            username: USERNAME,
-                            email: EMAIL,
-                            phone: PHONE
-                        };
-                        await Otp.deleteMany({ phone: lastOtp.phone, email: lastOtp.email });
-                        return res.status(200).json({
-                            message: "Successfully. OTP valid",
-                            user: user,
-                            status: true
-                        });
-                    }
-                    else {
-                        return res.status(404).json({
-                            message: "Failure. OTP invalid",
-                            status: false
-                        });
-                    }
-                }
-                else {
-                    return res.status(400).json({
-                        message: "Please enter your username, your email and your phone. Do not leave any fields blank !",
+            if (USERNAME !== null && EMAIL !== null && PHONE !== null && USERNAME !== '' && EMAIL !== '' && PHONE !== '') {
+                const otpUser = await Otp.find({ email: EMAIL, phone: PHONE, username: USERNAME });
+                if (otpUser.length === 0) {
+                    return res.status(401).json({
+                        message: "Expired otp. Please resend otp !",
                         status: false
                     });
                 }
+                const lastOtp = otpUser[otpUser.length - 1];
+                if (lastOtp.phone === PHONE && lastOtp.email === EMAIL && lastOtp.otp === OTP) {
+                    let user = {
+                        username: USERNAME,
+                        email: EMAIL,
+                        phone: PHONE
+                    };
+                    await Otp.deleteMany({ phone: lastOtp.phone, email: lastOtp.email });
+                    return res.status(200).json({
+                        message: "Successfully. OTP valid",
+                        user: user,
+                        status: true
+                    });
+                }
+                else {
+                    return res.status(404).json({
+                        message: "Failure. OTP invalid",
+                        status: false
+                    });
+                }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your username, your email and your phone. Do not leave any fields blank !",
+                    status: false
+                });
             }
         }
         catch (err) {
@@ -155,57 +137,48 @@ const AuthController = {
             let email = req.body.email;
             let phone = req.body.phone;
             let password = req.body.password;
-            const validData = validationResult(req);
-            if (validData.errors.length > 0) {
-                return res.status(400).json({
-                    message: validData.errors[0].msg,
-                    status: false
-                });
-            }
-            else {
-                if (username !== null && username !== '' && email !== null && email !== '' && phone !== null && phone !== '' && password !== null && password !== '') {
-                    const auths = await Customer.find();
-                    const auth = auths.find(x => x.phone === phone || x.email === email);
-                    if (auth) {
-                        return res.status(409).json({
-                            message: "This account is already exists. Please login !",
-                        });
-                    }
-                    else {
-                        const salt = await bcrypt.genSalt(10);
-                        const hashed = await bcrypt.hash(password, salt);
-                        const newUser = await new Customer({
-                            username: username,
-                            email: email,
-                            phone: phone,
-                            password: hashed
-                        });
-                        await newUser.save((err, data) => {
-                            if (!err) {
-                                const { password, __v, ...others } = data._doc;
-                                return res.status(201).json({
-                                    message: "Register successfully",
-                                    data: { ...others },
-                                    status: true
-                                });
-                            }
-                            else {
-                                return res.status(409).json({
-                                    message: "Register failure",
-                                    status: false,
-                                    errorStatus: err.status || 500,
-                                    errorMessage: err.message
-                                });
-                            }
-                        });
-                    }
-                }
-                else {
-                    return res.status(400).json({
-                        message: "Please enter your username, email, phone and password. Do not leave any fields blank !",
-                        status: false
+            if (username !== null && username !== '' && email !== null && email !== '' && phone !== null && phone !== '' && password !== null && password !== '') {
+                const auths = await Customer.find();
+                const auth = auths.find(x => x.phone === phone || x.email === email);
+                if (auth) {
+                    return res.status(409).json({
+                        message: "This account is already exists. Please login !",
                     });
                 }
+                else {
+                    const salt = await bcrypt.genSalt(10);
+                    const hashed = await bcrypt.hash(password, salt);
+                    const newUser = await new Customer({
+                        username: username,
+                        email: email,
+                        phone: phone,
+                        password: hashed
+                    });
+                    await newUser.save((err, data) => {
+                        if (!err) {
+                            const { password, __v, ...others } = data._doc;
+                            return res.status(201).json({
+                                message: "Register successfully",
+                                data: { ...others },
+                                status: true
+                            });
+                        }
+                        else {
+                            return res.status(409).json({
+                                message: "Register failure",
+                                status: false,
+                                errorStatus: err.status || 500,
+                                errorMessage: err.message
+                            });
+                        }
+                    });
+                }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your username, email, phone and password. Do not leave any fields blank !",
+                    status: false
+                });
             }
         }
         catch (err) {
@@ -217,50 +190,41 @@ const AuthController = {
         try {
             let PHONE_EMAIL = req.body.phone_email;
             let PASSWORD = req.body.password;
-            const validData = validationResult(req);
-            if (validData.errors.length > 0) {
-                return res.status(400).json({
-                    message: validData.errors[0].msg,
-                    status: false
-                });
-            }
-            else {
-                if (PHONE_EMAIL !== null && PHONE_EMAIL !== '' && PASSWORD !== null && PASSWORD !== '') {
-                    const auths = await Customer.find();
-                    const auth = auths.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
-                    if (!auth) {
-                        return res.status(404).json({ message: "Wrong phone/email. Please try again !", status: false });
-                    }
-                    const validPassword = await bcrypt.compare(PASSWORD, auth.password);
-                    if (!validPassword) {
-                        return res.status(404).json({ message: "Wrong password. Please try again !", status: false });
-                    }
-                    if (auth && validPassword) {
-                        const accessToken = AuthController.generateAccessToken(auth);
-                        const refreshToken = AuthController.generateRefreshToken(auth);
-                        const refreshTokens = await new RefreshToken({ refreshToken: refreshToken });
-                        await refreshTokens.save();
-                        res.cookie("refreshToken", refreshToken, {
-                            httpOnly: true,
-                            secure: false,
-                            path: '/',
-                            sameSite: 'strict',
-                        });
-                        const { password, __v, ...others } = auth._doc;
-                        return res.status(200).json({
-                            message: "Login successfully",
-                            data: { ...others },
-                            token: accessToken,
-                            status: true
-                        });
-                    }
+            if (PHONE_EMAIL !== null && PHONE_EMAIL !== '' && PASSWORD !== null && PASSWORD !== '') {
+                const auths = await Customer.find();
+                const auth = auths.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
+                if (!auth) {
+                    return res.status(404).json({ message: "Wrong phone/email. Please try again !", status: false });
                 }
-                else {
-                    return res.status(400).json({
-                        message: "Please enter your email/phone and password. Do not leave any fields blank !",
-                        status: false
+                const validPassword = await bcrypt.compare(PASSWORD, auth.password);
+                if (!validPassword) {
+                    return res.status(404).json({ message: "Wrong password. Please try again !", status: false });
+                }
+                if (auth && validPassword) {
+                    const accessToken = AuthController.generateAccessToken(auth);
+                    const refreshToken = AuthController.generateRefreshToken(auth);
+                    const refreshTokens = await new RefreshToken({ refreshToken: refreshToken });
+                    await refreshTokens.save();
+                    res.cookie("refreshToken", refreshToken, {
+                        httpOnly: true,
+                        secure: false,
+                        path: '/',
+                        sameSite: 'strict',
+                    });
+                    const { password, __v, ...others } = auth._doc;
+                    return res.status(200).json({
+                        message: "Login successfully",
+                        data: { ...others },
+                        token: accessToken,
+                        status: true
                     });
                 }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your email/phone and password. Do not leave any fields blank !",
+                    status: false
+                });
             }
         }
         catch (err) {
@@ -496,23 +460,32 @@ const AuthController = {
                     const emails = await Customer.find();
                     const validEmail = emails.find(x => x.email === OLD_EMAIL);
                     if (validEmail) {
-                        const dataTemp = new Otp({ email: NEW_EMAIL, otp: OTP });
-                        await dataTemp.save((err) => {
-                            if (!err) {
-                                sendMail(NEW_EMAIL, "Get OTP From System Voolo", OTP);
-                                return res.status(200).json({
-                                    message: "Send otp successfully",
-                                    email: NEW_EMAIL,
-                                    status: true,
-                                });
-                            }
-                            else {
-                                return res.status(409).json({
-                                    message: "Send otp failure",
-                                    status: false,
-                                });
-                            }
-                        });
+                        const isExists = emails.find(x => x.email === NEW_EMAIL);
+                        if (OLD_EMAIL !== NEW_EMAIL && !isExists) {
+                            const dataTemp = new Otp({ email: NEW_EMAIL, otp: OTP });
+                            await dataTemp.save((err) => {
+                                if (!err) {
+                                    sendMail(NEW_EMAIL, "Get OTP From System Voolo", OTP);
+                                    return res.status(200).json({
+                                        message: "Send otp successfully",
+                                        email: NEW_EMAIL,
+                                        status: true,
+                                    });
+                                }
+                                else {
+                                    return res.status(409).json({
+                                        message: "Send otp failure",
+                                        status: false,
+                                    });
+                                }
+                            });
+                        }
+                        else {
+                            return res.status(409).json({
+                                message: "This email is exists. Please try again !",
+                                status: false
+                            });
+                        }
                     }
                     else {
                         return res.status(404).json({

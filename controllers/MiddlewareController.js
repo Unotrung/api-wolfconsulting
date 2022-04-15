@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { validationResult } = require('express-validator');
 
 const MiddlewareController = {
 
@@ -79,6 +80,23 @@ const MiddlewareController = {
             next(err);
         }
     },
+
+    validateRequestSchema: (req, res, next) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    errors: errors.array()
+                })
+            }
+            else {
+                next();
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    }
 
 }
 
