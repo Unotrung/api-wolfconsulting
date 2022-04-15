@@ -43,14 +43,21 @@ const AuthController = {
             });
             if (USERNAME !== null && EMAIL !== null && PHONE !== null && USERNAME !== '' && EMAIL !== '' && PHONE !== '') {
                 const customers = await Customer.find();
-                const customer = customers.find(x => x.phone === PHONE || x.email === EMAIL);
-                if (customer) {
+                const validPhone = customers.find(x => x.phone === PHONE);
+                if (validPhone) {
                     return res.status(409).json({
-                        message: "Email/Phone is already exists. Please login !",
+                        message: "Phone is already exists. Please login !",
                         status: false
                     });
                 }
-                else {
+                const validEmail = customers.find(x => x.email === EMAIL);
+                if (validEmail) {
+                    return res.status(409).json({
+                        message: "Email is already exists. Please login !",
+                        status: false
+                    });
+                }
+                if (!validPhone && !validEmail) {
                     const dataTemp = await new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP });
                     await dataTemp.save()
                         .then((data) => {
