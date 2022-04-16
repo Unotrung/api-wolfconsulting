@@ -10,9 +10,6 @@ const sendMail = async (mail, title, content) => {
             user: process.env.USER_EMAIL,
             pass: process.env.PASSWORD_EMAIL,
         },
-        tls: {
-            rejectUnauthorized: false,
-        }
     });
 
     let mailOptions = {
@@ -25,17 +22,17 @@ const sendMail = async (mail, title, content) => {
 
     await transporter.sendMail(mailOptions, (err) => {
         if (err) {
-            return res.status(500).json({
+            return {
                 message: `Fail to send email to ${mail}!`,
                 status: false,
                 err: err
-            });
+            };
         }
         else {
-            return res.status(200).json({
+            return {
                 message: `Success to send email to ${mail}!`,
                 status: true,
-            });
+            };
         }
     });
 }
