@@ -12,13 +12,13 @@ router.get("/", MiddlewareController.verifyToken, UserController.getAllUser);
 router.get("/:id", MiddlewareController.verifyTokenByMySelf, UserController.getUser);
 
 router.put("/:id",
-    [
-        body('username')
-            .isLength({ min: 3 }).withMessage('Minimum length of username is 3')
-            .isLength({ max: 255 }).withMessage('Maximum length of username is 255'),
-        body('password').matches(formatPassword).withMessage(errMessagePassword),
-        body('new_password').matches(formatPassword).withMessage(errMessageNewPassword),
-    ],
+    // [
+    //     body('username')
+    //         .isLength({ min: 3 }).withMessage('Minimum length of username is 3')
+    //         .isLength({ max: 255 }).withMessage('Maximum length of username is 255'),
+    //     body('password').matches(formatPassword).withMessage(errMessagePassword),
+    //     body('new_password').matches(formatPassword).withMessage(errMessageNewPassword),
+    // ],
     MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, UserController.updateUser);
 
 module.exports = router;
