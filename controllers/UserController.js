@@ -71,24 +71,32 @@ const UserController = {
                             });
                         }
                         else {
-                            const salt = await bcrypt.genSalt(10);
-                            const hashed = await bcrypt.hash(NEW_PASSWORD, salt);
-                            user.password = hashed;
-                            await user.save()
-                                .then((data) => {
-                                    return res.status(201).json({
-                                        message: "Update password successfully",
-                                        status: true
+                            if (OLD_PASSWORD === NEW_PASSWORD) {
+                                return res.status(400).json({
+                                    message: "Old password and new password are the same. Please try again !",
+                                    status: false
+                                });
+                            }
+                            else {
+                                const salt = await bcrypt.genSalt(10);
+                                const hashed = await bcrypt.hash(NEW_PASSWORD, salt);
+                                user.password = hashed;
+                                await user.save()
+                                    .then((data) => {
+                                        return res.status(201).json({
+                                            message: "Update password successfully",
+                                            status: true
+                                        })
                                     })
-                                })
-                                .catch((err) => {
-                                    return res.status(409).json({
-                                        message: "Update password failure",
-                                        status: false,
-                                        errorStatus: err.status || 500,
-                                        errorMessage: err.message
+                                    .catch((err) => {
+                                        return res.status(409).json({
+                                            message: "Update password failure",
+                                            status: false,
+                                            errorStatus: err.status || 500,
+                                            errorMessage: err.message
+                                        })
                                     })
-                                })
+                            }
                         }
                     }
                     else if (USERNAME) {
