@@ -198,11 +198,12 @@ const AuthController = {
             let PHONE_EMAIL = req.body.phone_email;
             let PASSWORD = req.body.password;
             if (PHONE_EMAIL !== null && PHONE_EMAIL !== '' && PASSWORD !== null && PASSWORD !== '') {
-                const auths = await Customer.find();
-                const isBlock = auths.find(x => x.deleted === true && x.deletedAt !== null);
+                const deletedUser = await Customer.findDeleted();
+                const isBlock = deletedUser.find(x => x.deleted === Boolean(true) && x.deletedAt !== null);
                 if (isBlock) {
                     return res.status(403).json({ message: "This phone/email is blocked", status: false });
                 }
+                const auths = await Customer.find();
                 const auth = auths.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
                 if (!auth) {
                     return res.status(404).json({ message: "Wrong phone/email. Please try again !", status: false });

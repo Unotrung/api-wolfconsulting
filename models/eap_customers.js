@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const encrypt = require('mongoose-encryption');
 const dotenv = require('dotenv');
+const mongooseDelete = require('mongoose-delete');
 
 dotenv.config();
 
@@ -27,5 +28,8 @@ const eap_customerSchema = new mongoose.Schema({
 
 const secret = process.env.SECRET_MONGOOSE;
 eap_customerSchema.plugin(encrypt, { secret: secret, encryptedFields: ['username', 'email', 'phone', 'password'] });
+
+// Add plugin
+eap_customerSchema.plugin(mongooseDelete, { deletedAt: true, overrideMethods: 'all' }); // Soft Delete
 
 module.exports = mongoose.model('eap_customer', eap_customerSchema);
