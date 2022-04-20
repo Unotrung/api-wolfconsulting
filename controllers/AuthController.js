@@ -210,6 +210,7 @@ const AuthController = {
                 }
                 const validPassword = await bcrypt.compare(PASSWORD, auth.password);
                 if (!validPassword) {
+                    await auth.updateOne({ $inc: { loginAttempts: 1 } });
                     return res.status(404).json({ message: "Wrong password. Please try again !", status: false });
                 }
                 if (auth && validPassword) {

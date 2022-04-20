@@ -23,6 +23,14 @@ const eap_customerSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Password is required'],
     },
+    loginAttempts: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    lockUntil: {
+        type: Number
+    }
 
 }, { timestamps: true });
 
