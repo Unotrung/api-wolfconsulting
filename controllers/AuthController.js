@@ -6,6 +6,9 @@ const jwt = require('jsonwebtoken');
 const otpGenerator = require('otp-generator');
 const sendMail = require('../helpers/sendMail');
 const { validationResult } = require('express-validator');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const AuthController = {
 
@@ -208,12 +211,22 @@ const AuthController = {
                 if (!auth) {
                     return res.status(404).json({ message: "Wrong phone/email. Please try again !", status: false });
                 }
+                else if (auth) {
+                    if (auth.lockUntil && auth.lockUntil < Date.now()) {
+                        await auth.updateOne({ $set: { loginAttempts: 0 }, $unset: { lockUntil: 1 } })
+                    }
+                }
                 const validPassword = await bcrypt.compare(PASSWORD, auth.password);
                 if (!validPassword) {
-                    await auth.updateOne({ $inc: { loginAttempts: 1 } });
-                    return res.status(404).json({ message: "Wrong password. Please try again !", status: false });
+                    if (auth.loginAttempts === 5 && auth.lockUntil > Date.now()) {
+                        return res.status(404).json({ message: "This account is block 24h. Please try again !", status: false });
+                    }
+                    else if (auth.loginAttempts < 5) {
+                        await auth.updateOne({ $set: { lockUntil: Date.now() + 24 * 60 * 60 * 1000 }, $inc: { loginAttempts: 1 } });
+                        return res.status(404).json({ message: "Wrong password. Please try again !", status: false });
+                    }
                 }
-                if (auth && validPassword) {
+                if (auth && validPassword && auth.loginAttempts !== 5) {
                     const accessToken = AuthController.generateAccessToken(auth);
                     const refreshToken = AuthController.generateRefreshToken(auth);
                     const refreshTokens = await new RefreshToken({ refreshToken: refreshToken });
@@ -231,6 +244,9 @@ const AuthController = {
                         token: accessToken,
                         status: true
                     });
+                }
+                else {
+                    return res.status(403).json({ message: "You are logged in failure 5 times. Please wait 24 hours to login again !", status: false });
                 }
             }
             else {

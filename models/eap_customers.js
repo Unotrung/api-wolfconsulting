@@ -26,7 +26,9 @@ const eap_customerSchema = new mongoose.Schema({
     loginAttempts: {
         type: Number,
         required: true,
-        default: 0
+        default: 0,
+        max: 5,
+        min: 0
     },
     lockUntil: {
         type: Number
