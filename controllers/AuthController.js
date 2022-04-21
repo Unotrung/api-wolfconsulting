@@ -204,7 +204,7 @@ const AuthController = {
                 const deletedUser = await Customer.findDeleted();
                 const isBlock = deletedUser.find(x => x.deleted === Boolean(true) && x.deletedAt !== null);
                 if (isBlock) {
-                    return res.status(403).json({ message: "This phone/email is blocked", status: false });
+                    return res.status(403).json({ message: "This phone/email is blocked by admin", status: false });
                 }
                 const auths = await Customer.find();
                 const auth = auths.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
@@ -219,7 +219,7 @@ const AuthController = {
                 const validPassword = await bcrypt.compare(PASSWORD, auth.password);
                 if (!validPassword) {
                     if (auth.loginAttempts === 5 && auth.lockUntil > Date.now()) {
-                        return res.status(404).json({ message: "This account is block 24h. Please try again !", status: false });
+                        return res.status(404).json({ message: "You are logged in failure 5 times so this account is block 24h. Please wait 24 hours to login again !", status: false });
                     }
                     else if (auth.loginAttempts < 5) {
                         await auth.updateOne({ $set: { lockUntil: Date.now() + 24 * 60 * 60 * 1000 }, $inc: { loginAttempts: 1 } });
