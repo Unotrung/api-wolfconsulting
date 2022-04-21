@@ -5,15 +5,17 @@ dotenv.config();
 
 const sendMail = async (mail, title, content) => {
     let transporter = nodemailer.createTransport({
-        service: "hotmail",
+        service: process.env.MAIL_HOST,
+        port: process.env.MAIL_PORT,
+        secure: false,
         auth: {
-            user: process.env.USER_EMAIL,
-            pass: process.env.PASSWORD_EMAIL,
+            user: process.env.MAIL_USERNAME,
+            pass: process.env.MAIL_PASSWORD,
         },
     });
 
     let mailOptions = {
-        from: process.env.USER_EMAIL,
+        from: process.env.MAIL_USERNAME,
         to: mail,
         subject: `${title}`,
         text: `Hello email: ${mail}`,
