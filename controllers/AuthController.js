@@ -1,12 +1,11 @@
 const Customer = require('../models/eap_customers');
 const Otp = require('../models/eap_otps');
-const RefreshToken = require('../models/eap_refreshtokens');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const otpGenerator = require('otp-generator');
-const sendMail = require('../helpers/sendMail');
 const { validationResult } = require('express-validator');
 const dotenv = require('dotenv');
+const sendMail = require('../helpers/sendMail');
 
 dotenv.config();
 
@@ -204,12 +203,12 @@ const AuthController = {
                 const deletedUser = await Customer.findDeleted();
                 const isBlock = deletedUser.find(x => x.deleted === Boolean(true) && x.deletedAt !== null);
                 if (isBlock) {
-                    return res.status(403).json({ message: "This phone/email is blocked by admin", status: false });
+                    return res.status(403).json({ message: "This phone/email is blocked by admin", status: false, statusCode: 1001 });
                 }
                 const auths = await Customer.find();
                 const auth = auths.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
                 if (!auth) {
-                    return res.status(404).json({ message: "Wrong phone/email. Please try again !", status: false });
+                    return res.status(404).json({ message: "Wrong phone/email. Please try again !", status: false, statusCode: 1002 });
                 }
                 else if (auth) {
                     if (auth.lockUntil && auth.lockUntil < Date.now()) {
@@ -219,40 +218,49 @@ const AuthController = {
                 const validPassword = await bcrypt.compare(PASSWORD, auth.password);
                 if (!validPassword) {
                     if (auth.loginAttempts === 5 && auth.lockUntil > Date.now()) {
-                        return res.status(404).json({ message: "You are logged in failure 5 times so this account is block 24h. Please wait 24 hours to login again !", status: false });
+                        return res.status(404).json({ message: "You are logged in failure 5 times. Please wait 24 hours to login again !", status: false, statusCode: 1004 });
                     }
                     else if (auth.loginAttempts < 5) {
                         await auth.updateOne({ $set: { lockUntil: Date.now() + 24 * 60 * 60 * 1000 }, $inc: { loginAttempts: 1 } });
-                        return res.status(404).json({ message: `Wrong password. You are logged in failure ${auth.loginAttempts + 1} times`, status: false });
+                        return res.status(404).json({ message: `Wrong password. You are logged in failure ${auth.loginAttempts + 1} times`, status: false, statusCode: 1003 });
                     }
                 }
                 if (auth && validPassword && auth.loginAttempts !== 5) {
+                    await auth.updateOne({ $set: { loginAttempts: 0 }, $unset: { lockUntil: 1 } })
                     const accessToken = AuthController.generateAccessToken(auth);
                     const refreshToken = AuthController.generateRefreshToken(auth);
-                    const refreshTokens = await new RefreshToken({ refreshToken: refreshToken });
-                    await refreshTokens.save();
-                    res.cookie("refreshToken", refreshToken, {
-                        httpOnly: true,
-                        secure: false,
-                        path: '/',
-                        sameSite: 'strict',
-                    });
-                    const { password, __v, ...others } = auth._doc;
-                    return res.status(200).json({
-                        message: "Login successfully",
-                        data: { ...others },
-                        token: accessToken,
-                        status: true
-                    });
+                    auth.refreshToken = refreshToken;
+                    console.log("Refresh Token: ", auth.refreshToken);
+                    await auth.save()
+                        .then((data) => {
+                            console.log("Data: ", data);
+                            const { password, __v, refreshToken, ...others } = data._doc;
+                            return res.status(200).json({
+                                message: "Login successfully",
+                                data: { ...others },
+                                token: accessToken,
+                                status: true
+                            });
+                        })
+                        .catch(err => {
+                            return res.status(409).json({
+                                message: "Login failure",
+                                data: { ...others },
+                                token: accessToken,
+                                status: true
+                            });
+                        })
+
                 }
                 else {
-                    return res.status(403).json({ message: "You are logged in failure 5 times. Please wait 24 hours to login again !", status: false });
+                    return res.status(403).json({ message: "You are logged in failure 5 times. Please wait 24 hours to login again !", status: false, statusCode: 1004 });
                 }
             }
             else {
                 return res.status(400).json({
                     message: "Please enter your email/phone and password. Do not leave any fields blank !",
-                    status: false
+                    status: false,
+                    statusCode: 1005
                 });
             }
         }
@@ -260,60 +268,6 @@ const AuthController = {
             next(err);
         }
     },
-
-    // requestRefreshToken: async (req, res, next) => {
-    //     try {
-    //         // Get refreshToken from cookie
-    //         const refreshToken = req.cookies.refreshToken;
-    //         const refreshTokens = await RefreshToken.find();
-    //         console.log("RefreshTokens Find: ", refreshTokens);
-    //         if (!refreshToken) {
-    //             return res.status(401).json('You are not authenticated');
-    //         }
-    //         let data = refreshTokens.find((x) => x.refreshToken === refreshToken);
-    //         console.log("Data: ", data);
-    //         if (!data) {
-    //             return res.status(403).json('Refresh Token is not valid');
-    //         }
-    //         jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, async (err, user) => {
-    //             if (err) {
-    //                 console.log(err);
-    //             }
-    //             let listRefreshToken = refreshTokens.filter((x) => x.refreshToken !== refreshToken);
-    //             console.log("List RefreshToken: ", listRefreshToken);
-    //             const newAccessToken = AuthController.generateAccessToken(user);
-    //             const newRefreshToken = AuthController.generateRefreshToken(user);
-    //             await RefreshToken.updateOne({ refreshToken: data.refreshToken }, { refreshToken: newRefreshToken });
-    //             res.cookie("refreshToken", newRefreshToken, {
-    //                 httpOnly: true,
-    //                 secure: false,
-    //                 path: '/',
-    //                 sameSite: 'strict',
-    //             });
-    //             return res.status(200).json({
-    //                 token: newAccessToken,
-    //                 status: true
-    //             });
-    //         }
-    //         )
-    //     }
-    //     catch (err) {
-    //         next(err);
-    //     }
-    // },
-
-    // logout: async (req, res, next) => {
-    //     try {
-    //         // res.clearCookie("refreshToken");
-    //         // const refreshTokens = await RefreshToken.find();
-    //         // let listRefreshToken = refreshTokens.filter((x) => x.token !== req.cookies.refreshToken);
-    //         // refreshTokens = refreshTokens.filter(token => token !== req.cookies.refreshToken);
-    //         // return res.status(200).json({ message: 'Logged out success !' });
-    //     }
-    //     catch (err) {
-    //         next(err);
-    //     }
-    // },
 
     forgotPassword: async (req, res, next) => {
         try {

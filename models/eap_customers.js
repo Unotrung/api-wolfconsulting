@@ -32,12 +32,16 @@ const eap_customerSchema = new mongoose.Schema({
     },
     lockUntil: {
         type: Number
+    },
+    refreshToken: {
+        type: String,
+        default: ''
     }
 
 }, { timestamps: true });
 
 const secret = process.env.SECRET_MONGOOSE;
-eap_customerSchema.plugin(encrypt, { secret: secret, encryptedFields: ['username', 'email', 'phone', 'password'] });
+eap_customerSchema.plugin(encrypt, { secret: secret, encryptedFields: ['username', 'email', 'phone', 'password', 'refreshToken'] });
 
 // Add plugin
 eap_customerSchema.plugin(mongooseDelete, { deletedAt: true, overrideMethods: 'all' }); // Soft Delete
