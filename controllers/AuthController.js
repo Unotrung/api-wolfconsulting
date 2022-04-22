@@ -152,6 +152,7 @@ const AuthController = {
                 if (auth) {
                     return res.status(409).json({
                         message: "This account is already exists. Please login !",
+                        statusCode: 1000
                     });
                 }
                 else {
@@ -186,7 +187,8 @@ const AuthController = {
             else {
                 return res.status(400).json({
                     message: "Please enter your username, email, phone and password. Do not leave any fields blank !",
-                    status: false
+                    status: false,
+                    statusCode: 1005
                 });
             }
         }
@@ -235,10 +237,8 @@ const AuthController = {
                     const accessToken = AuthController.generateAccessToken(auth);
                     const refreshToken = AuthController.generateRefreshToken(auth);
                     auth.refreshToken = refreshToken;
-                    console.log("Refresh Token: ", auth.refreshToken);
                     await auth.save()
                         .then((data) => {
-                            console.log("Data: ", data);
                             const { password, __v, refreshToken, ...others } = data._doc;
                             return res.status(200).json({
                                 message: "Login successfully",
