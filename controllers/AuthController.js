@@ -222,7 +222,12 @@ const AuthController = {
                     }
                     else if (auth.loginAttempts < 5) {
                         await auth.updateOne({ $set: { lockUntil: Date.now() + 24 * 60 * 60 * 1000 }, $inc: { loginAttempts: 1 } });
-                        return res.status(404).json({ message: `Wrong password. You are logged in failure ${auth.loginAttempts + 1} times`, status: false, statusCode: 1003 });
+                        return res.status(404).json({
+                            message: `Wrong password. You are logged in failure ${auth.loginAttempts + 1} times`,
+                            status: false,
+                            statusCode: 1003,
+                            countFail: auth.loginAttempts + 1
+                        });
                     }
                 }
                 if (auth && validPassword && auth.loginAttempts !== 5) {
