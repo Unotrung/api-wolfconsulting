@@ -49,14 +49,16 @@ const AuthController = {
                 if (validPhone) {
                     return res.status(409).json({
                         message: "Phone is already exists. Please login !",
-                        status: false
+                        status: false,
+                        statusCode: 2010
                     });
                 }
                 const validEmail = customers.find(x => x.email === EMAIL);
                 if (validEmail) {
                     return res.status(409).json({
                         message: "Email is already exists. Please login !",
-                        status: false
+                        status: false,
+                        statusCode: 2011
                     });
                 }
                 if (!validPhone && !validEmail) {
@@ -84,7 +86,8 @@ const AuthController = {
             else {
                 return res.status(400).json({
                     message: "Please enter your username, your email and your phone. Do not leave any fields blank !",
-                    status: false
+                    status: false,
+                    statusCode: 1005,
                 });
             }
         }
@@ -104,16 +107,13 @@ const AuthController = {
                 if (otpUser.length === 0) {
                     return res.status(401).json({
                         message: "Expired otp. Please resend otp !",
-                        status: false
+                        status: false,
+                        statusCode: 3000,
                     });
                 }
                 const lastOtp = otpUser[otpUser.length - 1];
                 if (lastOtp.phone === PHONE && lastOtp.email === EMAIL && lastOtp.otp === OTP) {
-                    let user = {
-                        username: USERNAME,
-                        email: EMAIL,
-                        phone: PHONE
-                    };
+                    let user = { username: USERNAME, email: EMAIL, phone: PHONE };
                     await Otp.deleteMany({ phone: lastOtp.phone, email: lastOtp.email });
                     return res.status(200).json({
                         message: "Successfully. OTP valid",
@@ -124,14 +124,16 @@ const AuthController = {
                 else {
                     return res.status(404).json({
                         message: "Failure. OTP invalid",
-                        status: false
+                        status: false,
+                        statusCode: 4000
                     });
                 }
             }
             else {
                 return res.status(400).json({
                     message: "Please enter your username, your email and your phone. Do not leave any fields blank !",
-                    status: false
+                    status: false,
+                    statusCode: 1005
                 });
             }
         }
@@ -158,12 +160,7 @@ const AuthController = {
                 else {
                     const salt = await bcrypt.genSalt(10);
                     const hashed = await bcrypt.hash(password, salt);
-                    const newUser = await new Customer({
-                        username: username,
-                        email: email,
-                        phone: phone,
-                        password: hashed
-                    });
+                    const newUser = await new Customer({ username: username, email: email, phone: phone, password: hashed });
                     await newUser.save((err, data) => {
                         if (!err) {
                             const { password, __v, ...others } = data._doc;
@@ -247,15 +244,14 @@ const AuthController = {
                                 status: true
                             });
                         })
-                        .catch(err => {
+                        .catch((err) => {
                             return res.status(409).json({
                                 message: "Login failure",
-                                data: { ...others },
-                                token: accessToken,
-                                status: true
+                                status: false,
+                                errorStatus: err.status || 500,
+                                errorMessage: err.message
                             });
                         })
-
                 }
                 else {
                     return res.status(403).json({ message: "You are logged in failure 5 times. Please wait 24 hours to login again !", status: false, statusCode: 1004 });

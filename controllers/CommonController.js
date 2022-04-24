@@ -71,7 +71,7 @@ const CommonController = {
             }
             else {
                 return res.status(400).json({
-                    message: 'Please enter all fields',
+                    message: 'Please enter all fields !',
                     status: false
                 })
             }
@@ -114,7 +114,7 @@ const CommonController = {
             }
             else {
                 return res.status(400).json({
-                    message: 'Please enter all fields',
+                    message: 'Please enter all fields !',
                     status: false
                 })
             }
