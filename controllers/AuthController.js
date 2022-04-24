@@ -282,7 +282,8 @@ const AuthController = {
                 if (!auth) {
                     return res.status(404).json({
                         message: "This account is not exists. Please register !",
-                        status: false
+                        status: false,
+                        statusCode: 900
                     });
                 }
                 else {
@@ -292,7 +293,8 @@ const AuthController = {
                             sendMail(auth.email, "Get OTP From System Voolo", OTP);
                             return res.status(201).json({
                                 message: "Send otp successfully",
-                                status: true
+                                status: true,
+                                email: auth.emai
                             });
                         }
                         else {
@@ -309,7 +311,8 @@ const AuthController = {
             else {
                 return res.status(400).json({
                     message: "Please enter your email/phone. Do not leave any fields blank !",
-                    status: false
+                    status: false,
+                    statusCode: 1005
                 });
             }
         }
@@ -327,7 +330,8 @@ const AuthController = {
                 if (otpUser.length === 0) {
                     return res.status(401).json({
                         message: "Expired otp. Please resend otp !",
-                        status: false
+                        status: false,
+                        statusCode: 3000
                     });
                 }
                 else {
@@ -352,7 +356,8 @@ const AuthController = {
                     else {
                         return res.status(404).json({
                             message: "Failure. OTP invalid",
-                            status: false
+                            status: false,
+                            statusCode: 4000
                         });
                     }
                 }
@@ -360,7 +365,8 @@ const AuthController = {
             else {
                 return res.status(400).json({
                     message: "Please enter your email/phone and OTP code. Do not leave any fields blank !",
-                    status: false
+                    status: false,
+                    statusCode: 1005
                 });
             }
         }
@@ -407,14 +413,16 @@ const AuthController = {
                     else {
                         return res.status(400).json({
                             message: "This account is not exists. Please register !",
-                            status: false
+                            status: false,
+                            statusCode: 900
                         });
                     }
                 }
                 else {
                     return res.status(400).json({
                         message: "Please enter your phone/email and new password. Do not leave any fields blank !",
-                        status: false
+                        status: false,
+                        statusCode: 1005
                     });
                 }
             }
@@ -467,21 +475,24 @@ const AuthController = {
                         else {
                             return res.status(409).json({
                                 message: "This email is exists. Please try again !",
-                                status: false
+                                status: false,
+                                statusCode: 1000
                             });
                         }
                     }
                     else {
                         return res.status(404).json({
                             message: "Can not find this email to update !",
-                            status: false
+                            status: false,
+                            statusCode: 900
                         });
                     }
                 }
                 else {
                     return res.status(400).json({
                         message: "Please enter your old email and new email. Do not leave any fields blank !",
-                        status: false
+                        status: false,
+                        statusCode: 1005
                     });
                 }
             }
@@ -513,7 +524,8 @@ const AuthController = {
                         if (otpUser.length === 0) {
                             return res.status(401).json({
                                 message: "Expired otp. Please resend otp !",
-                                status: false
+                                status: false,
+                                statusCode: 3000
                             });
                         }
                         const lastOtp = otpUser[otpUser.length - 1];
@@ -537,21 +549,24 @@ const AuthController = {
                         else {
                             return res.status(404).json({
                                 message: "Failure. OTP invalid",
-                                status: false
+                                status: false,
+                                statusCode: 4000
                             });
                         }
                     }
                     else {
                         return res.status(404).json({
                             message: "Can not find this email to update !",
-                            status: false
+                            status: false,
+                            statusCode: 900
                         });
                     }
                 }
                 else {
                     return res.status(400).json({
                         message: "Please enter your old email, new email and otp code. Do not leave any fields blank !",
-                        status: false
+                        status: false,
+                        statusCode: 1005
                     });
                 }
             }
@@ -599,14 +614,16 @@ const AuthController = {
                     else {
                         return res.status(404).json({
                             message: "Can not find this email to update !",
-                            status: false
+                            status: false,
+                            statusCode: 900
                         });
                     }
                 }
                 else {
                     return res.status(400).json({
                         message: "Please enter your old email, new email and token. Do not leave any fields blank !",
-                        status: false
+                        status: false,
+                        statusCode: 1005
                     });
                 }
             }
