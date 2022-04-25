@@ -113,4 +113,8 @@ router.put("/updateEmail",
     ],
     MiddlewareController.verifyTokenByMySelf, MiddlewareController.verifyTokenByMySelfBody, MiddlewareController.validateRequestSchema, AuthController.updateEmail);
 
+router.put("/requestRefreshToken", MiddlewareController.verifyTokenByMySelf, AuthController.requestRefreshToken);
+
+router.put("/logout", MiddlewareController.verifyTokenByMySelf, AuthController.logout);
+
 module.exports = router;

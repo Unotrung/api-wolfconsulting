@@ -270,6 +270,100 @@ const AuthController = {
         }
     },
 
+    requestRefreshToken: async (req, res, next) => {
+        try {
+            let email = req.body.email;
+            let id = req.body.id;
+            let refreshToken = req.body.refreshToken;
+            if (refreshToken !== null && refreshToken !== '' && id !== null && id !== '' && email !== null && email !== '') {
+                const customers = await Customer.find();
+                const customer = customers.find(x => x.refreshToken === refreshToken && x._id === id);
+                if (customer) {
+                    customer.refreshToken = refreshToken;
+                    await customer.save()
+                        .then((data) => {
+                            return res.status(201).json({
+                                message: 'Update refreshToken successfully',
+                                status: true
+                            })
+                        })
+                        .catch((err) => {
+                            return res.status(409).json({
+                                message: 'Update refreshToken failure',
+                                status: false,
+                                errorStatus: err.status || 500,
+                                errorMessage: err.message
+                            })
+                        })
+                }
+                else {
+                    return res.status(409).json({
+                        message: "Can not find this account to update !",
+                        status: false,
+                        statusCode: 900
+                    });
+                }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your id, refreshToken. Do not leave any fields blank !",
+                    status: false,
+                    statusCode: 1005
+                });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
+    logout: async (req, res, next) => {
+        try {
+            let email = req.body.email;
+            let id = req.body.id;
+            let refreshToken = req.body.refreshToken;
+            if (refreshToken !== null && refreshToken !== '' && id !== null && id !== '' && email !== null && email !== '') {
+                const customers = await Customer.find();
+                const customer = customers.find(x => x.refreshToken === refreshToken && x._id === id);
+                if (customer) {
+                    customer.refreshToken = null;
+                    await customer.save()
+                        .then((data) => {
+                            return res.status(201).json({
+                                message: 'Log out successfully',
+                                status: true
+                            })
+                        })
+                        .catch((err) => {
+                            return res.status(409).json({
+                                message: 'Log out failure',
+                                status: false,
+                                errorStatus: err.status || 500,
+                                errorMessage: err.message
+                            })
+                        })
+                }
+                else {
+                    return res.status(409).json({
+                        message: "Can not find this account to log out !",
+                        status: false,
+                        statusCode: 900
+                    });
+                }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your id, refreshToken. Do not leave any fields blank !",
+                    status: false,
+                    statusCode: 1005
+                });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
     forgotPassword: async (req, res, next) => {
         try {
             let PHONE_EMAIL = req.body.phone_email;
