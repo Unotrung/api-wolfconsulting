@@ -279,11 +279,14 @@ const AuthController = {
                 const customers = await Customer.find();
                 const customer = customers.find(x => x.refreshToken === refreshToken && x.id === id && x.email === email);
                 if (customer) {
-                    customer.refreshToken = refreshToken;
+                    let newAccessToken = AuthController.generateAccessToken(customer);
+                    let newRefreshToken = AuthController.generateRefreshToken(customer);
+                    customer.refreshToken = newRefreshToken;
                     await customer.save()
                         .then((data) => {
                             return res.status(201).json({
                                 message: 'Update refreshToken successfully',
+                                refreshToken: newAccessToken,
                                 status: true
                             })
                         })
