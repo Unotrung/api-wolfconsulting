@@ -319,12 +319,10 @@ const AuthController = {
 
     logout: async (req, res, next) => {
         try {
-            let email = req.body.email;
             let id = req.body.id;
-            let refreshToken = req.body.refreshToken;
-            if (refreshToken !== null && refreshToken !== '' && id !== null && id !== '' && email !== null && email !== '') {
+            if (id !== null && id !== '') {
                 const customers = await Customer.find();
-                const customer = customers.find(x => x.refreshToken === refreshToken && x.id === id && x.email === email);
+                const customer = customers.find(x => x.id === id);
                 if (customer) {
                     customer.refreshToken = null;
                     await customer.save()
@@ -353,7 +351,7 @@ const AuthController = {
             }
             else {
                 return res.status(400).json({
-                    message: "Please enter your id, refreshToken, email. Do not leave any fields blank !",
+                    message: "Please enter your id. Do not leave any fields blank !",
                     status: false,
                     statusCode: 1005
                 });
