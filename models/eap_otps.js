@@ -18,7 +18,7 @@ const eap_otpSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
-        index: { expires: '1m' }
+        index: { expires: 60 }
     }
     // After 1 minutes it deleted automatically from the database
 

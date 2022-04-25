@@ -11,7 +11,10 @@ const MiddlewareController = {
                 const accessToken = token.split(" ")[1];
                 jwt.verify(accessToken, process.env.JWT_ACCESS_KEY, (err, user) => {
                     if (err) {
-                        return res.status(403).json("Token is not valid");
+                        return res.status(403).json({
+                            message: "Token is not valid",
+                            statusCode: 4003
+                        });
                     }
                     // Trả về user
                     req.user = user;
@@ -19,7 +22,10 @@ const MiddlewareController = {
                 });
             }
             else {
-                return res.status(401).json("You're not authenticated");
+                return res.status(401).json({
+                    message: "You're not authenticated",
+                    statusCode: 4001
+                });
             }
         }
         catch (err) {
@@ -34,7 +40,10 @@ const MiddlewareController = {
                     next();
                 }
                 else {
-                    return res.status(403).json('You are not allowed to do this action');
+                    return res.status(403).json({
+                        message: 'You are not allowed to do this action',
+                        statusCode: 4004
+                    });
                 }
             })
         }
@@ -49,7 +58,10 @@ const MiddlewareController = {
             if (token) {
                 jwt.verify(token, process.env.JWT_ACCESS_KEY, (err, user) => {
                     if (err) {
-                        return res.status(403).json("Token is not valid (Body)");
+                        return res.status(403).json({
+                            message: "Token is not valid (Body)",
+                            statusCode: 4003
+                        });
                     }
                     // Trả về user
                     req.user = user;
@@ -57,7 +69,10 @@ const MiddlewareController = {
                 });
             }
             else {
-                return res.status(401).json("You're not authenticated (Body)");
+                return res.status(401).json({
+                    message: "You're not authenticated (Body)",
+                    statusCode: 4001
+                });
             }
         }
         catch (err) {
@@ -72,7 +87,10 @@ const MiddlewareController = {
                     next();
                 }
                 else {
-                    return res.status(403).json('You are not allowed to do this action (Body)');
+                    return res.status(403).json({
+                        message: 'You are not allowed to do this action (Body)',
+                        statusCode: 4004
+                    });
                 }
             })
         }
