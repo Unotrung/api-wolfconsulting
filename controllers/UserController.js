@@ -45,7 +45,8 @@ const UserController = {
             else {
                 return res.status(404).json({
                     message: "This account infomation is not exists !",
-                    status: false
+                    status: false,
+                    statusCode: 900
                 });
             }
         }
@@ -67,14 +68,16 @@ const UserController = {
                         if (!validPassword) {
                             return res.status(404).json({
                                 message: "Your old password is not correct. Please try again !",
-                                status: false
+                                status: false,
+                                statusCode: 1003
                             });
                         }
                         else {
                             if (OLD_PASSWORD === NEW_PASSWORD) {
                                 return res.status(400).json({
                                     message: "Old password and new password are the same. Please try again !",
-                                    status: false
+                                    status: false,
+                                    statusCode: 1006
                                 });
                             }
                             else {
@@ -121,14 +124,16 @@ const UserController = {
                 else {
                     return res.status(404).json({
                         message: "This account is not exists !",
-                        status: false
+                        status: false,
+                        statusCode: 900
                     });
                 }
             }
             else {
                 return res.status(400).json({
                     message: "Please enter your old password and new password or username !",
-                    status: false
+                    status: false,
+                    statusCode: 1005
                 });
             }
         }

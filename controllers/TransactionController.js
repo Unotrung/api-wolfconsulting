@@ -63,8 +63,9 @@ const TransactionController = {
             else {
                 return res.status(404).json({
                     message: "This transaction id is not exists",
-                    status: false
-                })
+                    status: false,
+                    statusCode: 900
+                });
             }
         }
         catch (err) {

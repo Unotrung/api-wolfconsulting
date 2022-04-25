@@ -17,7 +17,7 @@
 //     console.log(`MongoDB Is Error: ${JSON.stringify(error)}`);
 // });
 
-// Khi ta tắt server nó sẽ ngắt kết nối database
+// // Khi ta tắt server nó sẽ ngắt kết nối database
 // process.on('SIGINT', async () => {
 //     await conn.close();
 //     process.exit(0);

@@ -63,8 +63,9 @@ const RepaymentController = {
             else {
                 return res.status(404).json({
                     message: "This repayment id is not exists",
-                    status: false
-                })
+                    status: false,
+                    statusCode: 900
+                });
             }
         }
         catch (err) {
