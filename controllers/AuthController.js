@@ -322,9 +322,9 @@ const AuthController = {
             let email = req.body.email;
             let id = req.body.id;
             let refreshToken = req.body.refreshToken;
-            if (refreshToken !== null && refreshToken !== '' && id !== null && id !== '' && email !== null && email !== '' && x.email === email) {
+            if (refreshToken !== null && refreshToken !== '' && id !== null && id !== '' && email !== null && email !== '') {
                 const customers = await Customer.find();
-                const customer = customers.find(x => x.refreshToken === refreshToken && x._id === id);
+                const customer = customers.find(x => x.refreshToken === refreshToken && x._id === id && x.email === email);
                 if (customer) {
                     customer.refreshToken = null;
                     await customer.save()
