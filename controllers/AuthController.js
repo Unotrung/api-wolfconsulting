@@ -163,7 +163,7 @@ const AuthController = {
                     const newUser = await new Customer({ username: username, email: email, phone: phone, password: hashed });
                     await newUser.save((err, data) => {
                         if (!err) {
-                            const { password, __v, ...others } = data._doc;
+                            const { password, __v, refreshToken, ...others } = data._doc;
                             return res.status(201).json({
                                 message: "Register successfully",
                                 data: { ...others },
@@ -236,7 +236,7 @@ const AuthController = {
                     auth.refreshToken = refreshToken;
                     await auth.save()
                         .then((data) => {
-                            const { password, __v, refreshToken, ...others } = data._doc;
+                            const { password, __v, ...others } = data._doc;
                             return res.status(200).json({
                                 message: "Login successfully",
                                 data: { ...others },
