@@ -217,7 +217,7 @@ const AuthController = {
                 const validPassword = await bcrypt.compare(PASSWORD, auth.password);
                 if (!validPassword) {
                     if (auth.loginAttempts === 5 && auth.lockUntil > Date.now()) {
-                        return res.status(404).json({ message: "You are logged in failure 5 times. Please wait 24 hours to login again !", status: false, statusCode: 1004 });
+                        return res.status(403).json({ message: "You are logged in failure 5 times. Please wait 24 hours to login again !", status: false, statusCode: 1004 });
                     }
                     else if (auth.loginAttempts < 5) {
                         await auth.updateOne({ $set: { lockUntil: Date.now() + 24 * 60 * 60 * 1000 }, $inc: { loginAttempts: 1 } });
@@ -508,7 +508,7 @@ const AuthController = {
                             })
                     }
                     else {
-                        return res.status(400).json({
+                        return res.status(404).json({
                             message: "This account is not exists. Please register !",
                             status: false,
                             statusCode: 900
