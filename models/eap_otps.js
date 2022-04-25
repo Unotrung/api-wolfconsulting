@@ -24,4 +24,6 @@ const eap_otpSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+eap_otpSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 });
+
 module.exports = mongoose.model('eap_otp', eap_otpSchema);
