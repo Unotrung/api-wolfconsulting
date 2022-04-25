@@ -306,7 +306,7 @@ const AuthController = {
             }
             else {
                 return res.status(400).json({
-                    message: "Please enter your id, refreshToken. Do not leave any fields blank !",
+                    message: "Please enter your id, refreshToken, email. Do not leave any fields blank !",
                     status: false,
                     statusCode: 1005
                 });
@@ -353,7 +353,7 @@ const AuthController = {
             }
             else {
                 return res.status(400).json({
-                    message: "Please enter your id, refreshToken. Do not leave any fields blank !",
+                    message: "Please enter your id, refreshToken, email. Do not leave any fields blank !",
                     status: false,
                     statusCode: 1005
                 });
