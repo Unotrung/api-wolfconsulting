@@ -325,7 +325,7 @@ const AuthController = {
         try {
             let id = req.body.id;
             let email = req.body.email;
-            if (id !== null && id !== '') {
+            if (id !== null && id !== '' && email !== null && email !== '') {
                 const customers = await Customer.find();
                 const customer = customers.find(x => x.id === id && x.email === email);
                 if (customer) {
@@ -391,7 +391,7 @@ const AuthController = {
                             return res.status(201).json({
                                 message: "Send otp successfully",
                                 status: true,
-                                email: auth.emai
+                                email: auth.email
                             });
                         }
                         else {
