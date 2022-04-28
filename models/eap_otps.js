@@ -15,6 +15,9 @@ const eap_otpSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Otp is required'],
     },
+    expiredAt: {
+        type: Date
+    }
 
 }, { timestamps: true });
 

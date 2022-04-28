@@ -3,7 +3,6 @@ const Otp = require('../models/eap_otps');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const otpGenerator = require('otp-generator');
-const { validationResult } = require('express-validator');
 const dotenv = require('dotenv');
 const sendMail = require('../helpers/sendMail');
 
@@ -62,7 +61,7 @@ const AuthController = {
                     });
                 }
                 if (!validPhone && !validEmail) {
-                    const dataTemp = await new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP });
+                    const dataTemp = await new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
                     await dataTemp.save()
                         .then((data) => {
                             const { otp, __v, ...others } = data._doc;
@@ -112,21 +111,31 @@ const AuthController = {
                     });
                 }
                 const lastOtp = otpUser[otpUser.length - 1];
-                if (lastOtp.phone === PHONE && lastOtp.email === EMAIL && lastOtp.otp === OTP) {
-                    let user = { username: USERNAME, email: EMAIL, phone: PHONE };
+                if (lastOtp.expiredAt < Date.now()) {
                     await Otp.deleteMany({ phone: lastOtp.phone, email: lastOtp.email });
-                    return res.status(200).json({
-                        message: "Successfully. OTP valid",
-                        user: user,
-                        status: true
+                    return res.status(401).json({
+                        message: "Expired otp. Please resend otp !",
+                        status: false,
+                        statusCode: 3000
                     });
                 }
                 else {
-                    return res.status(404).json({
-                        message: "Failure. OTP invalid",
-                        status: false,
-                        statusCode: 4000
-                    });
+                    if (lastOtp.phone === PHONE && lastOtp.email === EMAIL && lastOtp.otp === OTP) {
+                        let user = { username: USERNAME, email: EMAIL, phone: PHONE };
+                        await Otp.deleteMany({ phone: lastOtp.phone, email: lastOtp.email });
+                        return res.status(200).json({
+                            message: "Successfully. OTP valid",
+                            user: user,
+                            status: true
+                        });
+                    }
+                    else {
+                        return res.status(404).json({
+                            message: "Failure. OTP invalid",
+                            status: false,
+                            statusCode: 4000
+                        });
+                    }
                 }
             }
             else {
@@ -384,7 +393,7 @@ const AuthController = {
                     });
                 }
                 else {
-                    const dataTemp = await new Otp({ phone: auth.phone, email: auth.email, otp: OTP });
+                    const dataTemp = await new Otp({ phone: auth.phone, email: auth.email, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
                     await dataTemp.save((err) => {
                         if (!err) {
                             sendMail(auth.email, "Get OTP From System Voolo", OTP);
@@ -433,29 +442,39 @@ const AuthController = {
                 }
                 else {
                     const lastOtp = otpUser[otpUser.length - 1];
-                    if ((lastOtp.phone === PHONE_EMAIL || lastOtp.email === PHONE_EMAIL) && lastOtp.otp === OTP) {
-                        const token = jwt.sign(
-                            {
-                                id: lastOtp.id,
-                                phone: lastOtp.phone,
-                                email: lastOtp.email,
-                            },
-                            process.env.JWT_ACCESS_KEY,
-                            { expiresIn: "1m" }
-                        );
+                    if (lastOtp.expiredAt < Date.now()) {
                         await Otp.deleteMany({ $or: [{ phone: lastOtp.phone }, { email: lastOtp.email }] });
-                        return res.status(200).json({
-                            message: "Successfully. OTP valid",
-                            token: token,
-                            status: true
+                        return res.status(401).json({
+                            message: "Expired otp. Please resend otp !",
+                            status: false,
+                            statusCode: 3000
                         });
                     }
                     else {
-                        return res.status(404).json({
-                            message: "Failure. OTP invalid",
-                            status: false,
-                            statusCode: 4000
-                        });
+                        if ((lastOtp.phone === PHONE_EMAIL || lastOtp.email === PHONE_EMAIL) && lastOtp.otp === OTP) {
+                            const token = jwt.sign(
+                                {
+                                    id: lastOtp.id,
+                                    phone: lastOtp.phone,
+                                    email: lastOtp.email,
+                                },
+                                process.env.JWT_ACCESS_KEY,
+                                { expiresIn: "1m" }
+                            );
+                            await Otp.deleteMany({ $or: [{ phone: lastOtp.phone }, { email: lastOtp.email }] });
+                            return res.status(200).json({
+                                message: "Successfully. OTP valid",
+                                token: token,
+                                status: true
+                            });
+                        }
+                        else {
+                            return res.status(404).json({
+                                message: "Failure. OTP invalid",
+                                status: false,
+                                statusCode: 4000
+                            });
+                        }
                     }
                 }
             }
@@ -476,52 +495,43 @@ const AuthController = {
         try {
             let PHONE_EMAIL = req.body.phone_email;
             let NEW_PASSWORD = req.body.password;
-            const validData = validationResult(req);
-            if (validData.errors.length > 0) {
-                return res.status(400).json({
-                    message: validData.errors[0].msg,
-                    status: false
-                });
-            }
-            else {
-                if (PHONE_EMAIL !== null && NEW_PASSWORD !== null && PHONE_EMAIL !== '' && NEW_PASSWORD !== '') {
-                    const users = await Customer.find();
-                    const user = users.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
-                    if (user) {
-                        const salt = await bcrypt.genSalt(10);
-                        const hashed = await bcrypt.hash(NEW_PASSWORD, salt);
-                        user.password = hashed;
-                        await user.save()
-                            .then((data) => {
-                                return res.status(201).json({
-                                    message: "Reset password successfully",
-                                    status: true
-                                })
+            if (PHONE_EMAIL !== null && NEW_PASSWORD !== null && PHONE_EMAIL !== '' && NEW_PASSWORD !== '') {
+                const users = await Customer.find();
+                const user = users.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
+                if (user) {
+                    const salt = await bcrypt.genSalt(10);
+                    const hashed = await bcrypt.hash(NEW_PASSWORD, salt);
+                    user.password = hashed;
+                    await user.save()
+                        .then((data) => {
+                            return res.status(201).json({
+                                message: "Reset password successfully",
+                                status: true
                             })
-                            .catch((err) => {
-                                return res.status(409).json({
-                                    message: "Reset password failure",
-                                    status: false,
-                                    errorStatus: err.status || 500,
-                                    errorMessage: err.message,
-                                })
+                        })
+                        .catch((err) => {
+                            return res.status(409).json({
+                                message: "Reset password failure",
+                                status: false,
+                                errorStatus: err.status || 500,
+                                errorMessage: err.message,
                             })
-                    }
-                    else {
-                        return res.status(404).json({
-                            message: "This account is not exists. Please register !",
-                            status: false,
-                            statusCode: 900
-                        });
-                    }
+                        })
                 }
                 else {
-                    return res.status(400).json({
-                        message: "Please enter your phone/email and new password. Do not leave any fields blank !",
+                    return res.status(404).json({
+                        message: "This account is not exists. Please register !",
                         status: false,
-                        statusCode: 1005
+                        statusCode: 900
                     });
                 }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your phone/email and new password. Do not leave any fields blank !",
+                    status: false,
+                    statusCode: 1005
+                });
             }
         }
         catch (err) {
@@ -537,61 +547,52 @@ const AuthController = {
             const OTP = otpGenerator.generate(6, {
                 digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
             });
-            const validData = validationResult(req);
-            if (validData.errors.length > 0) {
-                return res.status(400).json({
-                    message: validData.errors[0].msg,
-                    status: false
-                });
-            }
-            else {
-                if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '') {
-                    const emails = await Customer.find();
-                    const validEmail = emails.find(x => x.email === OLD_EMAIL);
-                    if (validEmail) {
-                        const isExists = emails.find(x => x.email === NEW_EMAIL);
-                        if (OLD_EMAIL !== NEW_EMAIL && !isExists) {
-                            const dataTemp = new Otp({ email: NEW_EMAIL, otp: OTP });
-                            await dataTemp.save((err) => {
-                                if (!err) {
-                                    sendMail(NEW_EMAIL, "Get OTP From System Voolo", OTP);
-                                    return res.status(200).json({
-                                        message: "Send otp successfully",
-                                        email: NEW_EMAIL,
-                                        status: true,
-                                    });
-                                }
-                                else {
-                                    return res.status(409).json({
-                                        message: "Send otp failure",
-                                        status: false,
-                                    });
-                                }
-                            });
-                        }
-                        else {
-                            return res.status(409).json({
-                                message: "This email is exists. Please try again !",
-                                status: false,
-                                statusCode: 1000
-                            });
-                        }
+            if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '') {
+                const emails = await Customer.find();
+                const validEmail = emails.find(x => x.email === OLD_EMAIL);
+                if (validEmail) {
+                    const isExists = emails.find(x => x.email === NEW_EMAIL);
+                    if (OLD_EMAIL !== NEW_EMAIL && !isExists) {
+                        const dataTemp = new Otp({ email: NEW_EMAIL, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
+                        await dataTemp.save((err) => {
+                            if (!err) {
+                                sendMail(NEW_EMAIL, "Get OTP From System Voolo", OTP);
+                                return res.status(200).json({
+                                    message: "Send otp successfully",
+                                    email: NEW_EMAIL,
+                                    status: true,
+                                });
+                            }
+                            else {
+                                return res.status(409).json({
+                                    message: "Send otp failure",
+                                    status: false,
+                                });
+                            }
+                        });
                     }
                     else {
-                        return res.status(404).json({
-                            message: "Can not find this email to update !",
+                        return res.status(409).json({
+                            message: "This email is exists. Please try again !",
                             status: false,
-                            statusCode: 900
+                            statusCode: 1000
                         });
                     }
                 }
                 else {
-                    return res.status(400).json({
-                        message: "Please enter your old email and new email. Do not leave any fields blank !",
+                    return res.status(404).json({
+                        message: "Can not find this email to update !",
                         status: false,
-                        statusCode: 1005
+                        statusCode: 900
                     });
                 }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your old email and new email. Do not leave any fields blank !",
+                    status: false,
+                    statusCode: 1005
+                });
             }
         }
         catch (err) {
@@ -605,27 +606,28 @@ const AuthController = {
             const OLD_EMAIL = req.body.email;
             const NEW_EMAIL = req.body.new_email;
             const OTP = req.body.otp;
-            const validData = validationResult(req);
-            if (validData.errors.length > 0) {
-                return res.status(400).json({
-                    message: validData.errors[0].msg,
-                    status: false
-                });
-            }
-            else {
-                if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '' && OTP !== null && OTP !== '') {
-                    const emails = await Customer.find();
-                    const validEmail = emails.find(x => x.email === OLD_EMAIL);
-                    if (validEmail) {
-                        const otpUser = await Otp.find({ email: NEW_EMAIL });
-                        if (otpUser.length === 0) {
-                            return res.status(401).json({
-                                message: "Expired otp. Please resend otp !",
-                                status: false,
-                                statusCode: 3000
-                            });
-                        }
-                        const lastOtp = otpUser[otpUser.length - 1];
+            if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '' && OTP !== null && OTP !== '') {
+                const emails = await Customer.find();
+                const validEmail = emails.find(x => x.email === OLD_EMAIL);
+                if (validEmail) {
+                    const otpUser = await Otp.find({ email: NEW_EMAIL });
+                    if (otpUser.length === 0) {
+                        return res.status(401).json({
+                            message: "Expired otp. Please resend otp !",
+                            status: false,
+                            statusCode: 3000
+                        });
+                    }
+                    const lastOtp = otpUser[otpUser.length - 1];
+                    if (lastOtp.expiredAt < Date.now()) {
+                        await Otp.deleteMany({ email: lastOtp.email });
+                        return res.status(401).json({
+                            message: "Expired otp. Please resend otp !",
+                            status: false,
+                            statusCode: 3000
+                        });
+                    }
+                    else {
                         if (lastOtp.email === NEW_EMAIL && lastOtp.otp === OTP) {
                             const token = jwt.sign(
                                 {
@@ -651,21 +653,21 @@ const AuthController = {
                             });
                         }
                     }
-                    else {
-                        return res.status(404).json({
-                            message: "Can not find this email to update !",
-                            status: false,
-                            statusCode: 900
-                        });
-                    }
                 }
                 else {
-                    return res.status(400).json({
-                        message: "Please enter your old email, new email and otp code. Do not leave any fields blank !",
+                    return res.status(404).json({
+                        message: "Can not find this email to update !",
                         status: false,
-                        statusCode: 1005
+                        statusCode: 900
                     });
                 }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your old email, new email and otp code. Do not leave any fields blank !",
+                    status: false,
+                    statusCode: 1005
+                });
             }
         }
         catch (err) {
@@ -679,50 +681,41 @@ const AuthController = {
             const OLD_EMAIL = req.body.email;
             const NEW_EMAIL = req.body.new_email;
             const token = req.body.token;
-            const validData = validationResult(req);
-            if (validData.errors.length > 0) {
-                return res.status(400).json({
-                    message: validData.errors[0].msg,
-                    status: false
-                });
-            }
-            else {
-                if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '' && token !== null && token !== '') {
-                    const users = await Customer.find();
-                    const user = users.find(x => x.email === OLD_EMAIL);
-                    if (user) {
-                        user.email = NEW_EMAIL;
-                        await user.save()
-                            .then((data) => {
-                                return res.status(201).json({
-                                    message: "Update email successfully",
-                                    status: true
-                                })
+            if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '' && token !== null && token !== '') {
+                const users = await Customer.find();
+                const user = users.find(x => x.email === OLD_EMAIL);
+                if (user) {
+                    user.email = NEW_EMAIL;
+                    await user.save()
+                        .then((data) => {
+                            return res.status(201).json({
+                                message: "Update email successfully",
+                                status: true
                             })
-                            .catch((err) => {
-                                return res.status(409).json({
-                                    message: "Update email failure",
-                                    status: false,
-                                    errorStatus: err.status || 500,
-                                    errorMessage: err.message
-                                })
+                        })
+                        .catch((err) => {
+                            return res.status(409).json({
+                                message: "Update email failure",
+                                status: false,
+                                errorStatus: err.status || 500,
+                                errorMessage: err.message
                             })
-                    }
-                    else {
-                        return res.status(404).json({
-                            message: "Can not find this email to update !",
-                            status: false,
-                            statusCode: 900
-                        });
-                    }
+                        })
                 }
                 else {
-                    return res.status(400).json({
-                        message: "Please enter your old email, new email and token. Do not leave any fields blank !",
+                    return res.status(404).json({
+                        message: "Can not find this email to update !",
                         status: false,
-                        statusCode: 1005
+                        statusCode: 900
                     });
                 }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your old email, new email and token. Do not leave any fields blank !",
+                    status: false,
+                    statusCode: 1005
+                });
             }
         }
         catch (err) {
