@@ -207,72 +207,79 @@ const AuthController = {
         try {
             let PHONE_EMAIL = req.body.phone_email;
             let PASSWORD = req.body.password;
-            if (PHONE_EMAIL !== null && PHONE_EMAIL !== '' && PASSWORD !== null && PASSWORD !== '') {
-                const deletedUser = await Customer.findDeleted();
-                const isBlock = deletedUser.find(x => x.deleted === Boolean(true) && x.deletedAt !== null);
-                if (isBlock) {
-                    return res.status(403).json({ message: "This phone/email is blocked by admin", status: false, statusCode: 1001 });
-                }
-                const auths = await Customer.find();
-                const auth = auths.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
-                if (!auth) {
-                    return res.status(404).json({ message: "Wrong phone/email. Please try again !", status: false, statusCode: 1002 });
-                }
-                else if (auth) {
-                    if (auth.lockUntil && auth.lockUntil < Date.now()) {
-                        await auth.updateOne({ $set: { loginAttempts: 0 }, $unset: { lockUntil: 1 } })
-                    }
-                }
-                const validPassword = await bcrypt.compare(PASSWORD, auth.password);
-                if (!validPassword) {
-                    if (auth.loginAttempts === 5 && auth.lockUntil > Date.now()) {
-                        return res.status(403).json({ message: "You are logged in failure 5 times. Please wait 24 hours to login again !", status: false, statusCode: 1004 });
-                    }
-                    else if (auth.loginAttempts < 5) {
-                        await auth.updateOne({ $set: { lockUntil: Date.now() + 24 * 60 * 60 * 1000 }, $inc: { loginAttempts: 1 } });
-                        return res.status(404).json({
-                            message: `Wrong password. You are logged in failure ${auth.loginAttempts + 1} times`,
-                            status: false,
-                            statusCode: 1003,
-                            countFail: auth.loginAttempts + 1
-                        });
-                    }
-                }
-                if (auth && validPassword && auth.loginAttempts !== 5) {
-                    await auth.updateOne({ $set: { loginAttempts: 0 }, $unset: { lockUntil: 1 } })
-                    const accessToken = AuthController.generateAccessToken(auth);
-                    const refreshToken = AuthController.generateRefreshToken(auth);
-                    auth.refreshToken = refreshToken;
-                    await auth.save()
-                        .then((data) => {
-                            const { password, __v, ...others } = data._doc;
-                            return res.status(200).json({
-                                message: "Login successfully",
-                                data: { ...others },
-                                token: accessToken,
-                                status: true
-                            });
-                        })
-                        .catch((err) => {
-                            return res.status(409).json({
-                                message: "Login failure",
-                                status: false,
-                                errorStatus: err.status || 500,
-                                errorMessage: err.message
-                            });
-                        })
-                }
-                else {
-                    return res.status(403).json({ message: "You are logged in failure 5 times. Please wait 24 hours to login again !", status: false, statusCode: 1004 });
-                }
-            }
-            else {
-                return res.status(400).json({
-                    message: "Please enter your email/phone and password. Do not leave any fields blank !",
-                    status: false,
-                    statusCode: 1005
-                });
-            }
+            // if (PHONE_EMAIL !== null && PHONE_EMAIL !== '' && PASSWORD !== null && PASSWORD !== '') {
+            //     const deletedUser = await Customer.findDeleted();
+            //     const isBlock = deletedUser.find(x => x.deleted === Boolean(true) && x.deletedAt !== null);
+            //     if (isBlock) {
+            //         return res.status(403).json({ message: "This phone/email is blocked by admin", status: false, statusCode: 1001 });
+            //     }
+            //     const auths = await Customer.find();
+            //     const auth = auths.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
+            //     if (!auth) {
+            //         return res.status(404).json({ message: "Wrong phone/email. Please try again !", status: false, statusCode: 1002 });
+            //     }
+            //     else if (auth) {
+            //         if (auth.lockUntil && auth.lockUntil < Date.now()) {
+            //             await auth.updateOne({ $set: { loginAttempts: 0 }, $unset: { lockUntil: 1 } })
+            //         }
+            //     }
+            //     const validPassword = await bcrypt.compare(PASSWORD, auth.password);
+            //     if (!validPassword) {
+            //         if (auth.loginAttempts === 5 && auth.lockUntil > Date.now()) {
+            //             return res.status(403).json({ message: "You are logged in failure 5 times. Please wait 24 hours to login again !", status: false, statusCode: 1004 });
+            //         }
+            //         else if (auth.loginAttempts < 5) {
+            //             await auth.updateOne({ $set: { lockUntil: Date.now() + 24 * 60 * 60 * 1000 }, $inc: { loginAttempts: 1 } });
+            //             return res.status(404).json({
+            //                 message: `Wrong password. You are logged in failure ${auth.loginAttempts + 1} times`,
+            //                 status: false,
+            //                 statusCode: 1003,
+            //                 countFail: auth.loginAttempts + 1
+            //             });
+            //         }
+            //     }
+            //     if (auth && validPassword && auth.loginAttempts !== 5) {
+            //         await auth.updateOne({ $set: { loginAttempts: 0 }, $unset: { lockUntil: 1 } })
+            //         const accessToken = AuthController.generateAccessToken(auth);
+            //         const refreshToken = AuthController.generateRefreshToken(auth);
+            //         auth.refreshToken = refreshToken;
+            //         await auth.save()
+            //             .then((data) => {
+            //                 const { password, __v, ...others } = data._doc;
+            //                 return res.status(200).json({
+            //                     message: "Login successfully",
+            //                     data: { ...others },
+            //                     token: accessToken,
+            //                     status: true
+            //                 });
+            //             })
+            //             .catch((err) => {
+            //                 return res.status(409).json({
+            //                     message: "Login failure",
+            //                     status: false,
+            //                     errorStatus: err.status || 500,
+            //                     errorMessage: err.message
+            //                 });
+            //             })
+            //     }
+            //     else {
+            //         return res.status(403).json({ message: "You are logged in failure 5 times. Please wait 24 hours to login again !", status: false, statusCode: 1004 });
+            //     }
+            // }
+            // else {
+            //     return res.status(400).json({
+            //         message: "Please enter your email/phone and password. Do not leave any fields blank !",
+            //         status: false,
+            //         statusCode: 1005
+            //     });
+            // }
+            return res.status(200).json({
+                message: "Login successfully",
+                // data: { ...others },
+                data: {},
+                token: accessToken,
+                status: true
+            });
         }
         catch (err) {
             next(err);
