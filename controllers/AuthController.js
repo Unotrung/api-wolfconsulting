@@ -461,25 +461,57 @@ const AuthController = {
                     });
                 }
                 else {
-                    const dataTemp = await new Otp({ phone: auth.phone, email: auth.email, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
-                    await dataTemp.save((err) => {
-                        if (!err) {
-                            sendMail(auth.email, "Get OTP From System Voolo", OTP);
-                            return res.status(201).json({
-                                message: "Send otp successfully",
-                                status: true,
-                                email: auth.email
-                            });
+                    const blacklists = await Blacklists.find();
+                    const isExists = blacklists.find(x => x.phone === PHONE_EMAIL);
+                    if (isExists) {
+                        if (isExists.attempts === 5 && isExists.lockUntil > Date.now()) {
+                            return res.status(403).json({ message: "You have verified otp failure 5 times. Please wait 24 hours to try again !", status: false, statusCode: 1004 });
                         }
-                        else {
-                            return res.status(409).json({
-                                message: "Send otp failure",
-                                status: false,
-                                errorStatus: err.status || 500,
-                                errorMessage: err.message
+                        else if (isExists.lockUntil && isExists.lockUntil < Date.now()) {
+                            await Blacklists.deleteMany({ phone: PHONE_EMAIL });
+                            const dataTemp = await new Otp({ phone: auth.phone, email: auth.email, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
+                            await dataTemp.save((err) => {
+                                if (!err) {
+                                    sendMail(auth.email, "Get OTP From System Voolo", OTP);
+                                    return res.status(201).json({
+                                        message: "Send otp successfully",
+                                        status: true,
+                                        email: auth.email
+                                    });
+                                }
+                                else {
+                                    return res.status(409).json({
+                                        message: "Send otp failure",
+                                        status: false,
+                                        errorStatus: err.status || 500,
+                                        errorMessage: err.message
+                                    });
+                                }
                             });
+
                         }
-                    });
+                    }
+                    else {
+                        const dataTemp = await new Otp({ phone: auth.phone, email: auth.email, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
+                        await dataTemp.save((err) => {
+                            if (!err) {
+                                sendMail(auth.email, "Get OTP From System Voolo", OTP);
+                                return res.status(201).json({
+                                    message: "Send otp successfully",
+                                    status: true,
+                                    email: auth.email
+                                });
+                            }
+                            else {
+                                return res.status(409).json({
+                                    message: "Send otp failure",
+                                    status: false,
+                                    errorStatus: err.status || 500,
+                                    errorMessage: err.message
+                                });
+                            }
+                        });
+                    }
                 }
             }
             else {
@@ -529,6 +561,7 @@ const AuthController = {
                                 process.env.JWT_ACCESS_KEY,
                                 { expiresIn: "1m" }
                             );
+                            await Blacklists.deleteMany({ $or: [{ phone: lastOtp.phone }, { email: lastOtp.email }] });
                             await Otp.deleteMany({ $or: [{ phone: lastOtp.phone }, { email: lastOtp.email }] });
                             return res.status(200).json({
                                 message: "Successfully. OTP valid",
@@ -537,11 +570,25 @@ const AuthController = {
                             });
                         }
                         else {
-                            return res.status(404).json({
-                                message: "Failure. OTP invalid",
-                                status: false,
-                                statusCode: 4000
-                            });
+                            const blacklists = await Blacklists.find();
+                            const isExists = blacklists.find(x => x.phone === PHONE_EMAIL);
+                            if (isExists) {
+                                if (isExists.attempts === 5 && isExists.lockUntil > Date.now()) {
+                                    return res.status(403).json({ message: "You have verified otp failure 5 times. Please wait 24 hours to try again !", status: false, statusCode: 1004 });
+                                }
+                                else if (isExists.attempts < 5) {
+                                    await isExists.updateOne({ $set: { lockUntil: Date.now() + 24 * 60 * 60 * 1000 }, $inc: { attempts: 1 } });
+                                    return res.status(404).json({ message: `Failure. OTP invalid. You are verified otp failure ${isExists.attempts + 1} times !`, status: false, statusCode: 4000, countFail: isExists.attempts + 1 });
+                                }
+                            }
+                            else {
+                                const blackPhone = await new Blacklists({ phone: PHONE_EMAIL, attempts: 1, lockUntil: Date.now() + 24 * 60 * 60 * 1000 });
+                                await blackPhone.save((err) => {
+                                    if (!err) {
+                                        return res.status(404).json({ message: `Failure. OTP invalid. You are verified otp failure 1 times !`, status: false, statusCode: 4000, countFail: 1 });
+                                    }
+                                });
+                            }
                         }
                     }
                 }
