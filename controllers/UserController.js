@@ -22,7 +22,7 @@ const UserController = {
             else {
                 return res.status(200).json({
                     message: "List customer is empty",
-                    status: false
+                    status: true
                 });
             }
         }
