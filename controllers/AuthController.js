@@ -91,6 +91,47 @@ const AuthController = {
                                 });
                         }
                     }
+                    else if (isExists.attempts < 5) {
+                        await Blacklists.deleteMany({ phone: PHONE });
+                        let customers = await Customer.find();
+                        let validPhone = customers.find(x => x.phone === PHONE);
+                        if (validPhone) {
+                            return res.status(409).json({
+                                message: "Phone is already exists. Please login !",
+                                status: false,
+                                statusCode: 2010
+                            });
+                        }
+                        let validEmail = customers.find(x => x.email === EMAIL);
+                        if (validEmail) {
+                            return res.status(409).json({
+                                message: "Email is already exists. Please login !",
+                                status: false,
+                                statusCode: 2011
+                            });
+                        }
+                        if (!validPhone && !validEmail) {
+                            let dataTemp = await new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
+                            await dataTemp.save()
+                                .then((data) => {
+                                    let { otp, __v, ...others } = data._doc;
+                                    sendMail(EMAIL, "Get OTP From System Voolo", OTP);
+                                    return res.status(201).json({
+                                        message: "Send otp successfully",
+                                        data: { ...others },
+                                        status: true
+                                    });
+                                })
+                                .catch((err) => {
+                                    return res.status(409).json({
+                                        message: "Send otp failure",
+                                        status: false,
+                                        errorStatus: err.status || 500,
+                                        errorMessage: err.message
+                                    })
+                                });
+                        }
+                    }
                 }
                 else {
                     let customers = await Customer.find();
