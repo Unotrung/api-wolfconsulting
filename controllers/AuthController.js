@@ -388,6 +388,42 @@ const AuthController = {
         }
     },
 
+    getReRefreshToken: async (req, res, next) => {
+        try {
+            let id = req.params.id;
+            if (id !== null && id !== '') {
+                const customers = await Customer.find();
+                const customer = customers.find(x => x.id === id);
+                if (customer) {
+                    const { password, __v, refreshToken, ...others } = customer._doc;
+                    return res.status(200).json({
+                        message: "Login successfully",
+                        data: { ...others },
+                        refreshToken: refreshToken,
+                        status: true
+                    });
+                }
+                else {
+                    return res.status(409).json({
+                        message: "Can not find this account !",
+                        status: false,
+                        statusCode: 900
+                    });
+                }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your id, email. Do not leave any fields blank !",
+                    status: false,
+                    statusCode: 1005
+                });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
     requestRefreshToken: async (req, res, next) => {
         try {
             let email = req.body.email;

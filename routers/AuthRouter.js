@@ -115,6 +115,8 @@ router.put("/updateEmail",
 
 router.put("/requestRefreshToken", MiddlewareController.verifyTokenByMySelf, AuthController.requestRefreshToken);
 
+router.get("/getReRefreshToken/:id", MiddlewareController.verifyTokenByMySelf, AuthController.getReRefreshToken);
+
 router.put("/logout", MiddlewareController.verifyTokenByMySelf, AuthController.logout);
 
 module.exports = router;
