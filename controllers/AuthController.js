@@ -397,8 +397,7 @@ const AuthController = {
                 if (customer) {
                     const { password, __v, refreshToken, ...others } = customer._doc;
                     return res.status(200).json({
-                        message: "Login successfully",
-                        data: { ...others },
+                        message: "Get refresh token successfully",
                         refreshToken: refreshToken,
                         status: true
                     });
