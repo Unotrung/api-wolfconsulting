@@ -113,7 +113,7 @@ router.put("/updateEmail",
     ],
     MiddlewareController.verifyTokenByMySelf, MiddlewareController.verifyTokenByMySelfBody, MiddlewareController.validateRequestSchema, AuthController.updateEmail);
 
-router.put("/requestRefreshToken", MiddlewareController.verifyTokenByMySelf, AuthController.requestRefreshToken);
+router.put("/requestRefreshToken", AuthController.requestRefreshToken);
 
 router.get("/getReRefreshToken/:id", MiddlewareController.verifyTokenByMySelf, AuthController.getReRefreshToken);
 
