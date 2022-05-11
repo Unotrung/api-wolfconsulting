@@ -21,7 +21,7 @@ const CommonController = {
 
     generateProviders: async (req, res, next) => {
         try {
-            const providers = await Provider.find();
+            const providers = await Provider.find().select('-__v -createdAt -updatedAt');
             if (providers.length > 0) {
                 return res.status(200).json({
                     count: providers.length,
@@ -33,7 +33,7 @@ const CommonController = {
             else {
                 return res.status(200).json({
                     message: "List provider is empty",
-                    status: false
+                    status: true
                 })
             }
         }
@@ -62,9 +62,10 @@ const CommonController = {
                     }
                     else {
                         return res.status(409).json({
-                            err: err.message,
                             message: 'Add repayment failure',
-                            status: false
+                            status: false,
+                            errorStatus: err.status || 500,
+                            errorMessage: err.message
                         })
                     }
                 })
@@ -105,9 +106,10 @@ const CommonController = {
                     }
                     else {
                         return res.status(409).json({
-                            err: err.message,
                             message: 'Add transaction failure',
-                            status: false
+                            status: false,
+                            errorStatus: err.status || 500,
+                            errorMessage: err.message
                         })
                     }
                 })
