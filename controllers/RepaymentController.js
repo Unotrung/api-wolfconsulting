@@ -23,7 +23,7 @@ const RepaymentController = {
                 sortValue = parseInt(sortValue);
                 var skipItem = (page - 1) * PAGE_SIZE;
                 const sort = sortValue === 1 ? `${sortByField}` : `-${(sortByField)}`;
-                const result = await Repayment.find({ user: id }).skip(skipItem).limit(PAGE_SIZE).sort(sort);
+                const result = await Repayment.find({ user: id }).skip(skipItem).limit(PAGE_SIZE).sort(sort).select('-__v -createdAt -updatedAt -user');
                 return res.status(200).json({
                     message: "Get list repayment success",
                     data: result,
@@ -39,7 +39,7 @@ const RepaymentController = {
                 return res.status(200).json({
                     message: "You do not have any repayment",
                     totalItem: totalItem,
-                    status: false
+                    status: true
                 });
             }
         }
@@ -52,7 +52,7 @@ const RepaymentController = {
         try {
             let id = req.params.id;
             let idRepayment = req.params.idRepayment;
-            let data = await Repayment.find({ user: id, _id: idRepayment });
+            let data = await Repayment.find({ user: id, _id: idRepayment }).select('-__v -user');
             if (data.length > 0) {
                 return res.status(200).json({
                     message: "Get repayment detail success",
