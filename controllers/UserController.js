@@ -35,7 +35,7 @@ const UserController = {
         try {
             const user = await Customer.findById(req.params.id);
             if (user) {
-                const { passsword, __v, ...others } = user._doc;
+                const { password, __v, loginAttempts, deleted, createdAt, updatedAt, ...others } = user._doc;
                 return res.status(200).json({
                     message: "Get information of user successfully",
                     data: { ...others },
