@@ -8,7 +8,7 @@ const UserController = {
             const users = await Customer.find();
             let arrUsers = [];
             users.map((user, index) => {
-                let { passsword, __v, ...others } = user._doc;
+                let { createdAt, updatedAt, deleted, password, __v, ...others } = user._doc;
                 arrUsers.push({ ...others });
             })
             if (users.length > 0) {
