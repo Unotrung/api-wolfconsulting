@@ -320,7 +320,7 @@ const AuthController = {
                     auth.refreshToken = refreshToken;
                     await auth.save()
                         .then((data) => {
-                            const { password, loginAttempts, deleted, __v, ...others } = data._doc;
+                            const { password, loginAttempts, deleted, __v, createdAt, updatedAt, ...others } = data._doc;
                             return res.status(200).json({
                                 message: "Login successfully",
                                 data: { ...others },
