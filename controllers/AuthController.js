@@ -54,12 +54,18 @@ const AuthController = {
         return async (req, res) => {
             if (USERNAME !== null && USERNAME !== '' && EMAIL !== null && EMAIL !== '' && PHONE !== null && PHONE !== '' && OTP !== null && OTP !== '') {
                 let dataTemp = await new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
+                let user = {
+                    username: USERNAME,
+                    email: EMAIL,
+                    phone: PHONE
+                }
                 await dataTemp.save()
                     .then((data) => {
                         sendMail(EMAIL, "Get OTP From System Voolo", OTP);
                         return res.status(201).json({
                             message: "Send otp successfully",
-                            status: true
+                            status: true,
+                            user: user
                         });
                     })
                     .catch((err) => {

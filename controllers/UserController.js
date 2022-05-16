@@ -61,11 +61,9 @@ const UserController = {
             let NEW_PASSWORD = req.body.new_password;
             let USERNAME = req.body.username;
             const user = await Customer.findById(req.params.id);
-            console.log(123);
             if ((OLD_PASSWORD !== null && OLD_PASSWORD !== '' && NEW_PASSWORD !== null && NEW_PASSWORD !== '') || (USERNAME !== null && USERNAME !== '')) {
                 if (user) {
                     if (OLD_PASSWORD && NEW_PASSWORD) {
-                        console.log(456);
                         const validPassword = await bcrypt.compare(OLD_PASSWORD, user.password);
                         if (!validPassword) {
                             return res.status(404).json({
@@ -133,7 +131,6 @@ const UserController = {
             }
             else (OLD_PASSWORD == null && OLD_PASSWORD == '' && NEW_PASSWORD == null && NEW_PASSWORD == '') || (USERNAME == null && USERNAME == '')
             {
-                console.log(789);
                 return res.status(400).json({
                     message: "Please enter your old password and new password or username !",
                     status: false,
