@@ -65,7 +65,7 @@ const AuthController = {
                         return res.status(201).json({
                             message: "Send otp successfully",
                             status: true,
-                            user: user
+                            data: user
                         });
                     })
                     .catch((err) => {
