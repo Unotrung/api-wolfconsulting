@@ -484,17 +484,17 @@ const AuthController = {
         }
     },
 
-    sendOtpPassword: async (EMAIL, PHONE, OTP) => {
+    sendOtpPassword: (EMAIL, PHONE, OTP) => {
         return async (req, res) => {
             if (EMAIL !== null && EMAIL !== '' && PHONE !== null && PHONE !== '' && OTP !== null && OTP !== '') {
                 let dataTemp = await new Otp({ email: EMAIL, phone: PHONE, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
                 await dataTemp.save()
                     .then((data) => {
-                        sendMail(EMAIL, "Get OTP From System Voolo", OTP);
                         return res.status(201).json({
                             message: "Send otp successfully",
                             status: true,
-                            email: EMAIL
+                            email: EMAIL,
+                            otp: OTP
                         });
                     })
                     .catch((err) => {
@@ -542,11 +542,11 @@ const AuthController = {
                         }
                         else if (isExists.lockUntil && isExists.lockUntil < Date.now()) {
                             await Blacklists.deleteMany({ phone: PHONE_EMAIL });
-                            await AuthController.sendOtpPassword(email, phone, OTP);
+                            await AuthController.sendOtpPassword(email, phone, OTP)(req, res);
                         }
                     }
                     else {
-                        await AuthController.sendOtpPassword(email, phone, OTP);
+                        await AuthController.sendOtpPassword(email, phone, OTP)(req, res);
                     }
                 }
             }
