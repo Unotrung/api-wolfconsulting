@@ -255,7 +255,7 @@ const AuthController = {
                     });
                 }
                 else {
-                    const hashed = await AuthController.encryptPassword(NEW_PASSWORD);
+                    const hashed = await AuthController.encryptPassword(password);
                     const newUser = await new Customer({ username: username, email: email, phone: phone, password: hashed });
                     await newUser.save((err, data) => {
                         if (!err) {
