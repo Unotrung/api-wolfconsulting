@@ -113,19 +113,7 @@ const AuthController = {
                     if (isExists.attempts === 5 && isExists.lockUntil > Date.now()) {
                         return res.status(403).json({ message: "You have verified otp failure 5 times. Please wait 24 hours to try again !", status: false, statusCode: 1004, countFail: 5 });
                     }
-                    else if (isExists.lockUntil && isExists.lockUntil < Date.now()) {
-                        await Blacklists.deleteMany({ phone: PHONE });
-                        if (validPhone) {
-                            return res.status(409).json(message_phoneValid);
-                        }
-                        if (validEmail) {
-                            return res.status(409).json(message_email);
-                        }
-                        if (!validPhone && !validEmail) {
-                            await AuthController.generateOTP(USERNAME, EMAIL, PHONE, OTP)(req, res);
-                        }
-                    }
-                    else if (isExists.attempts > 0 && isExists.attempts < 5) {
+                    else if ((isExists.lockUntil && isExists.lockUntil < Date.now()) || (isExists.attempts > 0 && isExists.attempts < 5)) {
                         await Blacklists.deleteMany({ phone: PHONE });
                         if (validPhone) {
                             return res.status(409).json(message_phoneValid);
