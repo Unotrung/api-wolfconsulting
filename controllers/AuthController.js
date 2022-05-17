@@ -539,7 +539,7 @@ const AuthController = {
                         if (isExists.attempts === 5 && isExists.lockUntil > Date.now()) {
                             return res.status(403).json({ message: "You have verified otp failure 5 times. Please wait 24 hours to try again !", status: false, statusCode: 1004, countFail: 5 });
                         }
-                        else if (isExists.lockUntil && isExists.lockUntil < Date.now()) {
+                        else if ((isExists.lockUntil && isExists.lockUntil < Date.now()) || (isExists.attempts > 0 && isExists.attempts < 5)) {
                             await Blacklists.deleteMany({ phone: PHONE_EMAIL });
                             await AuthController.sendOtpPassword(email, phone, OTP)(req, res);
                         }
