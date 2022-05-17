@@ -441,8 +441,7 @@ const AuthController = {
     logout: async (req, res, next) => {
         try {
             let id = req.body.id;
-            let email = req.body.email;
-            if (id !== null && id !== '' && email !== null && email !== '') {
+            if (id !== null && id !== '') {
                 const customers = await Customer.find();
                 const customer = customers.find(x => x.id === id && x.email === email);
                 if (customer) {
@@ -473,7 +472,7 @@ const AuthController = {
             }
             else {
                 return res.status(400).json({
-                    message: "Please enter your id and email. Do not leave any fields blank !",
+                    message: "Please enter your id. Do not leave any fields blank !",
                     status: false,
                     statusCode: 1005
                 });

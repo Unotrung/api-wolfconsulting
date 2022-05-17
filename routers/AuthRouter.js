@@ -15,12 +15,10 @@ router.post("/sendOtp",
         body('username')
             .isLength({ min: 3 }).withMessage('Minimum length of username is 3')
             .isLength({ max: 255 }).withMessage('Maximum length of username is 255'),
-
         body('email')
             .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
             .isEmail().withMessage(errMessageMail),
-
         body('phone').matches(formatPhone).withMessage(errMessagePhone),
     ],
     MiddlewareController.validateRequestSchema, AuthController.sendOtp);
@@ -30,12 +28,10 @@ router.post("/verifyOtp",
         body('username')
             .isLength({ min: 3 }).withMessage('Minimum length of username is 3')
             .isLength({ max: 255 }).withMessage('Maximum length of username is 255'),
-
         body('email')
             .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
             .isEmail().withMessage(errMessageMail),
-
         body('phone').matches(formatPhone).withMessage(errMessagePhone),
     ],
     MiddlewareController.validateRequestSchema, AuthController.verifyOtp);
@@ -45,14 +41,11 @@ router.post("/register",
         body('username')
             .isLength({ min: 3 }).withMessage('Minimum length of username is 3')
             .isLength({ max: 255 }).withMessage('Maximum length of username is 255'),
-
         body('email')
             .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
             .isEmail().withMessage(errMessageMail),
-
         body('phone').matches(formatPhone).withMessage(errMessagePhone),
-
         body('password').matches(formatPassword).withMessage(errMessagePassword),
     ],
     MiddlewareController.validateRequestSchema, AuthController.register);
@@ -77,7 +70,6 @@ router.post("/sendOTPEmail",
             .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
             .isEmail().withMessage(errMessageMail),
-
         body('new_email')
             .isLength({ min: 13 }).withMessage('Minimum length of new email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of new email is 255')
@@ -91,7 +83,6 @@ router.post("/verifyOTPEmail",
             .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
             .isEmail().withMessage(errMessageMail),
-
         body('new_email')
             .isLength({ min: 13 }).withMessage('Minimum length of new email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of new email is 255')
@@ -105,7 +96,6 @@ router.put("/updateEmail",
             .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
             .isEmail().withMessage(errMessageMail),
-
         body('new_email')
             .isLength({ min: 13 }).withMessage('Minimum length of new email is 13')
             .isLength({ max: 255 }).withMessage('Maximum length of new email is 255')
