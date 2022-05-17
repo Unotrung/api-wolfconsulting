@@ -443,7 +443,7 @@ const AuthController = {
             let id = req.body.id;
             if (id !== null && id !== '') {
                 const customers = await Customer.find();
-                const customer = customers.find(x => x.id === id && x.email === email);
+                const customer = customers.find(x => x.id === id);
                 if (customer) {
                     customer.refreshToken = null;
                     await customer.save()
