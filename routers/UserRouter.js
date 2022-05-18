@@ -26,6 +26,6 @@ router.put("/:id",
             .matches(formatPassword)
             .withMessage(errMessageNewPassword),
     ],
-    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, UserController.updateUser);
+    MiddlewareController.verifyTokenByMySelf, UserController.updateUser);
 
 module.exports = router;

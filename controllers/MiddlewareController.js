@@ -105,7 +105,8 @@ const MiddlewareController = {
             if (errors.errors.length > 0) {
                 return res.status(400).json({
                     message: errors.errors[0].msg,
-                    status: false
+                    status: false,
+                    errorCode: 8000
                 });
             }
             else {
