@@ -18,4 +18,6 @@ const eap_blacklistSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+mongoose.SchemaTypes.String.set('trim', true);
+
 module.exports = mongoose.model('eap_blacklist', eap_blacklistSchema);

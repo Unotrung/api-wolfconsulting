@@ -36,9 +36,19 @@ const eap_customerSchema = new mongoose.Schema({
     refreshToken: {
         type: String,
         default: ''
+    },
+    verifyEmail: {
+        type: Boolean,
+        default: false
+    },
+    verifyPhone: {
+        type: Boolean,
+        default: false
     }
 
 }, { timestamps: true });
+
+mongoose.SchemaTypes.String.set('trim', true);
 
 const secret = process.env.SECRET_MONGOOSE;
 eap_customerSchema.plugin(encrypt, { secret: secret, encryptedFields: ['username', 'email', 'phone', 'password', 'refreshToken'] });

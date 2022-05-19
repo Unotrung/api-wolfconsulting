@@ -43,4 +43,6 @@ const transactionSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+mongoose.SchemaTypes.String.set('trim', true);
+
 module.exports = mongoose.model('Transaction', transactionSchema);

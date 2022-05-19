@@ -21,4 +21,6 @@ const eap_otpSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+mongoose.SchemaTypes.String.set('trim', true);
+
 module.exports = mongoose.model('eap_otp', eap_otpSchema);
