@@ -865,6 +865,148 @@ const AuthController = {
         }
     },
 
+    sendOTPPhone: async (req, res, next) => {
+        try {
+            let phone = req.body.phone;
+            let OTP = otpGenerator.generate(6, {
+                digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
+            });
+            if (phone !== null && phone !== "") {
+                const user = await AuthController.findValidPhoneInCustomer(phone);
+                if (user) {
+                    let dataTemp = await new Otp({ phone: phone, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
+                    await dataTemp.save()
+                        .then((data) => {
+                            return res.status(201).json({
+                                message: "Send otp successfully",
+                                status: true,
+                                otp: OTP
+                            });
+                        })
+                        .catch((err) => {
+                            return res.status(409).json({
+                                message: "Send otp failure",
+                                status: false,
+                                errorStatus: err.status || 500,
+                                errorMessage: err.message
+                            })
+                        });
+                }
+                else {
+                    return res.status(404).json({
+                        message: "This account is not exists. Please register !",
+                        status: false,
+                        statusCode: 900
+                    });
+                }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your phone. Do not leave any fields blank !",
+                    status: false,
+                    statusCode: 1005
+                });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
+    verifyOTPPhone: async (req, res, next) => {
+        try {
+            let phone = req.body.phone;
+            let otp = req.body.otp;
+            let otp_expired = {
+                message: "Expired otp. Please resend otp !",
+                status: false,
+                statusCode: 3000
+            };
+            if (phone !== null && phone !== "" && otp !== null && otp !== "") {
+                const otpUser = await Otp.find({ phone: phone });
+                if (otpUser.length === 0) {
+                    return res.status(401).json(otp_expired);
+                }
+                const lastOtp = otpUser[otpUser.length - 1];
+                if (lastOtp.expiredAt < Date.now()) {
+                    await Otp.deleteMany({ phone: phone });
+                    return res.status(401).json(otp_expired);
+                }
+                else {
+                    if (lastOtp.phone === phone && lastOtp.otp === otp) {
+                        await Otp.deleteMany({ phone: lastOtp.phone });
+                        return res.status(200).json({
+                            message: "Successfully. OTP valid",
+                            phone: phone,
+                            status: true
+                        });
+                    }
+                    else {
+                        return res.status(404).json({
+                            message: "Failure. OTP invalid",
+                            status: false,
+                            statusCode: 4000
+                        });
+                    }
+                }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your phone and otp code. Do not leave any fields blank !",
+                    status: false,
+                    statusCode: 1005
+                });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
+    updateVerifyPhone: async (req, res, next) => {
+        try {
+            let phone = req.body.phone;
+            if (phone !== null && phone !== "") {
+                const user = await AuthController.findValidPhoneInCustomer(phone);
+                if (user) {
+                    user.verifyPhone = true;
+                    await user.save()
+                        .then((data) => {
+                            return res.status(201).json({
+                                message: "Update status verify phone successfully",
+                                status: true
+                            })
+                        })
+                        .catch((err) => {
+                            return res.status(409).json({
+                                message: "Update status verify phone failure",
+                                status: false,
+                                errorStatus: err.status || 500,
+                                errorMessage: err.message
+                            })
+                        })
+                }
+                else {
+                    return res.status(404).json({
+                        message: "Can not find this account to update !",
+                        status: false,
+                        statusCode: 900
+                    });
+                }
+            }
+            else {
+                return res.status(400).json({
+                    message: "Please enter your phone. Do not leave any fields blank !",
+                    status: false,
+                    statusCode: 1005
+                });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
 }
 
 module.exports = AuthController;

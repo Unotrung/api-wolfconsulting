@@ -17,6 +17,7 @@ const userRoute = require('./routers/UserRouter');
 const transactionRoute = require('./routers/TransactionRouter');
 const repaymentRoute = require('./routers/RepaymentRouter');
 const commonRoute = require('./routers/CommonRouter');
+const relatedBNPLRoute = require('./routers/RelatedBNPLRouter');
 
 dotenv.config();
 
@@ -53,6 +54,7 @@ app.use('/v1/eap/user', userRoute);
 app.use('/v1/eap/transaction', transactionRoute);
 app.use('/v1/eap/repayment', repaymentRoute);
 app.use('/v1/eap/common', commonRoute);
+app.use('/v1/eap/relatedBNPL', relatedBNPLRoute);
 
 // app.get('/api', async (req, res, next) => {
 //     try {

@@ -109,4 +109,22 @@ router.get("/getReRefreshToken/:id", MiddlewareController.verifyTokenByMySelf, A
 
 router.put("/logout", MiddlewareController.verifyTokenByMySelf, AuthController.logout);
 
+router.post("/sendOTPPhone",
+    [
+        body('phone').matches(formatPhone).withMessage(errMessagePhone),
+    ],
+    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, AuthController.sendOTPPhone);
+
+router.post("/verifyOTPPhone",
+    [
+        body('phone').matches(formatPhone).withMessage(errMessagePhone),
+    ],
+    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, AuthController.verifyOTPPhone);
+
+router.post("/updateVerifyPhone",
+    [
+        body('phone').matches(formatPhone).withMessage(errMessagePhone),
+    ],
+    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, AuthController.updateVerifyPhone);
+
 module.exports = router;
