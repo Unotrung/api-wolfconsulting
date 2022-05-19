@@ -244,7 +244,7 @@ const AuthController = {
                 }
                 else {
                     const hashed = await AuthController.encryptPassword(password);
-                    const newUser = await new Customer({ username: username, email: email, phone: phone, password: hashed });
+                    const newUser = await new Customer({ username: username, email: email, phone: phone, password: hashed, verifyEmail: true });
                     await newUser.save((err, data) => {
                         if (!err) {
                             const { password, __v, refreshToken, loginAttempts, deleted, createdAt, updatedAt, ...others } = data._doc;
