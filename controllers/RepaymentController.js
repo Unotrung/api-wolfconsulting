@@ -1,4 +1,5 @@
 const Repayment = require('../models/Repayment');
+const { MSG_GET_LIST_SUCCESSFULLY, MSG_LIST_IS_EMPTY, MSG_GET_DETAIL_SUCCESSFULLY, MSG_NOT_FOUND } = require('../config/response/response');
 
 const RepaymentController = {
 
@@ -25,7 +26,7 @@ const RepaymentController = {
                 const sort = sortValue === 1 ? `${sortByField}` : `-${(sortByField)}`;
                 const result = await Repayment.find({ user: id }).skip(skipItem).limit(PAGE_SIZE).sort(sort).select('-__v -createdAt -updatedAt -user');
                 return res.status(200).json({
-                    message: "Get list repayment success",
+                    message: MSG_GET_LIST_SUCCESSFULLY,
                     data: result,
                     totalItem: totalItem,
                     totalPage: totalPage,
@@ -37,7 +38,7 @@ const RepaymentController = {
             }
             else {
                 return res.status(200).json({
-                    message: "You do not have any repayment",
+                    message: MSG_LIST_IS_EMPTY,
                     totalItem: totalItem,
                     status: true
                 });
@@ -55,14 +56,14 @@ const RepaymentController = {
             let data = await Repayment.find({ user: id, _id: idRepayment }).select('-__v -user');
             if (data.length > 0) {
                 return res.status(200).json({
-                    message: "Get repayment detail success",
+                    message: MSG_GET_DETAIL_SUCCESSFULLY,
                     data: data,
                     status: true
                 })
             }
             else {
                 return res.status(404).json({
-                    message: "This repayment id is not exists",
+                    message: MSG_NOT_FOUND,
                     status: false,
                     statusCode: 900
                 });

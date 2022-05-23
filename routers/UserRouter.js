@@ -1,22 +1,25 @@
-const MiddlewareController = require('../controllers/MiddlewareController');
 const UserController = require('../controllers/UserController');
-const { check, body } = require('express-validator');
-const router = require("express").Router();
+const MiddlewareController = require('../controllers/MiddlewareController');
+const { body } = require('express-validator');
+const router = require('express').Router();
+const { VALIDATE_PASSWORD } = require('../config/validate_data/validate_data');
+const { ERR_MESSAGE_PASSWORD, ERR_MESSAGE_NEW_PASSWORD, ERR_MSG_MIN_USERNAME, ERR_MSG_MAX_USERNAME } = require('../config/message/message');
 
-const formatPassword = /^(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*#?&~^\-+_\(\)]{6,}$/;
-const errMessagePassword = 'Password must contain at least 1 uppercase letter and 1 number. The minimum password length is 6';
-const errMessageNewPassword = 'New password must contain at least 1 uppercase letter and 1 number. The minimum password length is 6';
+const formatPassword = VALIDATE_PASSWORD;
 
-router.get("/", MiddlewareController.verifyToken, UserController.getAllUser);
+const errMessagePassword = ERR_MESSAGE_PASSWORD;
+const errMessageNewPassword = ERR_MESSAGE_NEW_PASSWORD;
 
-router.get("/:id", MiddlewareController.verifyTokenByMySelf, UserController.getUser);
+router.get('/', MiddlewareController.verifySecurity, MiddlewareController.verifyToken, UserController.getAllUser);
 
-router.put("/:id",
+router.get('/:id', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf, UserController.getUser);
+
+router.put('/:id', MiddlewareController.verifySecurity,
     [
         body('username')
             .optional({ nullable: true, checkFalsy: true })
-            .isLength({ min: 3 }).withMessage('Minimum length of username is 3')
-            .isLength({ max: 255 }).withMessage('Maximum length of username is 255'),
+            .isLength({ min: 3 }).withMessage(ERR_MSG_MIN_USERNAME)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_USERNAME),
         body('password')
             .optional({ nullable: true, checkFalsy: true })
             .matches(formatPassword)

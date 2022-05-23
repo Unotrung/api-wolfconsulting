@@ -1,130 +1,131 @@
-const AuthController = require("../controllers/AuthController");
-const MiddlewareController = require("../controllers/MiddlewareController");
-const { check, body } = require('express-validator');
-const router = require("express").Router();
+const AuthController = require('../controllers/AuthController');
+const MiddlewareController = require('../controllers/MiddlewareController');
+const { body } = require('express-validator');
+const router = require('express').Router();
+const { VALIDATE_PASSWORD, VALIDATE_PHONE } = require('../config/validate_data/validate_data');
+const { ERR_MESSAGE_PHONE, ERR_MESSAGE_MAIL, ERR_MESSAGE_NEW_MAIL, ERR_MESSAGE_PASSWORD, ERR_MSG_MIN_USERNAME, ERR_MSG_MAX_USERNAME, ERR_MSG_MIN_MAIL, ERR_MSG_MAX_MAIL, ERR_MSG_MIN_NEW_MAIL, ERR_MSG_MAX_NEW_MAIL } = require('../config/message/message');
 
-const formatPhone = /^(09|03|07|08|05)+([0-9]{8}$)/;
-const formatPassword = /^(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*#?&~^\-+_\(\)]{6,}$/;
-const errMessagePhone = 'Invalid phone number format';
-const errMessageMail = 'Invalid email format';
-const errMessageNewMail = 'Invalid new email format';
-const errMessagePassword = 'Password must contain at least 1 uppercase letter and 1 number. The minimum password length is 6';
+const formatPhone = VALIDATE_PHONE;
+const formatPassword = VALIDATE_PASSWORD;
 
-router.post("/sendOtp",
+const errMessagePhone = ERR_MESSAGE_PHONE;
+const errMessageMail = ERR_MESSAGE_MAIL;
+const errMessageNewMail = ERR_MESSAGE_NEW_MAIL;
+const errMessagePassword = ERR_MESSAGE_PASSWORD;
+
+router.post('/sendOtp', MiddlewareController.verifySecurity,
     [
         body('username')
-            .isLength({ min: 3 }).withMessage('Minimum length of username is 3')
-            .isLength({ max: 255 }).withMessage('Maximum length of username is 255'),
+            .isLength({ min: 3 }).withMessage(ERR_MSG_MIN_USERNAME)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_USERNAME),
         body('email')
-            .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
-            .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
+            .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_MAIL)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_MAIL)
             .isEmail().withMessage(errMessageMail),
         body('phone').matches(formatPhone).withMessage(errMessagePhone),
     ],
     MiddlewareController.validateRequestSchema, AuthController.sendOtp);
 
-router.post("/verifyOtp",
+router.post('/verifyOtp', MiddlewareController.verifySecurity,
     [
         body('username')
-            .isLength({ min: 3 }).withMessage('Minimum length of username is 3')
-            .isLength({ max: 255 }).withMessage('Maximum length of username is 255'),
+            .isLength({ min: 3 }).withMessage(ERR_MSG_MIN_USERNAME)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_USERNAME),
         body('email')
-            .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
-            .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
+            .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_MAIL)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_MAIL)
             .isEmail().withMessage(errMessageMail),
         body('phone').matches(formatPhone).withMessage(errMessagePhone),
     ],
     MiddlewareController.validateRequestSchema, AuthController.verifyOtp);
 
-router.post("/register",
+router.post('/register', MiddlewareController.verifySecurity,
     [
         body('username')
-            .isLength({ min: 3 }).withMessage('Minimum length of username is 3')
-            .isLength({ max: 255 }).withMessage('Maximum length of username is 255'),
+            .isLength({ min: 3 }).withMessage(ERR_MSG_MIN_USERNAME)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_USERNAME),
         body('email')
-            .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
-            .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
+            .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_MAIL)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_MAIL)
             .isEmail().withMessage(errMessageMail),
         body('phone').matches(formatPhone).withMessage(errMessagePhone),
         body('password').matches(formatPassword).withMessage(errMessagePassword),
     ],
     MiddlewareController.validateRequestSchema, AuthController.register);
 
-router.post("/login", AuthController.login);
-// router.get("/:id/requestRefreshToken", MiddlewareController.VerifyTokenByMySelf, AuthController.requestRefreshToken);
-// router.get("/logout", MiddlewareController.verifyToken, AuthController.logout);
+router.post('/login', MiddlewareController.verifySecurity, AuthController.login);
 
-router.post("/forgotPassword", AuthController.forgotPassword);
+router.post('/forgotPassword', MiddlewareController.verifySecurity, AuthController.forgotPassword);
 
-router.post("/verifyOtpPassword", AuthController.verifyOtpPassword);
+router.post('/verifyOtpPassword', MiddlewareController.verifySecurity, AuthController.verifyOtpPassword);
 
-router.put("/resetPassword",
+router.put('/resetPassword', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('password').matches(formatPassword).withMessage(errMessagePassword),
     ],
-    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, AuthController.resetPassword);
+    MiddlewareController.validateRequestSchema, AuthController.resetPassword);
 
-router.post("/sendOTPEmail",
+router.post('/sendOTPEmail', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('email')
-            .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
-            .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
+            .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_MAIL)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_MAIL)
             .isEmail().withMessage(errMessageMail),
         body('new_email')
-            .isLength({ min: 13 }).withMessage('Minimum length of new email is 13')
-            .isLength({ max: 255 }).withMessage('Maximum length of new email is 255')
+            .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_NEW_MAIL)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_NEW_MAIL)
             .isEmail().withMessage(errMessageNewMail),
     ],
-    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, AuthController.sendOTPEmail);
+    MiddlewareController.validateRequestSchema, AuthController.sendOTPEmail);
 
-router.post("/verifyOTPEmail",
+router.post('/verifyOTPEmail', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('email')
-            .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
-            .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
+            .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_MAIL)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_MAIL)
             .isEmail().withMessage(errMessageMail),
         body('new_email')
-            .isLength({ min: 13 }).withMessage('Minimum length of new email is 13')
-            .isLength({ max: 255 }).withMessage('Maximum length of new email is 255')
+            .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_NEW_MAIL)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_NEW_MAIL)
             .isEmail().withMessage(errMessageNewMail),
     ],
-    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, AuthController.verifyOTPEmail);
+    MiddlewareController.validateRequestSchema, AuthController.verifyOTPEmail);
 
-router.put("/updateEmail",
+router.put('/updateEmail', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf, MiddlewareController.verifyTokenByMySelfBody,
     [
         body('email')
-            .isLength({ min: 13 }).withMessage('Minimum length of email is 13')
-            .isLength({ max: 255 }).withMessage('Maximum length of email is 255')
+            .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_MAIL)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_MAIL)
             .isEmail().withMessage(errMessageMail),
         body('new_email')
-            .isLength({ min: 13 }).withMessage('Minimum length of new email is 13')
-            .isLength({ max: 255 }).withMessage('Maximum length of new email is 255')
+            .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_NEW_MAIL)
+            .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_NEW_MAIL)
             .isEmail().withMessage(errMessageNewMail),
     ],
-    MiddlewareController.verifyTokenByMySelf, MiddlewareController.verifyTokenByMySelfBody, MiddlewareController.validateRequestSchema, AuthController.updateEmail);
+    MiddlewareController.validateRequestSchema, AuthController.updateEmail);
 
-router.put("/requestRefreshToken", AuthController.requestRefreshToken);
+router.put('/requestRefreshToken', MiddlewareController.verifySecurity, AuthController.requestRefreshToken);
 
-router.get("/getReRefreshToken/:id", MiddlewareController.verifyTokenByMySelf, AuthController.getReRefreshToken);
+router.get('/getReRefreshToken/:id', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf, AuthController.getReRefreshToken);
 
-router.put("/logout", MiddlewareController.verifyTokenByMySelf, AuthController.logout);
+router.put('/logout', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf, AuthController.logout);
 
-router.post("/sendOTPPhone",
+router.post('/sendOTPPhone', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelfBody,
     [
         body('phone').matches(formatPhone).withMessage(errMessagePhone),
     ],
-    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, AuthController.sendOTPPhone);
+    MiddlewareController.validateRequestSchema, AuthController.sendOTPPhone);
 
-router.post("/verifyOTPPhone",
+router.post('/verifyOTPPhone', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('phone').matches(formatPhone).withMessage(errMessagePhone),
     ],
-    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, AuthController.verifyOTPPhone);
+    MiddlewareController.validateRequestSchema, AuthController.verifyOTPPhone);
 
-router.post("/updateVerifyPhone",
+router.post('/updateVerifyPhone', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('phone').matches(formatPhone).withMessage(errMessagePhone),
     ],
-    MiddlewareController.verifyTokenByMySelf, MiddlewareController.validateRequestSchema, AuthController.updateVerifyPhone);
+    MiddlewareController.validateRequestSchema, AuthController.updateVerifyPhone);
 
 module.exports = router;

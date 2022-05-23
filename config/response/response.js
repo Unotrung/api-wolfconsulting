@@ -1,0 +1,35 @@
+export const MSG_ENTER_ALL_FIELDS = 'Please enter all fields ! Do not leave any field blank !';
+export const MSG_GET_LIST_SUCCESSFULLY = 'Get list successfully';
+export const MSG_GET_LIST_FAILURE = 'Get list failure';
+export const MSG_LIST_IS_EMPTY = 'List is empty';
+export const MSG_GET_DETAIL_SUCCESSFULLY = 'Get detail successfully';
+export const MSG_GET_DETAIL_FAILURE = 'Get detail failure';
+export const MSG_NOT_FOUND = 'Not found data';
+export const MSG_GET_INFORMATION_USER_SUCCESS = 'Get information of user successfully';
+export const MSG_GET_INFORMATION_NOT_EXISTS = 'This account infomation is not exists !';
+export const MSG_UPDATE_SUCCESSFULLY = 'Update successfully';
+export const MSG_UPDATE_FAILURE = 'Update failure';
+export const MSG_SEND_OTP_SUCCESSFULLY = 'Send otp successfully';
+export const MSG_SEND_OTP_FAILURE = 'Send otp failure';
+export const MSG_VERIFY_OTP_SUCCESSFULLY = 'Successfully. OTP valid';
+export const MSG_VERIFY_OTP_FAILURE = 'Failure. OTP invalid';
+export const MSG_PHONE_EXISTS = 'Phone is already exists. Please login !';
+export const MSG_MAIL_EXISTS = 'Email is already exists. Please login !';
+export const MSG_ACCOUNT_EXISTS = 'This account is already exists. Please login !';
+export const MSG_SYSTEM_TITLE_OTP = 'Get OTP From System Voolo';
+export const MSG_VERIFY_OTP_FAILURE_5_TIMES = 'You have verified otp failure 5 times. Please wait 24 hours to try again !';
+export const MSG_EXPIRE_OTP = 'Expired otp. Please resend otp !';
+export const MSG_REGISTER_SUCCESSFULLY = 'Register successfully';
+export const MSG_REGISTER_FAILURE = 'Register failure';
+export const MSG_BLOCK_ACCOUNT = 'This phone/email is blocked by admin';
+export const MSG_WRONG_EMAIL_PHONE = 'Wrong phone/email. Please try again !';
+export const MSG_WRONG_PASSWORD = 'Wrong password. Please try again !';
+export const MSG_LOGIN_FAILURE_5_TIMES = 'You are logged in failure 5 times. Please wait 24 hours to login again!';
+export const MSG_LOGIN_SUCCESSFULLY = 'Login successfully';
+export const MSG_LOGIN_FAILURE = 'Login failure';
+export const MSG_LOGOUT_SUCCESSFULLY = 'Log out successfully';
+export const MSG_LOGOUT_FAILURE = 'Log out failure';
+export const MSG_ACCOUNT_NOT_EXISTS_REGISTER = 'This account is not exists. Please register !';
+export const MSG_EMAIL_IS_EXISTS = 'This email is exists. Please try again !';
+
+

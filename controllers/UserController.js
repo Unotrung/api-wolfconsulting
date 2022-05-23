@@ -1,5 +1,6 @@
 const Customer = require('../models/eap_customers');
 const bcrypt = require('bcrypt');
+const { MSG_GET_LIST_SUCCESSFULLY, MSG_GET_INFORMATION_USER_SUCCESS, MSG_GET_INFORMATION_NOT_EXISTS, MSG_LIST_IS_EMPTY, MSG_UPDATE_SUCCESSFULLY, MSG_UPDATE_FAILURE } = require('../config/response/response');
 
 const UserController = {
 
@@ -15,13 +16,13 @@ const UserController = {
                 return res.status(200).json({
                     count: users.length,
                     data: arrUsers,
-                    message: "Get list customer success",
+                    message: MSG_GET_LIST_SUCCESSFULLY,
                     status: true
                 });
             }
             else {
                 return res.status(200).json({
-                    message: "List customer is empty",
+                    message: MSG_LIST_IS_EMPTY,
                     status: true
                 });
             }
@@ -37,14 +38,14 @@ const UserController = {
             if (user) {
                 const { password, __v, loginAttempts, deleted, createdAt, updatedAt, ...others } = user._doc;
                 return res.status(200).json({
-                    message: "Get information of user successfully",
+                    message: MSG_GET_INFORMATION_USER_SUCCESS,
                     data: { ...others },
                     status: true
                 });
             }
             else {
                 return res.status(404).json({
-                    message: "This account infomation is not exists !",
+                    message: MSG_GET_INFORMATION_NOT_EXISTS,
                     status: false,
                     statusCode: 900
                 });
@@ -67,7 +68,7 @@ const UserController = {
                         const validPassword = await bcrypt.compare(OLD_PASSWORD, user.password);
                         if (!validPassword) {
                             return res.status(404).json({
-                                message: "Your old password is not correct. Please try again !",
+                                message: 'Your old password is not correct. Please try again !',
                                 status: false,
                                 statusCode: 1003
                             });
@@ -75,7 +76,7 @@ const UserController = {
                         else {
                             if (OLD_PASSWORD === NEW_PASSWORD) {
                                 return res.status(400).json({
-                                    message: "Old password and new password are the same. Please try again !",
+                                    message: 'Old password and new password are the same. Please try again !',
                                     status: false,
                                     statusCode: 1006
                                 });
@@ -87,13 +88,13 @@ const UserController = {
                                 await user.save()
                                     .then((data) => {
                                         return res.status(201).json({
-                                            message: "Update password successfully",
+                                            message: MSG_UPDATE_SUCCESSFULLY,
                                             status: true
                                         })
                                     })
                                     .catch((err) => {
                                         return res.status(409).json({
-                                            message: "Update password failure",
+                                            message: MSG_UPDATE_FAILURE,
                                             status: false,
                                             errorStatus: err.status || 500,
                                             errorMessage: err.message
@@ -107,13 +108,13 @@ const UserController = {
                         await user.save()
                             .then((data) => {
                                 return res.status(201).json({
-                                    message: "Update username successfully",
+                                    message: MSG_UPDATE_SUCCESSFULLY,
                                     status: true
                                 });
                             })
                             .catch((err) => {
                                 return res.status(409).json({
-                                    message: "Update username failure",
+                                    message: MSG_UPDATE_FAILURE,
                                     status: false,
                                     errorStatus: err.status || 500,
                                     errorMessage: err.message
@@ -123,16 +124,16 @@ const UserController = {
                 }
                 else {
                     return res.status(404).json({
-                        message: "This account is not exists !",
+                        message: MSG_GET_INFORMATION_NOT_EXISTS,
                         status: false,
                         statusCode: 900
                     });
                 }
             }
-            else (OLD_PASSWORD == null && OLD_PASSWORD == '' && NEW_PASSWORD == null && NEW_PASSWORD == '') || (USERNAME == null && USERNAME == '')
+            else (OLD_PASSWORD == null && OLD_PASSWORD == '' && NEW_PASSWORD == null && NEW_PASSWORD == '') && (USERNAME == null && USERNAME == '')
             {
                 return res.status(400).json({
-                    message: "Please enter your old password and new password or username !",
+                    message: 'Please enter your old password and new password or username !',
                     status: false,
                     statusCode: 1005
                 });

@@ -116,6 +116,26 @@ const MiddlewareController = {
         catch (err) {
             next(err);
         }
+    },
+
+    verifySecurity: (req, res, next) => {
+        try {
+            const appKey = req.query.appKey;
+            const appId = req.query.appId;
+            if (appKey && appId && appKey === process.env.APP_KEY && appId === process.env.APP_ID) {
+                req.isAuthenticated = true;
+                next();
+            }
+            else {
+                return res.status(401).json({
+                    message: "You do not have permission to access this app",
+                    statusCode: 9000
+                });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
     }
 
 }
