@@ -1,6 +1,6 @@
 const Customer = require('../models/eap_customers');
 const bcrypt = require('bcrypt');
-const { MSG_GET_LIST_SUCCESSFULLY, MSG_GET_INFORMATION_USER_SUCCESS, MSG_GET_INFORMATION_NOT_EXISTS, MSG_LIST_IS_EMPTY, MSG_UPDATE_SUCCESSFULLY, MSG_UPDATE_FAILURE } = require('../config/response/response');
+const { MSG_GET_LIST_SUCCESSFULLY, MSG_GET_INFORMATION_USER_SUCCESS, MSG_GET_INFORMATION_NOT_EXISTS, MSG_LIST_IS_EMPTY, MSG_UPDATE_SUCCESSFULLY, MSG_UPDATE_FAILURE, MSG_ENTER_ALL_FIELDS } = require('../config/response/response');
 
 const UserController = {
 
@@ -133,7 +133,7 @@ const UserController = {
             else (OLD_PASSWORD == null && OLD_PASSWORD == '' && NEW_PASSWORD == null && NEW_PASSWORD == '') && (USERNAME == null && USERNAME == '')
             {
                 return res.status(400).json({
-                    message: 'Please enter your old password and new password or username !',
+                    message: MSG_ENTER_ALL_FIELDS,
                     status: false,
                     statusCode: 1005
                 });
