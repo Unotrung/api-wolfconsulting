@@ -14,7 +14,7 @@ router.get('/', MiddlewareController.verifySecurity, MiddlewareController.verify
 
 router.get('/:id', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf, UserController.getUser);
 
-router.put('/:id', MiddlewareController.verifySecurity,
+router.put('/:id', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('username')
             .optional({ nullable: true, checkFalsy: true })
@@ -29,6 +29,6 @@ router.put('/:id', MiddlewareController.verifySecurity,
             .matches(formatPassword)
             .withMessage(errMessageNewPassword),
     ],
-    MiddlewareController.verifyTokenByMySelf, UserController.updateUser);
+    MiddlewareController.validateRequestSchema, UserController.updateUser);
 
 module.exports = router;
