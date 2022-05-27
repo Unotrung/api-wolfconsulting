@@ -10,11 +10,11 @@ const formatPassword = VALIDATE_PASSWORD;
 const errMessagePassword = ERR_MESSAGE_PASSWORD;
 const errMessageNewPassword = ERR_MESSAGE_NEW_PASSWORD;
 
-router.get('/', MiddlewareController.verifySecurity, MiddlewareController.verifyToken, UserController.getAllUser);
+router.get('/', MiddlewareController.verifyToken, UserController.getAllUser);
 
-router.get('/:id', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf, UserController.getUser);
+router.get('/:id', MiddlewareController.verifyTokenByMySelf, UserController.getUser);
 
-router.put('/:id', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
+router.put('/:id', MiddlewareController.verifyTokenByMySelf,
     [
         body('username')
             .optional({ nullable: true, checkFalsy: true })
