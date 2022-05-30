@@ -13,7 +13,7 @@ const errMessageMail = ERR_MESSAGE_MAIL;
 const errMessageNewMail = ERR_MESSAGE_NEW_MAIL;
 const errMessagePassword = ERR_MESSAGE_PASSWORD;
 
-router.post('/sendOtp',
+router.post('/sendOtp', MiddlewareController.verifySecurity,
     [
         body('username')
             .isLength({ min: 3 }).withMessage(ERR_MSG_MIN_USERNAME)
@@ -26,7 +26,7 @@ router.post('/sendOtp',
     ],
     MiddlewareController.validateRequestSchema, AuthController.sendOtp);
 
-router.post('/verifyOtp',
+router.post('/verifyOtp', MiddlewareController.verifySecurity,
     [
         body('username')
             .isLength({ min: 3 }).withMessage(ERR_MSG_MIN_USERNAME)
@@ -39,7 +39,7 @@ router.post('/verifyOtp',
     ],
     MiddlewareController.validateRequestSchema, AuthController.verifyOtp);
 
-router.post('/register',
+router.post('/register', MiddlewareController.verifySecurity,
     [
         body('username')
             .isLength({ min: 3 }).withMessage(ERR_MSG_MIN_USERNAME)
@@ -53,19 +53,19 @@ router.post('/register',
     ],
     MiddlewareController.validateRequestSchema, AuthController.register);
 
-router.post('/login', AuthController.login);
+router.post('/login', MiddlewareController.verifySecurity, AuthController.login);
 
-router.post('/forgotPassword', AuthController.forgotPassword);
+router.post('/forgotPassword', MiddlewareController.verifySecurity, AuthController.forgotPassword);
 
-router.post('/verifyOtpPassword', AuthController.verifyOtpPassword);
+router.post('/verifyOtpPassword', MiddlewareController.verifySecurity, AuthController.verifyOtpPassword);
 
-router.put('/resetPassword', MiddlewareController.verifyTokenByMySelf,
+router.put('/resetPassword', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('password').matches(formatPassword).withMessage(errMessagePassword),
     ],
     MiddlewareController.validateRequestSchema, AuthController.resetPassword);
 
-router.post('/sendOTPEmail', MiddlewareController.verifyTokenByMySelf,
+router.post('/sendOTPEmail', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('email')
             .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_MAIL)
@@ -78,7 +78,7 @@ router.post('/sendOTPEmail', MiddlewareController.verifyTokenByMySelf,
     ],
     MiddlewareController.validateRequestSchema, AuthController.sendOTPEmail);
 
-router.post('/verifyOTPEmail', MiddlewareController.verifyTokenByMySelf,
+router.post('/verifyOTPEmail', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('email')
             .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_MAIL)
@@ -91,7 +91,7 @@ router.post('/verifyOTPEmail', MiddlewareController.verifyTokenByMySelf,
     ],
     MiddlewareController.validateRequestSchema, AuthController.verifyOTPEmail);
 
-router.put('/updateEmail', MiddlewareController.verifyTokenByMySelf, MiddlewareController.verifyTokenByMySelfBody,
+router.put('/updateEmail', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf, MiddlewareController.verifyTokenByMySelfBody,
     [
         body('email')
             .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_MAIL)
@@ -104,25 +104,25 @@ router.put('/updateEmail', MiddlewareController.verifyTokenByMySelf, MiddlewareC
     ],
     MiddlewareController.validateRequestSchema, AuthController.updateEmail);
 
-router.put('/requestRefreshToken', AuthController.requestRefreshToken);
+router.put('/requestRefreshToken', MiddlewareController.verifySecurity, AuthController.requestRefreshToken);
 
-router.get('/getReRefreshToken/:id', MiddlewareController.verifyTokenByMySelf, AuthController.getReRefreshToken);
+router.get('/getReRefreshToken/:id', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf, AuthController.getReRefreshToken);
 
-router.put('/logout', MiddlewareController.verifyTokenByMySelf, AuthController.logout);
+router.put('/logout', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf, AuthController.logout);
 
-router.post('/sendOTPPhone', MiddlewareController.verifyTokenByMySelfBody,
+router.post('/sendOTPPhone', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelfBody,
     [
         body('phone').matches(formatPhone).withMessage(errMessagePhone),
     ],
     MiddlewareController.validateRequestSchema, AuthController.sendOTPPhone);
 
-router.post('/verifyOTPPhone', MiddlewareController.verifyTokenByMySelf,
+router.post('/verifyOTPPhone', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('phone').matches(formatPhone).withMessage(errMessagePhone),
     ],
     MiddlewareController.validateRequestSchema, AuthController.verifyOTPPhone);
 
-router.post('/updateVerifyPhone', MiddlewareController.verifyTokenByMySelf,
+router.post('/updateVerifyPhone', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('phone').matches(formatPhone).withMessage(errMessagePhone),
     ],
