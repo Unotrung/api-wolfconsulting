@@ -1,6 +1,22 @@
 const mongoose = require('mongoose');
 const encrypt = require('mongoose-encryption');
 
+const imageShema = new mongoose.Schema({
+    filename: {
+        type: String,
+        unique: true,
+        required: true
+    },
+    contentType: {
+        type: String,
+        required: true
+    },
+    imageBase64: {
+        type: String,
+        required: true
+    }
+})
+
 const bnpl_personalSchema = new mongoose.Schema({
 
     name: {
@@ -62,6 +78,7 @@ const bnpl_personalSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    images: [imageShema],
     credit_limit: {
         type: Number,
     },

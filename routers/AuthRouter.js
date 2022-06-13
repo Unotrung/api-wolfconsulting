@@ -128,4 +128,25 @@ router.post('/updateVerifyPhone', MiddlewareController.verifySecurity, Middlewar
     ],
     MiddlewareController.validateRequestSchema, AuthController.updateVerifyPhone);
 
+router.post('/sendOTPUpdatePhone', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
+    [
+        body('phone').matches(formatPhone).withMessage(errMessagePhone),
+        body('new_phone').matches(formatPhone).withMessage(errMessagePhone)
+    ],
+    MiddlewareController.validateRequestSchema, AuthController.sendOTPUpdatePhone);
+
+router.post('/verifyOTPUpdatePhone', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
+    [
+        body('phone').matches(formatPhone).withMessage(errMessagePhone),
+        body('new_phone').matches(formatPhone).withMessage(errMessagePhone)
+    ],
+    MiddlewareController.validateRequestSchema, AuthController.verifyOTPUpdatePhone);
+
+router.put('/updatePhone', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf, MiddlewareController.verifyTokenByMySelfBody,
+    [
+        body('phone').matches(formatPhone).withMessage(errMessagePhone),
+        body('new_phone').matches(formatPhone).withMessage(errMessagePhone)
+    ],
+    MiddlewareController.validateRequestSchema, AuthController.updatePhone);
+
 module.exports = router;

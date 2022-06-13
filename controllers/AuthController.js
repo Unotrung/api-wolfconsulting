@@ -491,6 +491,7 @@ const AuthController = {
                 let dataTemp = await new Otp({ email: EMAIL, phone: PHONE, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
                 await dataTemp.save()
                     .then((data) => {
+                        sendMail(EMAIL, MSG_SYSTEM_TITLE_OTP, OTP);
                         return res.status(201).json({
                             message: MSG_SEND_OTP_SUCCESSFULLY,
                             status: true,
@@ -830,6 +831,151 @@ const AuthController = {
                 const user = users.find(x => x.email === OLD_EMAIL);
                 if (user) {
                     user.email = NEW_EMAIL;
+                    await user.save()
+                        .then((data) => {
+                            return res.status(201).json({
+                                message: MSG_UPDATE_SUCCESSFULLY,
+                                status: true
+                            })
+                        })
+                        .catch((err) => {
+                            return res.status(409).json({
+                                message: MSG_UPDATE_FAILURE,
+                                status: false,
+                                errorStatus: err.status || 500,
+                                errorMessage: err.message
+                            })
+                        })
+                }
+                else {
+                    return res.status(404).json({
+                        message: MSG_GET_INFORMATION_NOT_EXISTS,
+                        status: false,
+                        statusCode: 900
+                    });
+                }
+            }
+            else {
+                return res.status(400).json({
+                    message: MSG_ENTER_ALL_FIELDS,
+                    status: false,
+                    statusCode: 1005
+                });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
+    sendOTPUpdatePhone: async (req, res, next) => {
+        try {
+            let phone = req.body.phone;
+            let new_phone = req.body.new_phone;
+            let OTP = otpGenerator.generate(6, {
+                digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
+            });
+            if (new_phone !== null && new_phone !== "") {
+                let dataTemp = await new Otp({ phone: new_phone, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
+                await dataTemp.save()
+                    .then((data) => {
+                        return res.status(201).json({
+                            message: MSG_SEND_OTP_SUCCESSFULLY,
+                            status: true,
+                            otp: OTP
+                        });
+                    })
+                    .catch((err) => {
+                        return res.status(409).json({
+                            message: MSG_SEND_OTP_FAILURE,
+                            status: false,
+                            errorStatus: err.status || 500,
+                            errorMessage: err.message
+                        })
+                    });
+            }
+            else {
+                return res.status(400).json({
+                    message: MSG_ENTER_ALL_FIELDS,
+                    status: false,
+                    statusCode: 1005
+                });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
+    verifyOTPUpdatePhone: async (req, res, next) => {
+        try {
+            let phone = req.body.phone;
+            let new_phone = req.body.new_phone;
+            let otp = req.body.otp;
+            let token = jwt.sign(
+                {
+                    phone: new_phone
+                },
+                process.env.JWT_ACCESS_KEY,
+                { expiresIn: '1m' }
+            );
+            let otp_expired = {
+                message: MSG_EXPIRE_OTP,
+                status: false,
+                statusCode: 3000
+            };
+            if (new_phone !== null && new_phone !== "" && otp !== null && otp !== "") {
+                const otpUser = await Otp.find({ phone: new_phone });
+                if (otpUser.length === 0) {
+                    return res.status(401).json(otp_expired);
+                }
+                const lastOtp = otpUser[otpUser.length - 1];
+                if (lastOtp.expiredAt && lastOtp.expiredAt < Date.now()) {
+                    await Otp.deleteMany({ new_phone: new_phone });
+                    return res.status(401).json(otp_expired);
+                }
+                else {
+                    if (lastOtp.phone === new_phone && lastOtp.otp === otp) {
+                        await Otp.deleteMany({ phone: lastOtp.phone });
+                        return res.status(200).json({
+                            message: MSG_VERIFY_OTP_SUCCESSFULLY,
+                            phone: phone,
+                            token: token,
+                            status: true
+                        });
+                    }
+                    else {
+                        return res.status(404).json({
+                            message: MSG_VERIFY_OTP_FAILURE,
+                            status: false,
+                            statusCode: 4000
+                        });
+                    }
+                }
+            }
+            else {
+                return res.status(400).json({
+                    message: MSG_ENTER_ALL_FIELDS,
+                    status: false,
+                    statusCode: 1005
+                });
+            }
+        }
+        catch (err) {
+            next(err);
+        }
+    },
+
+    updatePhone: async (req, res, next) => {
+        try {
+            const PHONE = req.body.phone;
+            const NEW_PHONE = req.body.new_phone;
+            const token = req.body.token;
+            if (PHONE !== null && NEW_PHONE !== null && PHONE !== '' && NEW_PHONE !== '' && token !== null && token !== '') {
+                const users = await Customer.find();
+                const user = users.find(x => x.phone === PHONE);
+                if (user) {
+                    user.phone = NEW_PHONE;
                     await user.save()
                         .then((data) => {
                             return res.status(201).json({
