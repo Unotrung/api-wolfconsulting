@@ -13,4 +13,4 @@ const bnpl_providerSchema = new mongoose.Schema({
 
 mongoose.SchemaTypes.String.set('trim', true);
 
-module.exports = mongoose.model('bnpl_provider', bnpl_providerSchema);
+module.exports = mongoose.model('bnpl_providers', bnpl_providerSchema);

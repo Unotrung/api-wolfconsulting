@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
+const { MSG_TOKEN_IS_NOT_VALID, MSG_YOU_ARE_NOT_AUTHENTICATED, MSG_YOU_ARE_NOT_ALLOWED_TO_DO_THIS_ACTION, MSG_YOU_DO_NOT_HAVE_PERMISSION_TO_ACCESS_THIS_APP } =
+    require('../config/response/response');
 
 const MiddlewareController = {
 
@@ -11,10 +13,7 @@ const MiddlewareController = {
                 const accessToken = token.split(" ")[1];
                 jwt.verify(accessToken, process.env.JWT_ACCESS_KEY, (err, user) => {
                     if (err) {
-                        return res.status(403).json({
-                            message: "Token is not valid",
-                            statusCode: 4003
-                        });
+                        return res.status(403).json(MSG_TOKEN_IS_NOT_VALID);
                     }
                     // Trả về user
                     req.user = user;
@@ -22,10 +21,7 @@ const MiddlewareController = {
                 });
             }
             else {
-                return res.status(401).json({
-                    message: "You're not authenticated",
-                    statusCode: 4001
-                });
+                return res.status(401).json(MSG_YOU_ARE_NOT_AUTHENTICATED);
             }
         }
         catch (err) {
@@ -40,10 +36,7 @@ const MiddlewareController = {
                     next();
                 }
                 else {
-                    return res.status(403).json({
-                        message: 'You are not allowed to do this action',
-                        statusCode: 4004
-                    });
+                    return res.status(403).json(MSG_YOU_ARE_NOT_ALLOWED_TO_DO_THIS_ACTION);
                 }
             })
         }
@@ -59,18 +52,17 @@ const MiddlewareController = {
                 jwt.verify(token, process.env.JWT_ACCESS_KEY, (err, user) => {
                     if (err) {
                         return res.status(403).json({
-                            message: "Token is not valid (Body)",
+                            message: 'Token is not valid (Body)',
                             statusCode: 4003
                         });
                     }
-                    // Trả về user
                     req.user = user;
                     next();
                 });
             }
             else {
                 return res.status(401).json({
-                    message: "You're not authenticated (Body)",
+                    message: 'You are not authenticated (Body)',
                     statusCode: 4001
                 });
             }
@@ -127,10 +119,7 @@ const MiddlewareController = {
                 next();
             }
             else {
-                return res.status(401).json({
-                    message: "You do not have permission to access this app",
-                    statusCode: 9000
-                });
+                return res.status(401).json(MSG_YOU_DO_NOT_HAVE_PERMISSION_TO_ACCESS_THIS_APP);
             }
         }
         catch (err) {

@@ -1,6 +1,7 @@
-const Personal = require('../models/bnpl_personals');
 const Customer = require('../models/eap_customers');
-const { MSG_GET_INFORMATION_USER_SUCCESS, MSG_GET_INFORMATION_NOT_EXISTS } = require('../config/response/response');
+const Personal = require('../models/bnpl_personals');
+const { MSG_GET_INFORMATION_USER_SUCCESS, MSG_GET_INFORMATION_NOT_EXISTS, MSG_THIS_ACCOUNT_HAS_NOT_ACTIVATED_THE_EMAIL, MSG_THIS_ACCOUNT_HAS_NOT_ACTIVATED_THE_PHONE }
+    = require('../config/response/response');
 
 const RelatedBNPLController = {
 
@@ -47,18 +48,10 @@ const RelatedBNPLController = {
                 let isVerifyEmail = await RelatedBNPLController.verifyEmail(userEAP.email);
                 let isVerifyPhone = await RelatedBNPLController.verifyPhone(userEAP.phone);
                 if (isVerifyEmail === false) {
-                    return res.status(200).json({
-                        message: 'This account has not activated the email',
-                        status: false,
-                        statusCode: 6001
-                    });
+                    return res.status(200).json(MSG_THIS_ACCOUNT_HAS_NOT_ACTIVATED_THE_EMAIL);
                 }
                 else if (isVerifyPhone === false) {
-                    return res.status(200).json({
-                        message: 'This account has not activated the phone',
-                        status: false,
-                        statusCode: 6002
-                    });
+                    return res.status(200).json(MSG_THIS_ACCOUNT_HAS_NOT_ACTIVATED_THE_PHONE);
                 }
                 else if (isVerifyEmail === true && isVerifyPhone === true) {
                     return res.status(200).json({

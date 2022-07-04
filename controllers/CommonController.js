@@ -1,6 +1,6 @@
 const Provider = require('../models/bnpl_providers');
-const Repayment = require('../models/Repayment');
-const Transaction = require('../models/Transaction');
+const Repayment = require('../models/repayments');
+const Transaction = require('../models/transactions');
 const { MSG_GET_LIST_SUCCESSFULLY, MSG_LIST_IS_EMPTY, MSG_ENTER_ALL_FIELDS } = require('../config/response/response');
 
 const CommonController = {

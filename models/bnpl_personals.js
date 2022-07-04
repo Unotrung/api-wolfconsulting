@@ -27,8 +27,8 @@ const bnpl_personalSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Sex is required'],
         enum: {
-            values: ['Nam', 'Nữ'],
-            message: 'Sex is only allowed Nam or Nữ'
+            values: ['M', 'F'],
+            message: 'Sex is only allowed Boy or Girl'
         }
     },
     birthday: {
@@ -47,6 +47,10 @@ const bnpl_personalSchema = new mongoose.Schema({
         type: Date,
         required: [true, 'Issue Date is required'],
     },
+    expireDate: {
+        type: Date,
+        required: [true, 'Expire Date is required'],
+    },
     city: {
         type: String,
         required: [true, 'City is required'],
@@ -62,9 +66,28 @@ const bnpl_personalSchema = new mongoose.Schema({
     street: {
         type: String
     },
+    temporaryCity: {
+        type: String,
+        required: [true, 'Temporary city is required'],
+    },
+    temporaryDistrict: {
+        type: String,
+        required: [true, 'Temporary district is required'],
+    },
+    temporaryWard: {
+        type: String,
+        required: [true, 'Temporary ward is required'],
+    },
+    temporaryStreet: {
+        type: String
+    },
     personal_title_ref: {
         type: String,
         required: [true, 'Personal Title Ref is required'],
+        enum: {
+            values: ['W', 'F', 'M', 'B', 'I', 'D', 'O', 'S'],
+            message: 'Personal Title Ref is not valid'
+        }
     },
     name_ref: {
         type: String,
@@ -78,7 +101,18 @@ const bnpl_personalSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    images: [imageShema],
+    nid_front_image: {
+        type: String,
+        required: [true, 'Nid front image is required'],
+    },
+    nid_back_image: {
+        type: String,
+        required: [true, 'Nid back image is required'],
+    },
+    selfie_image: {
+        type: String,
+        required: [true, 'Selfie image is required'],
+    },
     credit_limit: {
         type: Number,
     },
@@ -100,6 +134,6 @@ const bnpl_personalSchema = new mongoose.Schema({
 mongoose.SchemaTypes.String.set('trim', true);
 
 const secret = process.env.SECRET_MONGOOSE;
-bnpl_personalSchema.plugin(encrypt, { secret: secret, encryptedFields: ['name', 'phone', 'citizenId', 'name_ref', 'phone_ref'] });
+bnpl_personalSchema.plugin(encrypt, { secret: secret, encryptedFields: ['name', 'sex', 'birthday', 'phone', 'citizenId', 'issueDate', 'expireDate', 'personal_title_ref', 'name_ref', 'phone_ref', 'nid_front_image', 'nid_back_image', 'selfie_image'] });
 
-module.exports = mongoose.model('bnpl_personal', bnpl_personalSchema);
+module.exports = mongoose.model('bnpl_personals', bnpl_personalSchema);

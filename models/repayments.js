@@ -29,4 +29,4 @@ const repaymentSchema = new mongoose.Schema({
 
 mongoose.SchemaTypes.String.set('trim', true);
 
-module.exports = mongoose.model('Repayment', repaymentSchema);
+module.exports = mongoose.model('repayments', repaymentSchema);

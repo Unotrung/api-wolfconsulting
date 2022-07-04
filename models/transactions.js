@@ -45,4 +45,4 @@ const transactionSchema = new mongoose.Schema({
 
 mongoose.SchemaTypes.String.set('trim', true);
 
-module.exports = mongoose.model('Transaction', transactionSchema);
+module.exports = mongoose.model('transactions', transactionSchema);

@@ -3,13 +3,12 @@ const mongoose = require('mongoose');
 const morgan = require('morgan');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const cookieParser = require('cookie-parser');
 const path = require('path');
 const createError = require('http-errors');
-// const logEvents = require('./helpers/logEvents');
-const { v4: uuid } = require('uuid');
 const compression = require('compression');
 const helmet = require('helmet');
+// const logEvents = require('./helpers/logEvents');
+// const { v4: uuid } = require('uuid');
 // const { incr, expire, ttl } = require('./helpers/limiter');
 
 const authRoute = require('./routers/AuthRouter');
@@ -30,8 +29,6 @@ app.use(compression());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cors());
-
-app.use(cookieParser());
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -100,14 +97,11 @@ app.use('/v1/eap/relatedBNPL', relatedBNPLRoute);
 //     }
 // })
 
-// Handle Error Not Found
-
 app.use((req, res, next) => {
     next(createError.NotFound('This route dose not exists !'));
 })
 
 app.use((err, req, res, next) => {
-    // logEvents(`Id_Log: ${uuid()} --- Router: ${req.url} --- Method: ${req.method} --- Message: ${err.message}`);
     return res.json({
         status: err.status || 500,
         message: err.message

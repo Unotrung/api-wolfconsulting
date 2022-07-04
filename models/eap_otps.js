@@ -16,11 +16,13 @@ const eap_otpSchema = new mongoose.Schema({
         required: [true, 'Otp is required'],
     },
     expiredAt: {
-        type: Date
+        type: Date,
+        default: Date.now,
+        index: { expires: 60 }
     }
 
 }, { timestamps: true });
 
 mongoose.SchemaTypes.String.set('trim', true);
 
-module.exports = mongoose.model('eap_otp', eap_otpSchema);
+module.exports = mongoose.model('eap_otps', eap_otpSchema);

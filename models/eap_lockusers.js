@@ -1,9 +1,14 @@
 const mongoose = require('mongoose');
 
-const eap_blacklistSchema = new mongoose.Schema({
+const eap_lockuserSchema = new mongoose.Schema({
 
     phone: {
         type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true
     },
     attempts: {
         type: Number,
@@ -20,4 +25,4 @@ const eap_blacklistSchema = new mongoose.Schema({
 
 mongoose.SchemaTypes.String.set('trim', true);
 
-module.exports = mongoose.model('eap_blacklist', eap_blacklistSchema);
+module.exports = mongoose.model('eap_lockusers', eap_lockuserSchema);

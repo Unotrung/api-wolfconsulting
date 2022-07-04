@@ -30,7 +30,37 @@ const eap_customerSchema = new mongoose.Schema({
         max: 5,
         min: 0
     },
-    lockUntil: {
+    loginLockUntil: {
+        type: Number
+    },
+    otpPasswordAttempts: {
+        type: Number,
+        required: true,
+        default: 0,
+        max: 5,
+        min: 0
+    },
+    otpPasswordLockUntil: {
+        type: Number
+    },
+    otpEmailAttempts: {
+        type: Number,
+        required: true,
+        default: 0,
+        max: 5,
+        min: 0
+    },
+    otpEmailLockUntil: {
+        type: Number
+    },
+    otpPhoneAttempts: {
+        type: Number,
+        required: true,
+        default: 0,
+        max: 5,
+        min: 0
+    },
+    otpPhoneLockUntil: {
         type: Number
     },
     refreshToken: {
@@ -51,9 +81,9 @@ const eap_customerSchema = new mongoose.Schema({
 mongoose.SchemaTypes.String.set('trim', true);
 
 const secret = process.env.SECRET_MONGOOSE;
-eap_customerSchema.plugin(encrypt, { secret: secret, encryptedFields: ['username', 'email', 'phone', 'password', 'refreshToken'] });
+eap_customerSchema.plugin(encrypt, { secret: secret, encryptedFields: ['username', 'email', 'phone', 'password', 'refreshToken', 'verifyEmail', 'verifyPhone'] });
 
 // Add plugin
 eap_customerSchema.plugin(mongooseDelete, { deletedAt: true, overrideMethods: 'all' }); // Soft Delete
 
-module.exports = mongoose.model('eap_customer', eap_customerSchema);
+module.exports = mongoose.model('eap_customers', eap_customerSchema);

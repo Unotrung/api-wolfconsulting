@@ -1,15 +1,19 @@
 const Customer = require('../models/eap_customers');
+const LockUser = require('../models/eap_lockusers');
 const Otp = require('../models/eap_otps');
-const Blacklists = require('../models/eap_blacklist');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const otpGenerator = require('otp-generator');
 const sendMail = require('../helpers/sendMail');
-const { MSG_GET_INFORMATION_NOT_EXISTS, MSG_SEND_OTP_SUCCESSFULLY, MSG_SEND_OTP_FAILURE, MSG_ENTER_ALL_FIELDS, MSG_SYSTEM_TITLE_OTP, MSG_PHONE_EXISTS,
-    MSG_MAIL_EXISTS, MSG_EXPIRE_OTP, MSG_VERIFY_OTP_SUCCESSFULLY, MSG_VERIFY_OTP_FAILURE, MSG_ACCOUNT_EXISTS, MSG_REGISTER_SUCCESSFULLY,
-    MSG_REGISTER_FAILURE, MSG_BLOCK_ACCOUNT, MSG_WRONG_EMAIL_PHONE, MSG_WRONG_PASSWORD, MSG_LOGIN_FAILURE_5_TIMES, MSG_LOGIN_SUCCESSFULLY, MSG_LOGIN_FAILURE,
-    MSG_UPDATE_SUCCESSFULLY, MSG_UPDATE_FAILURE, MSG_LOGOUT_SUCCESSFULLY, MSG_LOGOUT_FAILURE, MSG_ACCOUNT_NOT_EXISTS_REGISTER, MSG_VERIFY_OTP_FAILURE_5_TIMES, MSG_EMAIL_IS_EXISTS }
-    = require('../config/response/response');
+const {
+    MSG_GET_INFORMATION_NOT_EXISTS, MSG_SEND_OTP_SUCCESSFULLY, MSG_SEND_OTP_FAILURE, MSG_ENTER_ALL_FIELDS, MSG_SYSTEM_TITLE_OTP,
+    MSG_PHONE_EXISTS, MSG_MAIL_EXISTS, MSG_EXPIRE_OTP, MSG_VERIFY_OTP_SUCCESSFULLY, MSG_VERIFY_OTP_FAILURE,
+    MSG_ACCOUNT_EXISTS, MSG_REGISTER_SUCCESSFULLY, MSG_REGISTER_FAILURE, MSG_DEACTIVE_ACCOUNT, MSG_WRONG_EMAIL_PHONE,
+    MSG_WRONG_PASSWORD, MSG_LOGIN_FAILURE_5_TIMES, MSG_LOGIN_SUCCESSFULLY, MSG_LOGIN_FAILURE, MSG_UPDATE_SUCCESSFULLY,
+    MSG_UPDATE_FAILURE, MSG_LOGOUT_SUCCESSFULLY, MSG_LOGOUT_FAILURE, MSG_ACCOUNT_NOT_EXISTS_REGISTER, MSG_VERIFY_OTP_FAILURE_5_TIMES,
+    MSG_EMAIL_IS_EXISTS, MSG_PHONE_IS_EXISTS, MSG_GET_REFRESH_TOKEN_SUCCESSFULLY
+} = require('../config/response/response');
+const { LOCK_TIME_OTP_FAILURE, LOCK_TIME_LOGIN_FAILURE } = require('../config/time/time');
 
 const AuthController = {
 
@@ -37,11 +41,6 @@ const AuthController = {
         );
     },
 
-    findUserInBlacklists: async (phone) => {
-        let blacklists = await Blacklists.find();
-        return blacklists.find(x => x.phone === phone);
-    },
-
     findValidPhoneInCustomer: async (phone) => {
         let customers = await Customer.find();
         return customers.find(x => x.phone === phone);
@@ -52,22 +51,31 @@ const AuthController = {
         return customers.find(x => x.email === email);
     },
 
+    findLockUser: async (phone, email) => {
+        let customers = await LockUser.find();
+        if (phone !== null && phone !== '' && email !== null && email !== '') {
+            return customers.find(x => x.phone === phone && x.email === email);
+        }
+        else if (phone !== null && phone !== '') {
+            return customers.find(x => x.phone === phone);
+        }
+        else if (email !== null && email !== '') {
+            return customers.find(x => x.email === email);
+        }
+    },
+
     generateOTP: (USERNAME, EMAIL, PHONE, OTP) => {
         return async (req, res) => {
             if (USERNAME !== null && USERNAME !== '' && EMAIL !== null && EMAIL !== '' && PHONE !== null && PHONE !== '' && OTP !== null && OTP !== '') {
-                let dataTemp = await new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
-                let user = {
-                    username: USERNAME,
-                    email: EMAIL,
-                    phone: PHONE
-                }
+                let dataTemp = await new Otp({ username: USERNAME, email: EMAIL, phone: PHONE, otp: OTP });
+                let user = { username: USERNAME, email: EMAIL, phone: PHONE }
                 await dataTemp.save()
-                    .then((data) => {
+                    .then(() => {
                         sendMail(EMAIL, MSG_SYSTEM_TITLE_OTP, OTP);
                         return res.status(201).json({
+                            data: user,
                             message: MSG_SEND_OTP_SUCCESSFULLY,
-                            status: true,
-                            data: user
+                            status: true
                         });
                     })
                     .catch((err) => {
@@ -80,11 +88,7 @@ const AuthController = {
                     });
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
     },
@@ -94,29 +98,19 @@ const AuthController = {
             const USERNAME = req.body.username;
             const EMAIL = req.body.email;
             const PHONE = req.body.phone;
-            const OTP = otpGenerator.generate(6, {
-                digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
-            });
+            const OTP = otpGenerator.generate(6, { digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false });
             if (USERNAME !== null && EMAIL !== null && PHONE !== null && USERNAME !== '' && EMAIL !== '' && PHONE !== '') {
-                const isExists = await AuthController.findUserInBlacklists(PHONE);
+                let isLockUser = await AuthController.findLockUser(PHONE, EMAIL);
                 let validPhone = await AuthController.findValidPhoneInCustomer(PHONE);
                 let validEmail = await AuthController.findValidEmailInCustomer(EMAIL);
-                let message_phoneValid = {
-                    message: MSG_PHONE_EXISTS,
-                    status: false,
-                    statusCode: 2010
-                };
-                let message_emailValid = {
-                    message: MSG_MAIL_EXISTS,
-                    status: false,
-                    statusCode: 2011
-                };
-                if (isExists) {
-                    if (isExists.attempts === 5 && isExists.lockUntil > Date.now()) {
+                let message_phoneValid = { message: MSG_PHONE_EXISTS, status: false, statusCode: 2010 };
+                let message_emailValid = { message: MSG_MAIL_EXISTS, status: false, statusCode: 2011 };
+                if (isLockUser) {
+                    if (isLockUser?.attempts === 5 && isLockUser?.lockUntil > Date.now()) {
                         return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5 });
                     }
-                    else if ((isExists.lockUntil && isExists.lockUntil < Date.now()) || (isExists.attempts > 0 && isExists.attempts < 5)) {
-                        await Blacklists.deleteMany({ phone: PHONE });
+                    else if (isLockUser?.lockUntil < Date.now()) {
+                        await LockUser.deleteMany({ phone: PHONE, email: EMAIL });
                         if (validPhone) {
                             return res.status(409).json(message_phoneValid);
                         }
@@ -127,9 +121,11 @@ const AuthController = {
                             await AuthController.generateOTP(USERNAME, EMAIL, PHONE, OTP)(req, res);
                         }
                     }
+                    else if (isLockUser?.lockUntil > Date.now() && isLockUser?.attempts < 5) {
+                        await AuthController.generateOTP(USERNAME, EMAIL, PHONE, OTP)(req, res);
+                    }
                 }
                 else {
-                    await Blacklists.deleteMany({ phone: PHONE });
                     if (validPhone) {
                         return res.status(409).json(message_phoneValid);
                     }
@@ -142,11 +138,7 @@ const AuthController = {
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005,
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -160,11 +152,7 @@ const AuthController = {
             let PHONE = req.body.phone;
             let USERNAME = req.body.username;
             let OTP = req.body.otp;
-            let otp_expired = {
-                message: MSG_EXPIRE_OTP,
-                status: false,
-                statusCode: 3000
-            };
+            let otp_expired = { message: MSG_EXPIRE_OTP, status: false, statusCode: 3000 };
             if (USERNAME !== null && EMAIL !== null && PHONE !== null && USERNAME !== '' && EMAIL !== '' && PHONE !== '') {
                 const otpUser = await Otp.find({ email: EMAIL, phone: PHONE, username: USERNAME });
                 if (otpUser.length === 0) {
@@ -172,50 +160,36 @@ const AuthController = {
                 }
                 else {
                     const lastOtp = otpUser[otpUser.length - 1];
-                    if (lastOtp.expiredAt && lastOtp.expiredAt < Date.now()) {
-                        await Otp.deleteMany({ phone: lastOtp.phone, email: lastOtp.email });
-                        return res.status(401).json(otp_expired);
+                    if (lastOtp.phone === PHONE && lastOtp.email === EMAIL && lastOtp.otp === OTP) {
+                        let user = { username: USERNAME, email: EMAIL, phone: PHONE };
+                        await LockUser.deleteMany({ phone: PHONE, email: EMAIL });
+                        await Otp.deleteMany({ phone: PHONE, email: EMAIL });
+                        return res.status(200).json({ user: user, message: MSG_VERIFY_OTP_SUCCESSFULLY, status: true });
                     }
                     else {
-                        if (lastOtp.phone === PHONE && lastOtp.email === EMAIL && lastOtp.otp === OTP) {
-                            let user = { username: USERNAME, email: EMAIL, phone: PHONE };
-                            await Blacklists.deleteMany({ phone: PHONE });
-                            await Otp.deleteMany({ phone: lastOtp.phone, email: lastOtp.email });
-                            return res.status(200).json({
-                                message: MSG_VERIFY_OTP_SUCCESSFULLY,
-                                user: user,
-                                status: true
-                            });
+                        const isLockUser = await AuthController.findLockUser(PHONE, EMAIL);
+                        if (isLockUser) {
+                            if (isLockUser?.attempts === 5 && isLockUser?.lockUntil > Date.now()) {
+                                return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5 });
+                            }
+                            else if (isLockUser?.attempts < 5) {
+                                await isLockUser.updateOne({ $set: { lockUntil: LOCK_TIME_OTP_FAILURE }, $inc: { attempts: 1 } });
+                                return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 4000, countFail: isLockUser.attempts + 1 });
+                            }
                         }
                         else {
-                            const isExists = await AuthController.findUserInBlacklists(PHONE);
-                            if (isExists) {
-                                if (isExists.attempts === 5 && isExists.lockUntil > Date.now()) {
-                                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5 });
+                            const lockUser = await new LockUser({ phone: PHONE, email: EMAIL, attempts: 1, lockUntil: LOCK_TIME_OTP_FAILURE });
+                            await lockUser.save((err) => {
+                                if (!err) {
+                                    return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 4000, countFail: 1 });
                                 }
-                                else if (isExists.attempts > 0 && isExists.attempts < 5) {
-                                    await isExists.updateOne({ $set: { lockUntil: Date.now() + 24 * 60 * 60 * 1000 }, $inc: { attempts: 1 } });
-                                    return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 4000, countFail: isExists.attempts + 1 });
-                                }
-                            }
-                            else {
-                                const blackPhone = await new Blacklists({ phone: PHONE, attempts: 1, lockUntil: Date.now() + 24 * 60 * 60 * 1000 });
-                                await blackPhone.save((err) => {
-                                    if (!err) {
-                                        return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 4000, countFail: 1 });
-                                    }
-                                });
-                            }
+                            });
                         }
                     }
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -225,8 +199,7 @@ const AuthController = {
 
     encryptPassword: async (password) => {
         const salt = await bcrypt.genSalt(10);
-        const hashed = await bcrypt.hash(password, salt);
-        return hashed;
+        return await bcrypt.hash(password, salt);
     },
 
     register: async (req, res, next) => {
@@ -239,20 +212,17 @@ const AuthController = {
                 const auths = await Customer.find();
                 const auth = auths.find(x => x.phone === phone || x.email === email);
                 if (auth) {
-                    return res.status(409).json({
-                        message: MSG_ACCOUNT_EXISTS,
-                        statusCode: 1000
-                    });
+                    return res.status(409).json({ message: MSG_ACCOUNT_EXISTS, statusCode: 1000 });
                 }
                 else {
                     const hashed = await AuthController.encryptPassword(password);
                     const newUser = await new Customer({ username: username, email: email, phone: phone, password: hashed, verifyEmail: true });
                     await newUser.save((err, data) => {
                         if (!err) {
-                            const { password, __v, refreshToken, loginAttempts, deleted, createdAt, updatedAt, ...others } = data._doc;
+                            const { password, __v, refreshToken, loginAttempts, otpPasswordAttempts, otpEmailAttempts, otpPhoneAttempts, deleted, createdAt, updatedAt, ...others } = data._doc;
                             return res.status(201).json({
-                                message: MSG_REGISTER_SUCCESSFULLY,
                                 data: { ...others },
+                                message: MSG_REGISTER_SUCCESSFULLY,
                                 status: true
                             });
                         }
@@ -268,11 +238,7 @@ const AuthController = {
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -286,9 +252,9 @@ const AuthController = {
             let PASSWORD = req.body.password;
             if (PHONE_EMAIL !== null && PHONE_EMAIL !== '' && PASSWORD !== null && PASSWORD !== '') {
                 const deletedUser = await Customer.findDeleted();
-                const isBlock = deletedUser.find(x => x.deleted === Boolean(true) && x.deletedAt !== null);
-                if (isBlock) {
-                    return res.status(403).json({ message: MSG_BLOCK_ACCOUNT, status: false, statusCode: 1001 });
+                const isDeactive = deletedUser.find(x => x.deleted === Boolean(true) && x.deletedAt !== null);
+                if (isDeactive) {
+                    return res.status(403).json({ message: MSG_DEACTIVE_ACCOUNT, status: false, statusCode: 1001 });
                 }
                 const auths = await Customer.find();
                 const auth = auths.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
@@ -296,37 +262,50 @@ const AuthController = {
                     return res.status(404).json({ message: MSG_WRONG_EMAIL_PHONE, status: false, statusCode: 1002 });
                 }
                 else if (auth) {
-                    if (auth?.lockUntil && auth?.lockUntil < Date.now()) {
-                        await auth.updateOne({ $set: { loginAttempts: 0 }, $unset: { lockUntil: 1 } })
+                    if (auth?.loginLockUntil < Date.now()) {
+                        await auth.updateOne({ $set: { loginAttempts: 0 }, $unset: { loginLockUntil: 1 } })
+                    }
+                    if (auth?.otpPasswordLockUntil < Date.now()) {
+                        await auth.updateOne({ $set: { otpPasswordAttempts: 0 }, $unset: { otpPasswordLockUntil: 1 } })
+                    }
+                    if (auth?.otpEmailLockUntil < Date.now()) {
+                        await auth.updateOne({ $set: { otpEmailAttempts: 0 }, $unset: { otpEmailLockUntil: 1 } })
+                    }
+                    if (auth?.otpPhoneLockUntil < Date.now()) {
+                        await auth.updateOne({ $set: { otpPhoneAttempts: 0 }, $unset: { otpPhoneLockUntil: 1 } })
                     }
                 }
                 const validPassword = await bcrypt.compare(PASSWORD, auth.password);
                 if (!validPassword) {
-                    if (auth?.loginAttempts === 5 && auth?.lockUntil > Date.now()) {
+                    if (auth?.loginAttempts === 5 && auth?.loginLockUntil > Date.now()) {
                         return res.status(403).json({ message: MSG_LOGIN_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5 });
                     }
                     else if (auth?.loginAttempts < 5) {
-                        await auth.updateOne({ $set: { lockUntil: Date.now() + 24 * 60 * 60 * 1000 }, $inc: { loginAttempts: 1 } });
-                        return res.status(404).json({
-                            message: MSG_WRONG_PASSWORD,
-                            status: false,
-                            statusCode: 1003,
-                            countFail: auth.loginAttempts + 1
-                        });
+                        await auth.updateOne({ $set: { loginLockUntil: LOCK_TIME_LOGIN_FAILURE }, $inc: { loginAttempts: 1 } });
+                        return res.status(404).json({ message: MSG_WRONG_PASSWORD, status: false, statusCode: 1003, countFail: auth.loginAttempts + 1 });
                     }
                 }
                 if (auth && validPassword && auth.loginAttempts !== 5) {
-                    await auth.updateOne({ $set: { loginAttempts: 0 }, $unset: { lockUntil: 1 } })
+                    await auth.updateOne({ $set: { loginAttempts: 0 }, $unset: { loginLockUntil: 1 } });
+                    if (auth?.otpPasswordAttempts === 5 && auth?.otpPasswordLockUntil > Date.now()) {
+                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_password' });
+                    }
+                    if (auth?.otpEmailAttempts === 5 && auth?.otpEmailLockUntil > Date.now()) {
+                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_email' });
+                    }
+                    if (auth?.otpPhoneAttempts === 5 && auth?.otpPhoneLockUntil > Date.now()) {
+                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_phone' });
+                    }
                     const accessToken = AuthController.generateAccessToken(auth);
                     const refreshToken = AuthController.generateRefreshToken(auth);
                     auth.refreshToken = refreshToken;
                     await auth.save()
                         .then((data) => {
-                            const { password, loginAttempts, deleted, __v, createdAt, updatedAt, ...others } = data._doc;
+                            const { password, loginAttempts, otpPasswordAttempts, otpEmailAttempts, otpPhoneAttempts, deleted, __v, createdAt, updatedAt, ...others } = data._doc;
                             return res.status(200).json({
-                                message: MSG_LOGIN_SUCCESSFULLY,
                                 data: { ...others },
                                 token: accessToken,
+                                message: MSG_LOGIN_SUCCESSFULLY,
                                 status: true
                             });
                         })
@@ -344,11 +323,7 @@ const AuthController = {
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -363,27 +338,19 @@ const AuthController = {
                 const customers = await Customer.find();
                 const customer = customers.find(x => x.id === id);
                 if (customer) {
-                    const { password, __v, refreshToken, ...others } = customer._doc;
+                    const { refreshToken, ...others } = customer._doc;
                     return res.status(200).json({
-                        message: "Get refresh token successfully",
                         refreshToken: refreshToken,
+                        message: MSG_GET_REFRESH_TOKEN_SUCCESSFULLY,
                         status: true
                     });
                 }
                 else {
-                    return res.status(409).json({
-                        message: MSG_GET_INFORMATION_NOT_EXISTS,
-                        status: false,
-                        statusCode: 900
-                    });
+                    return res.status(404).json({ message: MSG_GET_INFORMATION_NOT_EXISTS, status: false, statusCode: 900 });
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -402,7 +369,7 @@ const AuthController = {
                     let newRefreshToken = AuthController.generateRefreshToken(customer);
                     customer.refreshToken = newRefreshToken;
                     await customer.save()
-                        .then((data) => {
+                        .then(() => {
                             return res.status(201).json({
                                 message: MSG_UPDATE_SUCCESSFULLY,
                                 accessToken: newAccessToken,
@@ -420,19 +387,11 @@ const AuthController = {
                         })
                 }
                 else {
-                    return res.status(409).json({
-                        message: MSG_GET_INFORMATION_NOT_EXISTS,
-                        status: false,
-                        statusCode: 900
-                    });
+                    return res.status(404).json({ message: MSG_GET_INFORMATION_NOT_EXISTS, status: false, statusCode: 900 });
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -449,7 +408,7 @@ const AuthController = {
                 if (customer) {
                     customer.refreshToken = null;
                     await customer.save()
-                        .then((data) => {
+                        .then(() => {
                             return res.status(201).json({
                                 message: MSG_LOGOUT_SUCCESSFULLY,
                                 status: true
@@ -465,19 +424,11 @@ const AuthController = {
                         })
                 }
                 else {
-                    return res.status(409).json({
-                        message: MSG_GET_INFORMATION_NOT_EXISTS,
-                        status: false,
-                        statusCode: 900
-                    });
+                    return res.status(404).json({ message: MSG_GET_INFORMATION_NOT_EXISTS, status: false, statusCode: 900 });
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -488,15 +439,15 @@ const AuthController = {
     sendOtpPassword: (EMAIL, PHONE, OTP) => {
         return async (req, res) => {
             if (EMAIL !== null && EMAIL !== '' && PHONE !== null && PHONE !== '' && OTP !== null && OTP !== '') {
-                let dataTemp = await new Otp({ email: EMAIL, phone: PHONE, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
+                let dataTemp = await new Otp({ email: EMAIL, phone: PHONE, otp: OTP });
                 await dataTemp.save()
-                    .then((data) => {
+                    .then(() => {
                         sendMail(EMAIL, MSG_SYSTEM_TITLE_OTP, OTP);
                         return res.status(201).json({
-                            message: MSG_SEND_OTP_SUCCESSFULLY,
-                            status: true,
                             email: EMAIL,
-                            otp: OTP
+                            otp: OTP,
+                            message: MSG_SEND_OTP_SUCCESSFULLY,
+                            status: true
                         });
                     })
                     .catch((err) => {
@@ -509,11 +460,7 @@ const AuthController = {
                     });
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
     },
@@ -521,43 +468,33 @@ const AuthController = {
     forgotPassword: async (req, res, next) => {
         try {
             let PHONE_EMAIL = req.body.phone_email;
-            let OTP = otpGenerator.generate(6, {
-                digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
-            });
+            let OTP = otpGenerator.generate(6, { digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false });
             if (PHONE_EMAIL !== null && PHONE_EMAIL !== '') {
                 const auths = await Customer.find();
                 const auth = auths.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
                 if (!auth) {
-                    return res.status(404).json({
-                        message: MSG_ACCOUNT_NOT_EXISTS_REGISTER,
-                        status: false,
-                        statusCode: 900
-                    });
+                    return res.status(404).json({ message: MSG_ACCOUNT_NOT_EXISTS_REGISTER, status: false, statusCode: 900 });
                 }
                 else {
-                    const isExists = await AuthController.findUserInBlacklists(PHONE_EMAIL);
                     let phone = auth?.phone;
                     let email = auth?.email;
-                    if (isExists) {
-                        if (isExists.attempts === 5 && isExists.lockUntil > Date.now()) {
-                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5 });
-                        }
-                        else if ((isExists.lockUntil && isExists.lockUntil < Date.now()) || (isExists.attempts > 0 && isExists.attempts < 5)) {
-                            await Blacklists.deleteMany({ phone: PHONE_EMAIL });
-                            await AuthController.sendOtpPassword(email, phone, OTP)(req, res);
-                        }
+                    if (auth?.otpPasswordAttempts === 5 && auth?.otpPasswordLockUntil > Date.now()) {
+                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_password' });
                     }
-                    else {
-                        await AuthController.sendOtpPassword(email, phone, OTP)(req, res);
+                    if (auth?.otpEmailAttempts === 5 && auth?.otpEmailLockUntil > Date.now()) {
+                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_email' });
                     }
+                    if (auth?.otpPhoneAttempts === 5 && auth?.otpPhoneLockUntil > Date.now()) {
+                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_phone' });
+                    }
+                    if (auth?.otpPasswordLockUntil < Date.now()) {
+                        await auth.updateOne({ $set: { otpPasswordAttempts: 0 }, $unset: { otpPasswordLockUntil: 1 } })
+                    }
+                    await AuthController.sendOtpPassword(email, phone, OTP)(req, res);
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -569,11 +506,7 @@ const AuthController = {
         try {
             let PHONE_EMAIL = req.body.phone_email;
             let OTP = req.body.otp;
-            let expired_otp = {
-                message: MSG_EXPIRE_OTP,
-                status: false,
-                statusCode: 3000
-            };
+            let expired_otp = { message: MSG_EXPIRE_OTP, status: false, statusCode: 3000 };
             if (PHONE_EMAIL !== null && OTP !== null && PHONE_EMAIL !== '' && OTP !== '') {
                 const otpUser = await Otp.find({ $or: [{ phone: PHONE_EMAIL }, { email: PHONE_EMAIL }] });
                 if (otpUser.length === 0) {
@@ -581,58 +514,34 @@ const AuthController = {
                 }
                 else {
                     const lastOtp = otpUser[otpUser.length - 1];
-                    if (lastOtp.expiredAt && lastOtp.expiredAt < Date.now()) {
+                    if ((lastOtp.phone === PHONE_EMAIL || lastOtp.email === PHONE_EMAIL) && lastOtp.otp === OTP) {
+                        const token = jwt.sign(
+                            {
+                                id: lastOtp.id,
+                                phone: lastOtp.phone,
+                                email: lastOtp.email,
+                            },
+                            process.env.JWT_ACCESS_KEY,
+                            { expiresIn: "1m" }
+                        );
                         await Otp.deleteMany({ $or: [{ phone: lastOtp.phone }, { email: lastOtp.email }] });
-                        return res.status(401).json(expired_otp);
+                        return res.status(200).json({ token: token, message: MSG_VERIFY_OTP_SUCCESSFULLY, status: true });
                     }
                     else {
-                        if ((lastOtp.phone === PHONE_EMAIL || lastOtp.email === PHONE_EMAIL) && lastOtp.otp === OTP) {
-                            const token = jwt.sign(
-                                {
-                                    id: lastOtp.id,
-                                    phone: lastOtp.phone,
-                                    email: lastOtp.email,
-                                },
-                                process.env.JWT_ACCESS_KEY,
-                                { expiresIn: "1m" }
-                            );
-                            await Blacklists.deleteMany({ $or: [{ phone: lastOtp.phone }, { email: lastOtp.email }] });
-                            await Otp.deleteMany({ $or: [{ phone: lastOtp.phone }, { email: lastOtp.email }] });
-                            return res.status(200).json({
-                                message: MSG_VERIFY_OTP_SUCCESSFULLY,
-                                token: token,
-                                status: true
-                            });
+                        const auths = await Customer.find();
+                        const auth = auths.find(x => x.phone === PHONE_EMAIL || x.email === PHONE_EMAIL);
+                        if (auth?.otpPasswordAttempts === 5 && auth?.otpPasswordLockUntil > Date.now()) {
+                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_password' });
                         }
-                        else {
-                            const isExists = await AuthController.findUserInBlacklists(PHONE_EMAIL);
-                            if (isExists) {
-                                if (isExists.attempts === 5 && isExists.lockUntil > Date.now()) {
-                                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5 });
-                                }
-                                else if (isExists.attempts > 0 && isExists.attempts < 5) {
-                                    await isExists.updateOne({ $set: { lockUntil: Date.now() + 24 * 60 * 60 * 1000 }, $inc: { attempts: 1 } });
-                                    return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 4000, countFail: isExists.attempts + 1 });
-                                }
-                            }
-                            else {
-                                const blackPhone = await new Blacklists({ phone: PHONE_EMAIL, attempts: 1, lockUntil: Date.now() + 24 * 60 * 60 * 1000 });
-                                await blackPhone.save((err) => {
-                                    if (!err) {
-                                        return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 4000, countFail: 1 });
-                                    }
-                                });
-                            }
+                        if (auth?.otpPasswordAttempts < 5) {
+                            await auth.updateOne({ $set: { otpPasswordLockUntil: LOCK_TIME_OTP_FAILURE }, $inc: { otpPasswordAttempts: 1 } })
+                            return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1009, countFail: auth.otpPasswordAttempts + 1, type: 'otp_password' });
                         }
                     }
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -651,7 +560,7 @@ const AuthController = {
                     const hashed = await AuthController.encryptPassword(NEW_PASSWORD);
                     user.password = hashed;
                     await user.save()
-                        .then((data) => {
+                        .then(() => {
                             return res.status(201).json({
                                 message: MSG_UPDATE_SUCCESSFULLY,
                                 status: true
@@ -667,19 +576,11 @@ const AuthController = {
                         })
                 }
                 else {
-                    return res.status(404).json({
-                        message: MSG_ACCOUNT_NOT_EXISTS_REGISTER,
-                        status: false,
-                        statusCode: 900
-                    });
+                    return res.status(404).json({ message: MSG_ACCOUNT_NOT_EXISTS_REGISTER, status: false, statusCode: 900 });
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -687,61 +588,67 @@ const AuthController = {
         }
     },
 
+    checkEmailExists: async (OLD_EMAIL, NEW_EMAIL, OTP) => {
+        return async (req, res) => {
+            const emails = await Customer.find();
+            const validEmail = emails.find(x => x.email === OLD_EMAIL);
+            if (validEmail) {
+                const isExists = emails.find(x => x.email === NEW_EMAIL);
+                if (OLD_EMAIL !== NEW_EMAIL && !isExists) {
+                    const dataTemp = await new Otp({ email: NEW_EMAIL, otp: OTP });
+                    await dataTemp.save((err) => {
+                        if (!err) {
+                            sendMail(NEW_EMAIL, MSG_SYSTEM_TITLE_OTP, OTP);
+                            return res.status(200).json({
+                                email: NEW_EMAIL,
+                                message: MSG_SEND_OTP_SUCCESSFULLY,
+                                status: true
+                            });
+                        }
+                        else {
+                            return res.status(409).json({
+                                message: MSG_SEND_OTP_FAILURE,
+                                status: false,
+                                errorStatus: err.status || 500,
+                                errorMessage: err.message
+                            });
+                        }
+                    });
+                }
+                else {
+                    return res.status(409).json({ message: MSG_EMAIL_IS_EXISTS, status: false, statusCode: 1000 });
+                }
+            }
+            else {
+                return res.status(404).json({ message: MSG_GET_INFORMATION_NOT_EXISTS, status: false, statusCode: 900 });
+            }
+        }
+    },
+
     sendOTPEmail: async (req, res, next) => {
         try {
             const OLD_EMAIL = req.body.email;
             const NEW_EMAIL = req.body.new_email;
-            const OTP = otpGenerator.generate(6, {
-                digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
-            });
+            const OTP = otpGenerator.generate(6, { digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false });
             if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '') {
-                const emails = await Customer.find();
-                const validEmail = emails.find(x => x.email === OLD_EMAIL);
-                if (validEmail) {
-                    const isExists = emails.find(x => x.email === NEW_EMAIL);
-                    if (OLD_EMAIL !== NEW_EMAIL && !isExists) {
-                        const dataTemp = await new Otp({ email: NEW_EMAIL, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
-                        await dataTemp.save((err) => {
-                            if (!err) {
-                                sendMail(NEW_EMAIL, MSG_SYSTEM_TITLE_OTP, OTP);
-                                return res.status(200).json({
-                                    message: MSG_SEND_OTP_SUCCESSFULLY,
-                                    email: NEW_EMAIL,
-                                    status: true,
-                                });
-                            }
-                            else {
-                                return res.status(409).json({
-                                    message: MSG_SEND_OTP_FAILURE,
-                                    status: false,
-                                    errorStatus: err.status || 500,
-                                    errorMessage: err.message
-                                });
-                            }
-                        });
-                    }
-                    else {
-                        return res.status(409).json({
-                            message: MSG_EMAIL_IS_EXISTS,
-                            status: false,
-                            statusCode: 1000
-                        });
-                    }
+                const auths = await Customer.find();
+                const auth = auths.find(x => x.email === OLD_EMAIL);
+                if (auth?.otpPasswordAttempts === 5 && auth?.otpPasswordLockUntil > Date.now()) {
+                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_password' });
                 }
-                else {
-                    return res.status(404).json({
-                        message: MSG_GET_INFORMATION_NOT_EXISTS,
-                        status: false,
-                        statusCode: 900
-                    });
+                if (auth?.otpEmailAttempts === 5 && auth?.otpEmailLockUntil > Date.now()) {
+                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_email' });
                 }
+                if (auth?.otpPhoneAttempts === 5 && auth?.otpPhoneLockUntil > Date.now()) {
+                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_phone' });
+                }
+                if (auth?.otpEmailLockUntil < Date.now()) {
+                    await auth.updateOne({ $set: { otpEmailAttempts: 0 }, $unset: { otpEmailLockUntil: 1 } })
+                }
+                await AuthController.checkEmailExists(OLD_EMAIL, NEW_EMAIL, OTP)(req, res);
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -754,65 +661,46 @@ const AuthController = {
             const OLD_EMAIL = req.body.email;
             const NEW_EMAIL = req.body.new_email;
             const OTP = req.body.otp;
-            let otp_expired = {
-                message: MSG_EXPIRE_OTP,
-                status: false,
-                statusCode: 3000
-            };
+            let otp_expired = { message: MSG_EXPIRE_OTP, status: false, statusCode: 3000 };
             if (OLD_EMAIL !== null && NEW_EMAIL !== null && OLD_EMAIL !== '' && NEW_EMAIL !== '' && OTP !== null && OTP !== '') {
-                const emails = await Customer.find();
-                const validEmail = emails.find(x => x.email === OLD_EMAIL);
-                if (validEmail) {
-                    const otpUser = await Otp.find({ email: NEW_EMAIL });
-                    if (otpUser.length === 0) {
-                        return res.status(401).json(otp_expired);
-                    }
-                    const lastOtp = otpUser[otpUser.length - 1];
-                    if (lastOtp.expiredAt && lastOtp.expiredAt < Date.now()) {
-                        await Otp.deleteMany({ email: lastOtp.email });
-                        return res.status(401).json(otp_expired);
-                    }
-                    else {
-                        if (lastOtp.email === NEW_EMAIL && lastOtp.otp === OTP) {
-                            const token = jwt.sign(
-                                {
-                                    id: lastOtp.id,
-                                    email: lastOtp.email,
-                                },
-                                process.env.JWT_ACCESS_KEY,
-                                { expiresIn: '1m' }
-                            );
-                            await Otp.deleteMany({ email: lastOtp.email });
-                            return res.status(200).json({
-                                message: MSG_VERIFY_OTP_SUCCESSFULLY,
-                                email: NEW_EMAIL,
-                                token: token,
-                                status: true
-                            });
-                        }
-                        else {
-                            return res.status(404).json({
-                                message: MSG_VERIFY_OTP_FAILURE,
-                                status: false,
-                                statusCode: 4000
-                            });
-                        }
-                    }
+                const otpUser = await Otp.find({ email: NEW_EMAIL });
+                if (otpUser.length === 0) {
+                    return res.status(401).json(otp_expired);
                 }
                 else {
-                    return res.status(404).json({
-                        message: MSG_GET_INFORMATION_NOT_EXISTS,
-                        status: false,
-                        statusCode: 900
-                    });
+                    const lastOtp = otpUser[otpUser.length - 1];
+                    if (lastOtp.email === NEW_EMAIL && lastOtp.otp === OTP) {
+                        const token = jwt.sign(
+                            {
+                                id: lastOtp.id,
+                                email: lastOtp.email,
+                            },
+                            process.env.JWT_ACCESS_KEY,
+                            { expiresIn: '1m' }
+                        );
+                        await Otp.deleteMany({ email: lastOtp.email });
+                        return res.status(200).json({
+                            email: NEW_EMAIL,
+                            token: token,
+                            message: MSG_VERIFY_OTP_SUCCESSFULLY,
+                            status: true
+                        });
+                    }
+                    else {
+                        const auths = await Customer.find();
+                        const auth = auths.find(x => x.email === OLD_EMAIL);
+                        if (auth?.otpEmailAttempts === 5 && auth?.otpEmailLockUntil > Date.now()) {
+                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_email' });
+                        }
+                        if (auth?.otpEmailAttempts < 5) {
+                            await auth.updateOne({ $set: { otpEmailLockUntil: LOCK_TIME_OTP_FAILURE }, $inc: { otpEmailAttempts: 1 } })
+                            return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1009, countFail: auth.otpEmailAttempts + 1, type: 'otp_email' });
+                        }
+                    }
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -832,7 +720,7 @@ const AuthController = {
                 if (user) {
                     user.email = NEW_EMAIL;
                     await user.save()
-                        .then((data) => {
+                        .then(() => {
                             return res.status(201).json({
                                 message: MSG_UPDATE_SUCCESSFULLY,
                                 status: true
@@ -848,19 +736,11 @@ const AuthController = {
                         })
                 }
                 else {
-                    return res.status(404).json({
-                        message: MSG_GET_INFORMATION_NOT_EXISTS,
-                        status: false,
-                        statusCode: 900
-                    });
+                    return res.status(404).json({ message: MSG_GET_INFORMATION_NOT_EXISTS, status: false, statusCode: 900 });
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -868,38 +748,67 @@ const AuthController = {
         }
     },
 
+    checkPhoneExists: async (OLD_PHONE, NEW_PHONE, OTP) => {
+        return async (req, res) => {
+            const phones = await Customer.find();
+            const validPhone = phones.find(x => x.phone === OLD_PHONE);
+            if (validPhone) {
+                const isExists = phones.find(x => x.phone === NEW_PHONE);
+                if (OLD_PHONE !== NEW_PHONE && !isExists) {
+                    const dataTemp = await new Otp({ phone: NEW_PHONE, otp: OTP });
+                    await dataTemp.save((err) => {
+                        if (!err) {
+                            return res.status(200).json({
+                                phone: NEW_PHONE,
+                                otp: OTP,
+                                message: MSG_SEND_OTP_SUCCESSFULLY,
+                                status: true
+                            });
+                        }
+                        else {
+                            return res.status(409).json({
+                                message: MSG_SEND_OTP_FAILURE,
+                                status: false,
+                                errorStatus: err.status || 500,
+                                errorMessage: err.message
+                            });
+                        }
+                    });
+                }
+                else {
+                    return res.status(409).json({ message: MSG_PHONE_IS_EXISTS, status: false, statusCode: 1000 });
+                }
+            }
+            else {
+                return res.status(404).json({ message: MSG_GET_INFORMATION_NOT_EXISTS, status: false, statusCode: 900 });
+            }
+        }
+    },
+
     sendOTPUpdatePhone: async (req, res, next) => {
         try {
             let phone = req.body.phone;
             let new_phone = req.body.new_phone;
-            let OTP = otpGenerator.generate(6, {
-                digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
-            });
-            if (new_phone !== null && new_phone !== "") {
-                let dataTemp = await new Otp({ phone: new_phone, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
-                await dataTemp.save()
-                    .then((data) => {
-                        return res.status(201).json({
-                            message: MSG_SEND_OTP_SUCCESSFULLY,
-                            status: true,
-                            otp: OTP
-                        });
-                    })
-                    .catch((err) => {
-                        return res.status(409).json({
-                            message: MSG_SEND_OTP_FAILURE,
-                            status: false,
-                            errorStatus: err.status || 500,
-                            errorMessage: err.message
-                        })
-                    });
+            let OTP = otpGenerator.generate(6, { digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false });
+            if (phone !== null && phone !== "" && new_phone !== null && new_phone !== "") {
+                const auths = await Customer.find();
+                const auth = auths.find(x => x.phone === phone);
+                if (auth?.otpPasswordAttempts === 5 && auth?.otpPasswordLockUntil > Date.now()) {
+                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_password' });
+                }
+                if (auth?.otpEmailAttempts === 5 && auth?.otpEmailLockUntil > Date.now()) {
+                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_email' });
+                }
+                if (auth?.otpPhoneAttempts === 5 && auth?.otpPhoneLockUntil > Date.now()) {
+                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_phone' });
+                }
+                if (auth?.otpPhoneLockUntil < Date.now()) {
+                    await auth.updateOne({ $set: { otpPhoneAttempts: 0 }, $unset: { otpPhoneLockUntil: 1 } })
+                }
+                await AuthController.checkPhoneExists(phone, new_phone, OTP)(req, res);
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -912,53 +821,46 @@ const AuthController = {
             let phone = req.body.phone;
             let new_phone = req.body.new_phone;
             let otp = req.body.otp;
-            let token = jwt.sign(
-                {
-                    phone: new_phone
-                },
-                process.env.JWT_ACCESS_KEY,
-                { expiresIn: '1m' }
-            );
-            let otp_expired = {
-                message: MSG_EXPIRE_OTP,
-                status: false,
-                statusCode: 3000
-            };
-            if (new_phone !== null && new_phone !== "" && otp !== null && otp !== "") {
+            let otp_expired = { message: MSG_EXPIRE_OTP, status: false, statusCode: 3000 };
+            if (phone !== null && phone !== "" && new_phone !== null && new_phone !== "" && otp !== null && otp !== "") {
                 const otpUser = await Otp.find({ phone: new_phone });
                 if (otpUser.length === 0) {
                     return res.status(401).json(otp_expired);
                 }
-                const lastOtp = otpUser[otpUser.length - 1];
-                if (lastOtp.expiredAt && lastOtp.expiredAt < Date.now()) {
-                    await Otp.deleteMany({ new_phone: new_phone });
-                    return res.status(401).json(otp_expired);
-                }
                 else {
+                    const lastOtp = otpUser[otpUser.length - 1];
                     if (lastOtp.phone === new_phone && lastOtp.otp === otp) {
+                        let token = jwt.sign(
+                            {
+                                id: lastOtp.id,
+                                phone: lastOtp.phone
+                            },
+                            process.env.JWT_ACCESS_KEY,
+                            { expiresIn: '1m' }
+                        );
                         await Otp.deleteMany({ phone: lastOtp.phone });
                         return res.status(200).json({
-                            message: MSG_VERIFY_OTP_SUCCESSFULLY,
                             phone: phone,
                             token: token,
+                            message: MSG_VERIFY_OTP_SUCCESSFULLY,
                             status: true
                         });
                     }
                     else {
-                        return res.status(404).json({
-                            message: MSG_VERIFY_OTP_FAILURE,
-                            status: false,
-                            statusCode: 4000
-                        });
+                        const auths = await Customer.find();
+                        const auth = auths.find(x => x.phone === phone);
+                        if (auth?.otpPhoneAttempts === 5 && auth?.otpPhoneLockUntil > Date.now()) {
+                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_phone' });
+                        }
+                        if (auth?.otpPhoneAttempts < 5) {
+                            await auth.updateOne({ $set: { otpPhoneLockUntil: LOCK_TIME_OTP_FAILURE }, $inc: { otpPhoneAttempts: 1 } })
+                            return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1009, countFail: auth.otpPhoneAttempts + 1, type: 'otp_phone' });
+                        }
                     }
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -977,7 +879,7 @@ const AuthController = {
                 if (user) {
                     user.phone = NEW_PHONE;
                     await user.save()
-                        .then((data) => {
+                        .then(() => {
                             return res.status(201).json({
                                 message: MSG_UPDATE_SUCCESSFULLY,
                                 status: true
@@ -993,19 +895,11 @@ const AuthController = {
                         })
                 }
                 else {
-                    return res.status(404).json({
-                        message: MSG_GET_INFORMATION_NOT_EXISTS,
-                        status: false,
-                        statusCode: 900
-                    });
+                    return res.status(404).json({ message: MSG_GET_INFORMATION_NOT_EXISTS, status: false, statusCode: 900 });
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -1016,19 +910,17 @@ const AuthController = {
     sendOTPPhone: async (req, res, next) => {
         try {
             let phone = req.body.phone;
-            let OTP = otpGenerator.generate(6, {
-                digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false
-            });
+            let OTP = otpGenerator.generate(6, { digits: true, specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false });
             if (phone !== null && phone !== "") {
                 const user = await AuthController.findValidPhoneInCustomer(phone);
                 if (user) {
-                    let dataTemp = await new Otp({ phone: phone, otp: OTP, expiredAt: Date.now() + 1 * 60 * 1000 });
+                    let dataTemp = await new Otp({ phone: phone, otp: OTP });
                     await dataTemp.save()
-                        .then((data) => {
+                        .then(() => {
                             return res.status(201).json({
+                                otp: OTP,
                                 message: MSG_SEND_OTP_SUCCESSFULLY,
-                                status: true,
-                                otp: OTP
+                                status: true
                             });
                         })
                         .catch((err) => {
@@ -1041,19 +933,11 @@ const AuthController = {
                         });
                 }
                 else {
-                    return res.status(404).json({
-                        message: MSG_ACCOUNT_NOT_EXISTS_REGISTER,
-                        status: false,
-                        statusCode: 900
-                    });
+                    return res.status(404).json({ message: MSG_ACCOUNT_NOT_EXISTS_REGISTER, status: false, statusCode: 900 });
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -1065,45 +949,29 @@ const AuthController = {
         try {
             let phone = req.body.phone;
             let otp = req.body.otp;
-            let otp_expired = {
-                message: MSG_EXPIRE_OTP,
-                status: false,
-                statusCode: 3000
-            };
+            let otp_expired = { message: MSG_EXPIRE_OTP, status: false, statusCode: 3000 };
             if (phone !== null && phone !== "" && otp !== null && otp !== "") {
                 const otpUser = await Otp.find({ phone: phone });
                 if (otpUser.length === 0) {
                     return res.status(401).json(otp_expired);
                 }
-                const lastOtp = otpUser[otpUser.length - 1];
-                if (lastOtp.expiredAt && lastOtp.expiredAt < Date.now()) {
-                    await Otp.deleteMany({ phone: phone });
-                    return res.status(401).json(otp_expired);
-                }
                 else {
+                    const lastOtp = otpUser[otpUser.length - 1];
                     if (lastOtp.phone === phone && lastOtp.otp === otp) {
                         await Otp.deleteMany({ phone: lastOtp.phone });
                         return res.status(200).json({
-                            message: MSG_VERIFY_OTP_SUCCESSFULLY,
                             phone: phone,
+                            message: MSG_VERIFY_OTP_SUCCESSFULLY,
                             status: true
                         });
                     }
                     else {
-                        return res.status(404).json({
-                            message: MSG_VERIFY_OTP_FAILURE,
-                            status: false,
-                            statusCode: 4000
-                        });
+                        return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 4000 });
                     }
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
@@ -1119,7 +987,7 @@ const AuthController = {
                 if (user) {
                     user.verifyPhone = true;
                     await user.save()
-                        .then((data) => {
+                        .then(() => {
                             return res.status(201).json({
                                 message: MSG_UPDATE_SUCCESSFULLY,
                                 status: true
@@ -1135,19 +1003,11 @@ const AuthController = {
                         })
                 }
                 else {
-                    return res.status(404).json({
-                        message: MSG_GET_INFORMATION_NOT_EXISTS,
-                        status: false,
-                        statusCode: 900
-                    });
+                    return res.status(404).json({ message: MSG_GET_INFORMATION_NOT_EXISTS, status: false, statusCode: 900 });
                 }
             }
             else {
-                return res.status(400).json({
-                    message: MSG_ENTER_ALL_FIELDS,
-                    status: false,
-                    statusCode: 1005
-                });
+                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
             }
         }
         catch (err) {
