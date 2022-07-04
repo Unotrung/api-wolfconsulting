@@ -2,7 +2,7 @@ const Customer = require('../models/eap_customers');
 const bcrypt = require('bcrypt');
 const {
     MSG_GET_INFORMATION_USER_SUCCESS, MSG_GET_INFORMATION_NOT_EXISTS, MSG_UPDATE_SUCCESSFULLY, MSG_UPDATE_FAILURE, MSG_ENTER_ALL_FIELDS
-    INCORRECT_OLD_PASSWORD, OLD_PASSWORD_AND_NEW_PASSWORD_MUST_NOT_BE_THE_SAME
+    MSG_INCORRECT_OLD_PASSWORD, MSG_OLD_PASSWORD_AND_NEW_PASSWORD_MUST_NOT_BE_THE_SAME
 }
     = require('../config/response/response');
 
@@ -72,7 +72,7 @@ const UserController = {
                         const validPassword = await bcrypt.compare(OLD_PASSWORD, user.password);
                         if (!validPassword) {
                             return res.status(404).json({
-                                message: INCORRECT_OLD_PASSWORD,
+                                message: MSG_INCORRECT_OLD_PASSWORD,
                                 status: false,
                                 statusCode: 1003
                             });
@@ -80,7 +80,7 @@ const UserController = {
                         else {
                             if (OLD_PASSWORD === NEW_PASSWORD) {
                                 return res.status(400).json({
-                                    message: OLD_PASSWORD_AND_NEW_PASSWORD_MUST_NOT_BE_THE_SAME,
+                                    message: MSG_OLD_PASSWORD_AND_NEW_PASSWORD_MUST_NOT_BE_THE_SAME,
                                     status: false,
                                     statusCode: 1006
                                 });
