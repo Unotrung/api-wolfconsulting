@@ -40,7 +40,7 @@ const UserController = {
         try {
             const user = await Customer.findById(req.params.id);
             if (user) {
-                const { password, __v, loginAttempts, loginLockUntil, otpPasswordAttempts, otpPasswordLockUntil, otpEmaildAttempts, otpEmailLockUntil, otpPhonedAttempts, otpPhoneLockUntil, deleted, createdAt, updatedAt, ...others } = user._doc;
+                const { password, __v, loginAttempts, loginLockUntil, otpPasswordAttempts, otpPasswordLockUntil, otpEmailAttempts, otpEmailLockUntil, otpPhoneAttempts, otpPhoneLockUntil, deleted, createdAt, updatedAt, ...others } = user._doc;
                 return res.status(200).json({
                     data: { ...others },
                     message: MSG_GET_INFORMATION_USER_SUCCESS,

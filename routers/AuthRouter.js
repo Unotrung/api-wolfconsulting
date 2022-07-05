@@ -63,7 +63,7 @@ router.put('/resetPassword', MiddlewareController.verifySecurity, MiddlewareCont
     ],
     MiddlewareController.validateRequestSchema, AuthController.resetPassword);
 
-router.post('/sendOTPEmail', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
+router.post('/sendOTPUpdateEmail', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('email')
             .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_MAIL)
@@ -74,9 +74,9 @@ router.post('/sendOTPEmail', MiddlewareController.verifySecurity, MiddlewareCont
             .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_NEW_MAIL)
             .isEmail().withMessage(ERR_MESSAGE_NEW_MAIL),
     ],
-    MiddlewareController.validateRequestSchema, AuthController.sendOTPEmail);
+    MiddlewareController.validateRequestSchema, AuthController.sendOTPUpdateEmail);
 
-router.post('/verifyOTPEmail', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
+router.post('/verifyOTPUpdateEmail', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf,
     [
         body('email')
             .isLength({ min: 13 }).withMessage(ERR_MSG_MIN_MAIL)
@@ -87,7 +87,7 @@ router.post('/verifyOTPEmail', MiddlewareController.verifySecurity, MiddlewareCo
             .isLength({ max: 255 }).withMessage(ERR_MSG_MAX_NEW_MAIL)
             .isEmail().withMessage(ERR_MESSAGE_NEW_MAIL),
     ],
-    MiddlewareController.validateRequestSchema, AuthController.verifyOTPEmail);
+    MiddlewareController.validateRequestSchema, AuthController.verifyOTPUpdateEmail);
 
 router.put('/updateEmail', MiddlewareController.verifySecurity, MiddlewareController.verifyTokenByMySelf, MiddlewareController.verifyTokenByMySelfBody,
     [

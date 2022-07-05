@@ -11,7 +11,7 @@ const {
     MSG_ACCOUNT_EXISTS, MSG_REGISTER_SUCCESSFULLY, MSG_REGISTER_FAILURE, MSG_DEACTIVE_ACCOUNT, MSG_WRONG_EMAIL_PHONE,
     MSG_WRONG_PASSWORD, MSG_LOGIN_FAILURE_5_TIMES, MSG_LOGIN_SUCCESSFULLY, MSG_LOGIN_FAILURE, MSG_UPDATE_SUCCESSFULLY,
     MSG_UPDATE_FAILURE, MSG_LOGOUT_SUCCESSFULLY, MSG_LOGOUT_FAILURE, MSG_ACCOUNT_NOT_EXISTS_REGISTER, MSG_VERIFY_OTP_FAILURE_5_TIMES,
-    MSG_EMAIL_IS_EXISTS, MSG_PHONE_IS_EXISTS, MSG_GET_REFRESH_TOKEN_SUCCESSFULLY
+    MSG_EMAIL_IS_EXISTS, MSG_PHONE_IS_EXISTS, MSG_GET_REFRESH_TOKEN_SUCCESSFULLY, MSG_OLD_EMAIL_AND_NEW_EMAIL_MUST_NOT_BE_THE_SAME, MSG_OLD_PHONE_AND_NEW_PHONE_MUST_NOT_BE_THE_SAME
 } = require('../config/response/response');
 const { LOCK_TIME_OTP_FAILURE, LOCK_TIME_LOGIN_FAILURE } = require('../config/time/time');
 
@@ -72,11 +72,7 @@ const AuthController = {
                 await dataTemp.save()
                     .then(() => {
                         sendMail(EMAIL, MSG_SYSTEM_TITLE_OTP, OTP);
-                        return res.status(201).json({
-                            data: user,
-                            message: MSG_SEND_OTP_SUCCESSFULLY,
-                            status: true
-                        });
+                        return res.status(201).json({ data: user, message: MSG_SEND_OTP_SUCCESSFULLY, status: true });
                     })
                     .catch((err) => {
                         return res.status(409).json({
@@ -443,12 +439,7 @@ const AuthController = {
                 await dataTemp.save()
                     .then(() => {
                         sendMail(EMAIL, MSG_SYSTEM_TITLE_OTP, OTP);
-                        return res.status(201).json({
-                            email: EMAIL,
-                            otp: OTP,
-                            message: MSG_SEND_OTP_SUCCESSFULLY,
-                            status: true
-                        });
+                        return res.status(201).json({ email: EMAIL, message: MSG_SEND_OTP_SUCCESSFULLY, status: true });
                     })
                     .catch((err) => {
                         return res.status(409).json({
@@ -588,22 +579,21 @@ const AuthController = {
         }
     },
 
-    checkEmailExists: async (OLD_EMAIL, NEW_EMAIL, OTP) => {
+    checkEmailExists: (OLD_EMAIL, NEW_EMAIL, OTP) => {
         return async (req, res) => {
             const emails = await Customer.find();
             const validEmail = emails.find(x => x.email === OLD_EMAIL);
             if (validEmail) {
                 const isExists = emails.find(x => x.email === NEW_EMAIL);
+                if (isExists) {
+                    return res.status(409).json({ message: MSG_EMAIL_IS_EXISTS, status: true, statusCode: 5002 });
+                }
                 if (OLD_EMAIL !== NEW_EMAIL && !isExists) {
                     const dataTemp = await new Otp({ email: NEW_EMAIL, otp: OTP });
                     await dataTemp.save((err) => {
                         if (!err) {
                             sendMail(NEW_EMAIL, MSG_SYSTEM_TITLE_OTP, OTP);
-                            return res.status(200).json({
-                                email: NEW_EMAIL,
-                                message: MSG_SEND_OTP_SUCCESSFULLY,
-                                status: true
-                            });
+                            return res.status(200).json({ email: NEW_EMAIL, message: MSG_SEND_OTP_SUCCESSFULLY, status: true });
                         }
                         else {
                             return res.status(409).json({
@@ -616,7 +606,7 @@ const AuthController = {
                     });
                 }
                 else {
-                    return res.status(409).json({ message: MSG_EMAIL_IS_EXISTS, status: false, statusCode: 1000 });
+                    return res.status(409).json({ message: MSG_OLD_EMAIL_AND_NEW_EMAIL_MUST_NOT_BE_THE_SAME, status: false, statusCode: 5001 });
                 }
             }
             else {
@@ -625,7 +615,7 @@ const AuthController = {
         }
     },
 
-    sendOTPEmail: async (req, res, next) => {
+    sendOTPUpdateEmail: async (req, res, next) => {
         try {
             const OLD_EMAIL = req.body.email;
             const NEW_EMAIL = req.body.new_email;
@@ -656,7 +646,7 @@ const AuthController = {
         }
     },
 
-    verifyOTPEmail: async (req, res, next) => {
+    verifyOTPUpdateEmail: async (req, res, next) => {
         try {
             const OLD_EMAIL = req.body.email;
             const NEW_EMAIL = req.body.new_email;
@@ -748,22 +738,20 @@ const AuthController = {
         }
     },
 
-    checkPhoneExists: async (OLD_PHONE, NEW_PHONE, OTP) => {
+    checkPhoneExists: (OLD_PHONE, NEW_PHONE, OTP) => {
         return async (req, res) => {
             const phones = await Customer.find();
             const validPhone = phones.find(x => x.phone === OLD_PHONE);
             if (validPhone) {
                 const isExists = phones.find(x => x.phone === NEW_PHONE);
+                if (isExists) {
+                    return res.status(409).json({ message: MSG_PHONE_IS_EXISTS, status: true, statusCode: 5002 });
+                }
                 if (OLD_PHONE !== NEW_PHONE && !isExists) {
                     const dataTemp = await new Otp({ phone: NEW_PHONE, otp: OTP });
                     await dataTemp.save((err) => {
                         if (!err) {
-                            return res.status(200).json({
-                                phone: NEW_PHONE,
-                                otp: OTP,
-                                message: MSG_SEND_OTP_SUCCESSFULLY,
-                                status: true
-                            });
+                            return res.status(200).json({ phone: NEW_PHONE, otp: OTP, message: MSG_SEND_OTP_SUCCESSFULLY, status: true });
                         }
                         else {
                             return res.status(409).json({
@@ -776,7 +764,7 @@ const AuthController = {
                     });
                 }
                 else {
-                    return res.status(409).json({ message: MSG_PHONE_IS_EXISTS, status: false, statusCode: 1000 });
+                    return res.status(409).json({ message: MSG_OLD_PHONE_AND_NEW_PHONE_MUST_NOT_BE_THE_SAME, status: false, statusCode: 5001 });
                 }
             }
             else {
@@ -840,7 +828,7 @@ const AuthController = {
                         );
                         await Otp.deleteMany({ phone: lastOtp.phone });
                         return res.status(200).json({
-                            phone: phone,
+                            phone: new_phone,
                             token: token,
                             message: MSG_VERIFY_OTP_SUCCESSFULLY,
                             status: true

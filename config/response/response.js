@@ -17,22 +17,24 @@ const MSG_PHONE_EXISTS = 'Phone Number already exists';
 const MSG_MAIL_EXISTS = 'Email already exists';
 const MSG_ACCOUNT_EXISTS = 'This account already exists';
 const MSG_SYSTEM_TITLE_OTP = 'Get OTP from VOOLO System';
-const MSG_VERIFY_OTP_FAILURE_5_TIMES = 'Incorrect OTP 5 times. Please wait 24 hours to try again !';
+const MSG_VERIFY_OTP_FAILURE_5_TIMES = 'Incorrect OTP 5 times. Please wait 1 hour to try again !';
 const MSG_EXPIRE_OTP = 'Expired OTP';
 const MSG_REGISTER_SUCCESSFULLY = 'Register successfully';
 const MSG_REGISTER_FAILURE = 'Register failed';
 const MSG_DEACTIVE_ACCOUNT = 'This phone/email is deactivated by admin';
 const MSG_WRONG_EMAIL_PHONE = 'Invalid Phone/Email';
 const MSG_WRONG_PASSWORD = 'Wrong Password';
-const MSG_LOGIN_FAILURE_5_TIMES = 'Failed logined in 5 times. Please wait 24 hours to try again !';
+const MSG_LOGIN_FAILURE_5_TIMES = 'Failed logined in 5 times. Please wait 1 hour to try again !';
 const MSG_LOGIN_SUCCESSFULLY = 'Login successfully';
 const MSG_LOGIN_FAILURE = 'Login failed';
 const MSG_LOGOUT_SUCCESSFULLY = 'Log out successfully';
 const MSG_LOGOUT_FAILURE = 'Log out failed';
 const MSG_ACCOUNT_NOT_EXISTS_REGISTER = 'This account not exists';
-const MSG_EMAIL_IS_EXISTS = 'This email exists';
-const MSG_PHONE_IS_EXISTS = 'This phone exists';
+const MSG_EMAIL_IS_EXISTS = 'New email already exists. Please enter another email';
+const MSG_PHONE_IS_EXISTS = 'New phone already exists. Please enter another phone';
 const MSG_INCORRECT_OLD_PASSWORD = 'Old password is incorrect';
+const MSG_OLD_EMAIL_AND_NEW_EMAIL_MUST_NOT_BE_THE_SAME = 'Old email and new email must not be the same';
+const MSG_OLD_PHONE_AND_NEW_PHONE_MUST_NOT_BE_THE_SAME = 'Old phone and new phone must not be the same';
 const MSG_OLD_PASSWORD_AND_NEW_PASSWORD_MUST_NOT_BE_THE_SAME = 'Old password and new password must not be the same';
 const MSG_GET_REFRESH_TOKEN_SUCCESSFULLY = 'Get refresh token successfully';
 const MSG_TOKEN_IS_NOT_VALID = {
@@ -71,7 +73,7 @@ module.exports = {
     MSG_REGISTER_SUCCESSFULLY, MSG_EXPIRE_OTP, MSG_VERIFY_OTP_FAILURE_5_TIMES, MSG_SYSTEM_TITLE_OTP, MSG_ACCOUNT_EXISTS,
     MSG_MAIL_EXISTS, MSG_PHONE_EXISTS, MSG_VERIFY_OTP_FAILURE, MSG_PHONE_IS_EXISTS, MSG_TOKEN_IS_NOT_VALID,
     MSG_YOU_ARE_NOT_AUTHENTICATED, MSG_YOU_ARE_NOT_ALLOWED_TO_DO_THIS_ACTION, MSG_YOU_DO_NOT_HAVE_PERMISSION_TO_ACCESS_THIS_APP, MSG_THIS_ACCOUNT_HAS_NOT_ACTIVATED_THE_EMAIL, MSG_THIS_ACCOUNT_HAS_NOT_ACTIVATED_THE_PHONE,
-    MSG_INCORRECT_OLD_PASSWORD, MSG_OLD_PASSWORD_AND_NEW_PASSWORD_MUST_NOT_BE_THE_SAME, MSG_GET_REFRESH_TOKEN_SUCCESSFULLY
+    MSG_INCORRECT_OLD_PASSWORD, MSG_OLD_PASSWORD_AND_NEW_PASSWORD_MUST_NOT_BE_THE_SAME, MSG_GET_REFRESH_TOKEN_SUCCESSFULLY, MSG_OLD_EMAIL_AND_NEW_EMAIL_MUST_NOT_BE_THE_SAME, MSG_OLD_PHONE_AND_NEW_PHONE_MUST_NOT_BE_THE_SAME
 }
 
 
