@@ -143,54 +143,57 @@ const AuthController = {
     },
 
     verifyOtp: async (req, res, next) => {
-        try {
-            let EMAIL = req.body.email;
-            let PHONE = req.body.phone;
-            let USERNAME = req.body.username;
-            let OTP = req.body.otp;
-            let otp_expired = { message: MSG_EXPIRE_OTP, status: false, statusCode: 3000 };
-            if (USERNAME !== null && EMAIL !== null && PHONE !== null && USERNAME !== '' && EMAIL !== '' && PHONE !== '') {
-                const otpUser = await Otp.find({ email: EMAIL, phone: PHONE, username: USERNAME });
-                if (otpUser.length === 0) {
-                    return res.status(401).json(otp_expired);
-                }
-                else {
-                    const lastOtp = otpUser[otpUser.length - 1];
-                    if (lastOtp.phone === PHONE && lastOtp.email === EMAIL && lastOtp.otp === OTP) {
-                        let user = { username: USERNAME, email: EMAIL, phone: PHONE };
-                        await LockUser.deleteMany({ phone: PHONE, email: EMAIL });
-                        await Otp.deleteMany({ phone: PHONE, email: EMAIL });
-                        return res.status(200).json({ user: user, message: MSG_VERIFY_OTP_SUCCESSFULLY, status: true });
-                    }
-                    else {
-                        const isLockUser = await AuthController.findLockUser(PHONE, EMAIL);
-                        if (isLockUser) {
-                            if (isLockUser.attempts === 5 && isLockUser.lockUntil > Date.now()) {
-                                return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5 });
-                            }
-                            else if (isLockUser.attempts < 5) {
-                                await isLockUser.updateOne({ $set: { lockUntil: LOCK_TIME_OTP_FAILURE }, $inc: { attempts: 1 } });
-                                return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1009, countFail: isLockUser.attempts + 1 });
-                            }
-                        }
-                        else {
-                            const lockUser = await new LockUser({ phone: PHONE, email: EMAIL, attempts: 1, lockUntil: LOCK_TIME_OTP_FAILURE });
-                            await lockUser.save((err) => {
-                                if (!err) {
-                                    return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1009, countFail: 1 });
-                                }
-                            });
-                        }
-                    }
-                }
+        // try {
+        let EMAIL = req.body.email;
+        let PHONE = req.body.phone;
+        let USERNAME = req.body.username;
+        let OTP = req.body.otp;
+        let otp_expired = { message: MSG_EXPIRE_OTP, status: false, statusCode: 3000 };
+        if (USERNAME !== null && EMAIL !== null && PHONE !== null && USERNAME !== '' && EMAIL !== '' && PHONE !== '') {
+            const otpUser = await Otp.find({ email: EMAIL, phone: PHONE, username: USERNAME });
+            if (otpUser.length === 0) {
+                return res.status(401).json(otp_expired);
             }
             else {
-                return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
+                const lastOtp = otpUser[otpUser.length - 1];
+                if (lastOtp.phone === PHONE && lastOtp.email === EMAIL && lastOtp.otp === OTP) {
+                    let user = { username: USERNAME, email: EMAIL, phone: PHONE };
+                    await LockUser.deleteMany({ phone: PHONE, email: EMAIL });
+                    await Otp.deleteMany({ phone: PHONE, email: EMAIL });
+                    return res.status(200).json({ user: user, message: MSG_VERIFY_OTP_SUCCESSFULLY, status: true });
+                }
+                else {
+                    const isLockUser = await AuthController.findLockUser(PHONE, EMAIL);
+                    if (isLockUser) {
+                        if (isLockUser.attempts === 5 && isLockUser.lockUntil > Date.now()) {
+                            console.log('isLockUser.attempts === 5 && isLockUser.lockUntil > Date.now()');
+                            console.log('isLockUser.attempts === 5: ', isLockUser.attempts);
+                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5 });
+                        }
+                        else if (isLockUser.attempts < 5) {
+                            console.log('isLockUser.attempts < 5: ', isLockUser.attempts);
+                            await isLockUser.updateOne({ $set: { lockUntil: LOCK_TIME_OTP_FAILURE }, $inc: { attempts: 1 } });
+                            return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1009, countFail: isLockUser.attempts + 1 });
+                        }
+                    }
+                    else {
+                        const lockUser = await new LockUser({ phone: PHONE, email: EMAIL, attempts: 1, lockUntil: LOCK_TIME_OTP_FAILURE });
+                        await lockUser.save((err) => {
+                            if (!err) {
+                                return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1009, countFail: 1 });
+                            }
+                        });
+                    }
+                }
             }
         }
-        catch (err) {
-            next(err);
+        else {
+            return res.status(400).json({ message: MSG_ENTER_ALL_FIELDS, status: false, statusCode: 1005 });
         }
+        // }
+        // catch (err) {
+        //     next(err);
+        // }
     },
 
     encryptPassword: async (password) => {
