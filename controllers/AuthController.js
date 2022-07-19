@@ -205,32 +205,40 @@ const AuthController = {
             let phone = req.body.phone;
             let password = req.body.password;
             if (username !== null && username !== '' && email !== null && email !== '' && phone !== null && phone !== '' && password !== null && password !== '') {
-                const auths = await Customer.find();
-                const auth = auths.find(x => x.phone === phone || x.email === email);
-                if (auth) {
-                    return res.status(409).json({ message: MSG_ACCOUNT_EXISTS, statusCode: 1000 });
+                const isLockUser = await AuthController.findLockUser(phone, email);
+                if (isLockUser) {
+                    if (isLockUser.attempts === 5 && isLockUser.lockUntil > Date.now()) {
+                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5 });
+                    }
                 }
                 else {
-                    const hashed = await AuthController.encryptPassword(password);
-                    const newUser = await new Customer({ username: username, email: email, phone: phone, password: hashed, verifyEmail: true });
-                    await newUser.save((err, data) => {
-                        if (!err) {
-                            const { password, __v, refreshToken, loginAttempts, otpPasswordAttempts, otpEmailAttempts, otpPhoneAttempts, deleted, createdAt, updatedAt, ...others } = data._doc;
-                            return res.status(201).json({
-                                data: { ...others },
-                                message: MSG_REGISTER_SUCCESSFULLY,
-                                status: true
-                            });
-                        }
-                        else {
-                            return res.status(409).json({
-                                message: MSG_REGISTER_FAILURE,
-                                status: false,
-                                errorStatus: err.status || 500,
-                                errorMessage: err.message
-                            });
-                        }
-                    });
+                    const auths = await Customer.find();
+                    const auth = auths.find(x => x.phone === phone || x.email === email);
+                    if (auth) {
+                        return res.status(409).json({ message: MSG_ACCOUNT_EXISTS, statusCode: 1000 });
+                    }
+                    else {
+                        const hashed = await AuthController.encryptPassword(password);
+                        const newUser = await new Customer({ username: username, email: email, phone: phone, password: hashed, verifyEmail: true });
+                        await newUser.save((err, data) => {
+                            if (!err) {
+                                const { password, __v, refreshToken, loginAttempts, otpPasswordAttempts, otpEmailAttempts, otpPhoneAttempts, deleted, createdAt, updatedAt, ...others } = data._doc;
+                                return res.status(201).json({
+                                    data: { ...others },
+                                    message: MSG_REGISTER_SUCCESSFULLY,
+                                    status: true
+                                });
+                            }
+                            else {
+                                return res.status(409).json({
+                                    message: MSG_REGISTER_FAILURE,
+                                    status: false,
+                                    errorStatus: err.status || 500,
+                                    errorMessage: err.message
+                                });
+                            }
+                        });
+                    }
                 }
             }
             else {
