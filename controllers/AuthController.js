@@ -413,6 +413,8 @@ const AuthController = {
                 const customers = await Customer.find();
                 const customer = customers.find(x => x.id === id);
                 if (customer) {
+                    console.log('Id: ', id);
+                    console.log('Customer: ', customer);
                     customer.refreshToken = null;
                     await customer.save()
                         .then(() => {
