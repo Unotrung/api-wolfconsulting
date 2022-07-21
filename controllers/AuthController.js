@@ -177,7 +177,7 @@ const AuthController = {
                             const lockUser = await new LockUser({ phone: PHONE, email: EMAIL, attempts: 1, lockUntil: LOCK_TIME_OTP_FAILURE });
                             await lockUser.save((err) => {
                                 if (!err) {
-                                    return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1009, countFail: 1 });
+                                    return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1004, countFail: 1 });
                                 }
                             });
                         }
@@ -292,13 +292,13 @@ const AuthController = {
                 if (auth && validPassword && auth.loginAttempts !== 5) {
                     await auth.updateOne({ $set: { loginAttempts: 0 }, $unset: { loginLockUntil: 1 } });
                     if (auth.otpPasswordAttempts === 5 && auth.otpPasswordLockUntil > Date.now()) {
-                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_password' });
+                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'otp_password' });
                     }
                     if (auth.otpEmailAttempts === 5 && auth.otpEmailLockUntil > Date.now()) {
-                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_email' });
+                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'otp_email' });
                     }
                     if (auth.otpPhoneAttempts === 5 && auth.otpPhoneLockUntil > Date.now()) {
-                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_phone' });
+                        return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'otp_phone' });
                     }
                     const accessToken = AuthController.generateAccessToken(auth);
                     const refreshToken = AuthController.generateRefreshToken(auth);
@@ -632,13 +632,13 @@ const AuthController = {
                 const auths = await Customer.find();
                 const auth = auths.find(x => x.email === OLD_EMAIL);
                 if (auth.otpPasswordAttempts === 5 && auth.otpPasswordLockUntil > Date.now()) {
-                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_password' });
+                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'otp_password' });
                 }
                 if (auth.otpEmailAttempts === 5 && auth.otpEmailLockUntil > Date.now()) {
-                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_email' });
+                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'otp_email' });
                 }
                 if (auth.otpPhoneAttempts === 5 && auth.otpPhoneLockUntil > Date.now()) {
-                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_phone' });
+                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'otp_phone' });
                 }
                 if (auth.otpEmailLockUntil < Date.now()) {
                     await auth.updateOne({ $set: { otpEmailAttempts: 0 }, $unset: { otpEmailLockUntil: 1 } })
@@ -688,11 +688,11 @@ const AuthController = {
                         const auths = await Customer.find();
                         const auth = auths.find(x => x.email === OLD_EMAIL);
                         if (auth.otpEmailAttempts === 5 && auth.otpEmailLockUntil > Date.now()) {
-                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_email' });
+                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'otp_email' });
                         }
                         if (auth.otpEmailAttempts < 5) {
                             await auth.updateOne({ $set: { otpEmailLockUntil: LOCK_TIME_OTP_FAILURE }, $inc: { otpEmailAttempts: 1 } })
-                            return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1009, countFail: auth.otpEmailAttempts + 1, type: 'otp_email' });
+                            return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1004, countFail: auth.otpEmailAttempts + 1, type: 'otp_email' });
                         }
                     }
                 }
@@ -790,13 +790,13 @@ const AuthController = {
                 const auths = await Customer.find();
                 const auth = auths.find(x => x.phone === phone);
                 if (auth.otpPasswordAttempts === 5 && auth.otpPasswordLockUntil > Date.now()) {
-                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_password' });
+                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'otp_password' });
                 }
                 if (auth.otpEmailAttempts === 5 && auth.otpEmailLockUntil > Date.now()) {
-                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_email' });
+                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'otp_email' });
                 }
                 if (auth.otpPhoneAttempts === 5 && auth.otpPhoneLockUntil > Date.now()) {
-                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_phone' });
+                    return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'otp_phone' });
                 }
                 if (auth.otpPhoneLockUntil < Date.now()) {
                     await auth.updateOne({ $set: { otpPhoneAttempts: 0 }, $unset: { otpPhoneLockUntil: 1 } })
@@ -846,11 +846,11 @@ const AuthController = {
                         const auths = await Customer.find();
                         const auth = auths.find(x => x.phone === phone);
                         if (auth.otpPhoneAttempts === 5 && auth.otpPhoneLockUntil > Date.now()) {
-                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1009, countFail: 5, type: 'otp_phone' });
+                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'otp_phone' });
                         }
                         if (auth.otpPhoneAttempts < 5) {
                             await auth.updateOne({ $set: { otpPhoneLockUntil: LOCK_TIME_OTP_FAILURE }, $inc: { otpPhoneAttempts: 1 } })
-                            return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1009, countFail: auth.otpPhoneAttempts + 1, type: 'otp_phone' });
+                            return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1004, countFail: auth.otpPhoneAttempts + 1, type: 'otp_phone' });
                         }
                     }
                 }
@@ -962,7 +962,7 @@ const AuthController = {
                         });
                     }
                     else {
-                        return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1009 });
+                        return res.status(404).json({ message: MSG_VERIFY_OTP_FAILURE, status: false, statusCode: 1004 });
                     }
                 }
             }
