@@ -53,15 +53,7 @@ const AuthController = {
 
     findLockUser: async (phone, email) => {
         let customers = await LockUser.find();
-        if (phone !== null && phone !== '' && email !== null && email !== '') {
-            return customers.find(x => x.phone === phone && x.email === email);
-        }
-        else if (phone !== null && phone !== '') {
-            return customers.find(x => x.phone === phone);
-        }
-        else if (email !== null && email !== '') {
-            return customers.find(x => x.email === email);
-        }
+        return customers.find(x => x.phone === phone && x.email === email);
     },
 
     generateOTP: (USERNAME, EMAIL, PHONE, OTP) => {
@@ -166,7 +158,6 @@ const AuthController = {
                         const isLockUser = await AuthController.findLockUser(PHONE, EMAIL);
                         if (isLockUser) {
                             if (isLockUser.attempts === 5 && isLockUser.lockUntil > Date.now()) {
-                                console.log('isLockUser.attempts === 5 && isLockUser.lockUntil > Date.now()');
                                 console.log('isLockUser.attempts === 5: ', isLockUser.attempts);
                                 return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5 });
                             }
@@ -413,8 +404,6 @@ const AuthController = {
                 const customers = await Customer.find();
                 const customer = customers.find(x => x.id === id);
                 if (customer) {
-                    console.log('Id: ', id);
-                    console.log('Customer: ', customer);
                     customer.refreshToken = null;
                     await customer.save()
                         .then(() => {
