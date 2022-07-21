@@ -53,7 +53,7 @@ const AuthController = {
 
     findLockUser: async (phone, email) => {
         let customers = await LockUser.find();
-        return customers.find(x => x.phone === phone && x.email === email);
+        return customers.find(x => x.phone === phone || x.email === email);
     },
 
     generateOTP: (USERNAME, EMAIL, PHONE, OTP) => {
