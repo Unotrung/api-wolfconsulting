@@ -95,7 +95,6 @@ const AuthController = {
                 let message_emailValid = { message: MSG_MAIL_EXISTS, status: false, statusCode: 2011 };
                 if (isLockUser) {
                     if (isLockUser.attempts === 5 && isLockUser.lockUntil > Date.now()) {
-                        console.log('isLockUser.phone === PHONE && isLockUser.email === EMAIL', { 1: isLockUser.phone, 2: isLockUser.email });
                         if (isLockUser.phone === PHONE && isLockUser.email === EMAIL) {
                             return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'both' });
                         }
