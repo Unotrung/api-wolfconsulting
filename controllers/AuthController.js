@@ -94,19 +94,8 @@ const AuthController = {
                 let message_phoneValid = { message: MSG_PHONE_EXISTS, status: false, statusCode: 2010 };
                 let message_emailValid = { message: MSG_MAIL_EXISTS, status: false, statusCode: 2011 };
                 if (isLockUser) {
-                    if (isLockUser.attempts === 5 && isLockUser.lockUntil > Date.now()) {
-                        if (isLockUser.phone === PHONE && isLockUser.email === EMAIL) {
-                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'both' });
-                        }
-                        else if (isLockUser.phone === PHONE) {
-                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'phone' });
-                        }
-                        else {
-                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'email' });
-                        }
-                    }
-                    else if (isLockUser.lockUntil < Date.now()) {
-                        await LockUser.deleteMany({ phone: PHONE, email: EMAIL });
+                    if (isLockUser.lockUntil < Date.now()) {
+                        await LockUser.deleteMany({ $or: [{ phone: PHONE }, { email: EMAIL }] });
                         if (validPhone) {
                             return res.status(409).json(message_phoneValid);
                         }
@@ -115,6 +104,17 @@ const AuthController = {
                         }
                         if (!validPhone && !validEmail) {
                             await AuthController.generateOTP(USERNAME, EMAIL, PHONE, OTP)(req, res);
+                        }
+                    }
+                    else if (isLockUser.attempts === 5 && isLockUser.lockUntil > Date.now()) {
+                        if (isLockUser.phone === PHONE && isLockUser.email === EMAIL) {
+                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'both' });
+                        }
+                        else if (isLockUser.phone === PHONE) {
+                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'phone' });
+                        }
+                        else {
+                            return res.status(403).json({ message: MSG_VERIFY_OTP_FAILURE_5_TIMES, status: false, statusCode: 1004, countFail: 5, type: 'email' });
                         }
                     }
                     else if (isLockUser.lockUntil > Date.now() && isLockUser.attempts < 5) {
@@ -158,8 +158,8 @@ const AuthController = {
                     const lastOtp = otpUser[otpUser.length - 1];
                     if (lastOtp.phone === PHONE && lastOtp.email === EMAIL && lastOtp.otp === OTP) {
                         let user = { username: USERNAME, email: EMAIL, phone: PHONE };
-                        await LockUser.deleteMany({ phone: PHONE, email: EMAIL });
-                        await Otp.deleteMany({ phone: PHONE, email: EMAIL });
+                        await LockUser.deleteMany({ $or: [{ phone: PHONE }, { email: EMAIL }] });
+                        await Otp.deleteMany({ $or: [{ phone: PHONE }, { email: EMAIL }] });
                         return res.status(200).json({ user: user, message: MSG_VERIFY_OTP_SUCCESSFULLY, status: true });
                     }
                     else {
